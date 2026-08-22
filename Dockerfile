@@ -19,16 +19,16 @@ COPY --from=build /app/server/package.json   ./server/package.json
 COPY --from=build /app/server/dist           ./server/dist
 COPY --from=build /app/client/dist           ./client/dist
 
-RUN npm ci --workspace=server --omit=dev && npm cache clean --force
+RUN npm install --workspace=server --omit=dev --no-audit --no-fund && npm cache clean --force
 
-# Persistent data & uploads directories
-RUN mkdir -p /app/server/data /app/server/uploads
+# Persistent data & uploads directories with permissions for node user
+RUN mkdir -p /app/data /app/uploads /app/server/data /app/server/uploads && chown -R node:node /app
 
 EXPOSE 4000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "fetch('http://localhost:4000/api/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
+  CMD node -e "const p = process.env.PORT || 4000; fetch('http://127.0.0.1:' + p + '/api/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))"
 
 # Run as non-root user
 USER node
