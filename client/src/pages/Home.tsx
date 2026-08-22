@@ -471,7 +471,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       </div>
 
       {/* Stepper Footer Actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+      <div className="stepper-footer-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', gap: 16 }}>
         {step > 1 ? (
           <button type="button" className="btn" onClick={() => setStep(s => s - 1)} disabled={loading}>السابق</button>
         ) : (
@@ -482,7 +482,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
           <button type="button" className="btn btn--primary" onClick={nextStep} style={{ minWidth: 120 }}>التالي</button>
         ) : (
           <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ minWidth: 140, boxShadow: '0 0 24px var(--primary-dim)' }}>
-            {loading ? 'جاري الإرسال...' : 'تأكيد وإرسال الطلب'}
+            {loading ? 'جاري الإرسال...' : 'تأكيد الطلب'}
           </button>
         )}
       </div>
