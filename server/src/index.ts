@@ -5,6 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
+import fs from 'node:fs';
 
 // ─── Critical: validate JWT_SECRET before anything else ──────────────────────
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -91,6 +92,18 @@ app.use('/api/admin/projects', filesRouter);
 
 // Generic CRUD last (so more specific routes above take precedence)
 app.use('/api/admin', crudRouter);
+
+// ─── Serve Frontend in Production ─────────────────────────────────────────────
+const CLIENT_DIST = path.resolve(process.cwd(), 'client', 'dist');
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST, { maxAge: '1h' }));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+  });
+}
 
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
