@@ -6,11 +6,17 @@ import fs from 'node:fs';
 export const DATA_DIR   = process.env.DATA_DIR   || path.resolve(process.cwd(), 'data');
 export const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve(process.cwd(), 'uploads');
 
-fs.mkdirSync(DATA_DIR,   { recursive: true });
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  fs.mkdirSync(DATA_DIR,   { recursive: true });
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (err) {
+  console.error('[db] Notice creating data/uploads dir:', err);
+}
 
 // ─── Connection ────────────────────────────────────────────────────────────────
-const db = new Database(path.join(DATA_DIR, 'studio.db'));
+const dbPath = path.join(DATA_DIR, 'studio.db');
+console.log(`[db] Initializing database at: ${dbPath}`);
+const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
