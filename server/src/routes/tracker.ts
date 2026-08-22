@@ -52,7 +52,7 @@ router.get('/:orderNo', (req, res, next) => {
     const revisions = project ? db.prepare('SELECT * FROM revisions WHERE project_id=? ORDER BY id DESC').all(project.id) : [];
 
     // Fetch Payment Settings
-    const settings = db.prepare('SELECT key, value FROM settings WHERE key IN ("instapay_username", "vodafone_cash", "bank_details", "payment_instructions")').all() as {key: string, value: string}[];
+    const settings = db.prepare('SELECT key, value FROM settings WHERE key IN ('instapay_username', 'vodafone_cash', 'bank_details', 'payment_instructions')').all() as {key: string, value: string}[];
     const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
 
     res.json({
