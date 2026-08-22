@@ -90,8 +90,20 @@ app.use('/api/admin/projects', filesRouter);
 app.use('/api/admin', crudRouter);
 
 // ─── Serve Frontend in Production ─────────────────────────────────────────────
-const CLIENT_DIST = path.resolve(process.cwd(), 'client', 'dist');
-if (fs.existsSync(CLIENT_DIST)) {
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const candidatePaths = [
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(__dirname, '../client/dist'),
+];
+const CLIENT_DIST = candidatePaths.find(p => fs.existsSync(p));
+
+if (CLIENT_DIST) {
+  console.log(`[static] Serving frontend from: ${CLIENT_DIST}`);
   app.use(express.static(CLIENT_DIST, { maxAge: '1h' }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
@@ -99,6 +111,8 @@ if (fs.existsSync(CLIENT_DIST)) {
     }
     res.sendFile(path.join(CLIENT_DIST, 'index.html'));
   });
+} else {
+  console.warn('[static] Frontend client/dist folder not found. API is running, but no static files will be served.');
 }
 
 // ─── Error handler ────────────────────────────────────────────────────────────
