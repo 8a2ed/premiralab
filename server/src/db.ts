@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from 'node:fs';
 
-// ─── Paths ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DATA_DIR   = process.env.DATA_DIR   || path.resolve(process.cwd(), 'data');
 export const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve(process.cwd(), 'uploads');
 
@@ -13,7 +13,7 @@ try {
   console.error('[db] Notice creating data/uploads dir:', err);
 }
 
-// ─── Connection ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const dbPath = path.join(DATA_DIR, 'studio.db');
 console.log(`[db] Initializing database at: ${dbPath}`);
 const db = new Database(dbPath);
@@ -21,8 +21,11 @@ const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.pragma('busy_timeout = 5000');
+try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_receipt TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT;'); } catch (e) { /* ignore */ }
 
-// ─── Schema ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -159,7 +162,7 @@ db.exec(`
   );
 `);
 
-// ─── Indexes (idempotent) ──────────────────────────────────────────────────────
+// â”€â”€â”€ Indexes (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_orders_client_id   ON orders(client_id);
   CREATE INDEX IF NOT EXISTS idx_orders_status       ON orders(status);
