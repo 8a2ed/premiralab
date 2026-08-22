@@ -40,12 +40,12 @@ export function Home({ data, onToast }: HomeProps) {
         <section className="hero">
           <div className="container hero-grid">
             <div>
-              <div className="eyebrow">استوديو تصميم رقمي متكامل</div>
-              <h1>نحوّل الأفكار إلى <span className="highlight">تجارب بصرية</span> قوية.</h1>
-              <p>من الهوية البصرية إلى المنتجات الرقمية — منظومة تصميم احترافية مع إدارة مشاريع وملفات ومراجعات منظمة.</p>
+              <div className="eyebrow">Ø§Ø³ØªÙˆØ¯ÙŠÙˆ ØªØµÙ…ÙŠÙ… Ø±Ù‚Ù…ÙŠ Ù…ØªÙƒØ§Ù…Ù„</div>
+              <h1>Ù†Ø­ÙˆÙ‘Ù„ Ø§Ù„Ø£ÙÙƒØ§Ø± Ø¥Ù„Ù‰ <span className="highlight">ØªØ¬Ø§Ø±Ø¨ Ø¨ØµØ±ÙŠØ©</span> Ù‚ÙˆÙŠØ©.</h1>
+              <p>Ù…Ù† Ø§Ù„Ù‡ÙˆÙŠØ© Ø§Ù„Ø¨ØµØ±ÙŠØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø±Ù‚Ù…ÙŠØ© â€” Ù…Ù†Ø¸ÙˆÙ…Ø© ØªØµÙ…ÙŠÙ… Ø§Ø­ØªØ±Ø§ÙÙŠØ© Ù…Ø¹ Ø¥Ø¯Ø§Ø±Ø© Ù…Ø´Ø§Ø±ÙŠØ¹ ÙˆÙ…Ù„ÙØ§Øª ÙˆÙ…Ø±Ø§Ø¬Ø¹Ø§Øª Ù…Ù†Ø¸Ù…Ø©.</p>
               <div className="actions">
                 <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
-                  اطلب مشروعك <ArrowLeft size={18} aria-hidden />
+                  Ø§Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹Ùƒ <ArrowLeft size={18} aria-hidden />
                 </button>
               </div>
             </div>
@@ -56,8 +56,8 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Services */}
         <section className="section" id="services" aria-labelledby="services-title">
           <div className="container">
-            <h2 id="services-title">الخدمات</h2>
-            <p className="muted">حلول تصميم قابلة للتوسع.</p>
+            <h2 id="services-title">Ø§Ù„Ø®Ø¯Ù…Ø§Øª</h2>
+            <p className="muted">Ø­Ù„ÙˆÙ„ ØªØµÙ…ÙŠÙ… Ù‚Ø§Ø¨Ù„Ø© Ù„Ù„ØªÙˆØ³Ø¹.</p>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.services?.map(s => (
                 <div className="card" key={s.id}>
@@ -73,22 +73,22 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Packages */}
         <section className="section" id="packages" aria-labelledby="packages-title">
           <div className="container">
-            <h2 id="packages-title">الباقات</h2>
-            <p className="muted">اختر نقطة البداية المناسبة.</p>
+            <h2 id="packages-title">Ø§Ù„Ø¨Ø§Ù‚Ø§Øª</h2>
+            <p className="muted">Ø§Ø®ØªØ± Ù†Ù‚Ø·Ø© Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø©.</p>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.packages?.map(p => (
                 <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
-                  {p.popular && <span className="tag">الأكثر طلباً ⭐</span>}
+                  {p.popular && <span className="tag">Ø§Ù„Ø£ÙƒØ«Ø± Ø·Ù„Ø¨Ø§Ù‹ â­</span>}
                   <h3>{p.title}</h3>
                   <div className="price">{money(p.price, data.site?.currency)}</div>
                   <p className="muted">{p.description}</p>
-                  <ul className="feature-list" aria-label="مميزات الباقة">
+                  <ul className="feature-list" aria-label="Ù…Ù…ÙŠØ²Ø§Øª Ø§Ù„Ø¨Ø§Ù‚Ø©">
                     {p.features.map(f => (
                       <li key={f}><CheckCircle2 size={14} aria-hidden /> {f}</li>
                     ))}
                   </ul>
                   <button className="btn btn--primary" onClick={() => openOrder(p)} style={{ marginTop: 'auto' }}>
-                    اطلب الباقة
+                    Ø§Ø·Ù„Ø¨ Ø§Ù„Ø¨Ø§Ù‚Ø©
                   </button>
                 </div>
               ))}
@@ -101,8 +101,8 @@ export function Home({ data, onToast }: HomeProps) {
           <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 id="portfolio-title">أعمال مختارة</h2>
-                <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا (اضغط على أي عمل لاستعراض التفاصيل الكاملة).</p>
+                <h2 id="portfolio-title">Ø£Ø¹Ù…Ø§Ù„ Ù…Ø®ØªØ§Ø±Ø©</h2>
+                <p className="muted">Ù†Ù…Ø§Ø°Ø¬ ÙˆØªØ¬Ø§Ø±Ø¨ Ø¨ØµØ±ÙŠØ© ØµÙ…Ù…Ù†Ø§Ù‡Ø§ Ù„Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§ (Ø§Ø¶ØºØ· Ø¹Ù„Ù‰ Ø£ÙŠ Ø¹Ù…Ù„ Ù„Ø§Ø³ØªØ¹Ø±Ø§Ø¶ Ø§Ù„ØªÙØ§ØµÙŠÙ„ Ø§Ù„ÙƒØ§Ù…Ù„Ø©).</p>
               </div>
             </div>
 
@@ -114,13 +114,13 @@ export function Home({ data, onToast }: HomeProps) {
                   onClick={() => setActivePortfolio(p)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`عرض تفاصيل ${p.title}`}
+                  aria-label={`Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ ${p.title}`}
                 >
                   {p.image_url && (
                     <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
                       <ImageWithSkeleton skeletonHeight={240} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
                       <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(4px)', zIndex: 2 }}>
-                        <Eye size={12} /> استعراض العمل
+                        <Eye size={12} /> Ø§Ø³ØªØ¹Ø±Ø§Ø¶ Ø§Ù„Ø¹Ù…Ù„
                       </div>
                     </div>
                   )}
@@ -129,7 +129,7 @@ export function Home({ data, onToast }: HomeProps) {
                   <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>{p.description}</p>
                 </div>
               )) : (
-                <div className="empty">أضف أعمالك من لوحة الإدارة.</div>
+                <div className="empty">Ø£Ø¶Ù Ø£Ø¹Ù…Ø§Ù„Ùƒ Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©.</div>
               )}
             </div>
           </div>
@@ -138,11 +138,11 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Testimonials */}
         <section className="section" id="testimonials" aria-labelledby="testimonials-title">
           <div className="container">
-            <h2 id="testimonials-title">آراء العملاء</h2>
+            <h2 id="testimonials-title">Ø¢Ø±Ø§Ø¡ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</h2>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.testimonials?.map(t => (
                 <div className="card testimonial-card" key={t.id}>
-                  <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
+                  <div className="stars" aria-label={`ØªÙ‚ÙŠÙŠÙ… ${t.rating} Ù…Ù† 5`}>
                     {Array.from({ length: t.rating }).map((_, i) => (
                       <Star key={i} size={16} fill="currentColor" aria-hidden />
                     ))}
@@ -193,7 +193,7 @@ export function Home({ data, onToast }: HomeProps) {
   );
 }
 
-// ─── Order Modal ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Order Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface OrderModalProps {
   packages:           Package[];
@@ -205,6 +205,7 @@ interface OrderModalProps {
 }
 
 function OrderModal({ packages, services, defaultPackage, initialProjectType, onClose, onDone }: OrderModalProps) {
+  const [step, setStep] = useState(1);
   const [f, setF] = useState({
     name: '', phone: '', email: '',
     packageId: defaultPackage ? String(defaultPackage.id) : '',
@@ -215,8 +216,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const [loading,   setLoading]   = useState(false);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async () => {
     setLoading(true);
     try {
       const res = await api.order({
@@ -235,7 +235,6 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   };
 
   const [copied, setCopied] = useState(false);
-
   const copyTrackerUrl = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
@@ -244,93 +243,200 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   };
 
   if (submitted) {
-    const trackerUrl = `${window.location.origin}/?track=${submitted.orderNo}`;
+    const trackerUrl = ${window.location.origin}/?track=;
     return (
-      <Modal title="تم استلام طلبك 🎉" onClose={onClose}>
-        <div className="order-success">
-          <CheckCircle2 size={48} className="icon--success" />
-          <h3>شكراً لك!</h3>
-          <p>رقم طلبك: <strong className="order-no-highlight">{submitted.orderNo}</strong></p>
-          <p className="muted">احفظ هذا الرقم لمتابعة حالة مشروعك.</p>
-          <div className="tracker-link-box" style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
-            <p className="muted" style={{ margin: 0 }}>رابط متابعة المشروع:</p>
-            <a href={trackerUrl} className="tracker-link" target="_blank" rel="noopener">{trackerUrl}</a>
-            <button
-              className="btn btn--sm"
-              onClick={() => copyTrackerUrl(trackerUrl)}
-              style={{ marginTop: 4 }}
-              type="button"
-            >
-              {copied ? <><Check size={14} className="icon--success" /> تم النسخ</> : <><Copy size={14} /> نسخ الرابط</>}
+      <Modal title="تم استلام طلبك بنجاح ✨" onClose={onClose}>
+        <div className="order-success" style={{ textAlign: 'center', padding: '20px 0' }}>
+          <CheckCircle2 size={56} className="icon--success" style={{ margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكراً لثقتك بنا!</h3>
+          <p style={{ fontSize: 16 }}>رقم طلبك: <strong style={{ color: 'var(--primary)', fontSize: 18, background: 'var(--primary-dim)', padding: '4px 10px', borderRadius: 8 }}>{submitted.orderNo}</strong></p>
+          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريباً. يمكنك متابعة حالة الطلب في أي وقت.</p>
+          
+          <div style={{ background: 'var(--bg-2)', padding: 20, borderRadius: 16, border: '1px solid var(--border)', marginTop: 24 }}>
+            <p className="muted" style={{ margin: '0 0 12px', fontSize: 13 }}>رابط المتابعة الخاص بك (احتفظ به):</p>
+            <a href={trackerUrl} style={{ color: 'var(--text)', display: 'block', marginBottom: 16, wordBreak: 'break-all', fontWeight: 600 }} target="_blank" rel="noopener">{trackerUrl}</a>
+            <button className="btn btn--sm" onClick={() => copyTrackerUrl(trackerUrl)} style={{ width: '100%', justifyContent: 'center' }} type="button">
+              {copied ? <><Check size={16} className="icon--success" /> تم النسخ</> : <><Copy size={16} /> نسخ رابط المتابعة</>}
             </button>
           </div>
-          <button className="btn btn--primary" onClick={onClose} style={{ marginTop: 20 }}>إغلاق</button>
+          <button className="btn btn--primary" onClick={onClose} style={{ marginTop: 20, width: '100%' }}>إغلاق</button>
         </div>
       </Modal>
     );
   }
 
+  const nextStep = () => {
+    if (step === 1) {
+      if (!f.packageId && !f.serviceId && !f.projectType) return onDone('يرجى اختيار باقة أو خدمة أو تحديد نوع المشروع', 'error');
+    }
+    if (step === 2) {
+      // notes/budget are optional
+    }
+    if (step === 3) {
+      if (!f.name || !f.phone) return onDone('الاسم ورقم الهاتف مطلوبان', 'error');
+    }
+    setStep(s => s + 1);
+  };
+
+  const steps = [
+    { num: 1, title: 'الخدمة المطلوبة' },
+    { num: 2, title: 'التفاصيل' },
+    { num: 3, title: 'التواصل' },
+    { num: 4, title: 'التأكيد' }
+  ];
+
   return (
-    <Modal title="ابدأ مشروعك" onClose={onClose} size="lg">
-      <form onSubmit={submit} noValidate>
-        <div className="form-grid">
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-name">الاسم الكامل *</label>
-            <input id="order-name" className="input" required placeholder="محمد أحمد" value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} />
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-phone">رقم الهاتف *</label>
-            <input id="order-phone" className="input" required placeholder="01xxxxxxxxx" value={f.phone} onChange={e => setF(p => ({ ...p, phone: e.target.value }))} />
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-email">البريد الإلكتروني</label>
-            <input id="order-email" className="input" type="email" placeholder="email@example.com" value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} />
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-type">نوع المشروع</label>
-            <input id="order-type" className="input" placeholder="هوية بصرية، سوشيال ميديا..." value={f.projectType} onChange={e => setF(p => ({ ...p, projectType: e.target.value }))} />
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-pkg">الباقة</label>
-            <select id="order-pkg" className="select" value={f.packageId} onChange={e => setF(p => ({ ...p, packageId: e.target.value }))}>
-              <option value="">اختر باقة (اختياري)</option>
-              {packages.map(p => <option key={p.id} value={p.id}>{p.title} — {money(p.price)}</option>)}
-            </select>
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-svc">الخدمة</label>
-            <select id="order-svc" className="select" value={f.serviceId} onChange={e => setF(p => ({ ...p, serviceId: e.target.value }))}>
-              <option value="">اختر خدمة (اختياري)</option>
-              {services.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-            </select>
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (جنيه)</label>
-            <input id="order-budget" className="input" type="number" min="0" placeholder="5000" value={f.budget} onChange={e => setF(p => ({ ...p, budget: e.target.value }))} />
-          </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="order-deadline">الموعد النهائي</label>
-            <input id="order-deadline" className="input" type="date" value={f.deadline} onChange={e => setF(p => ({ ...p, deadline: e.target.value }))} />
-          </div>
+    <Modal title="ابدأ مشروعك الآن" onClose={onClose} size="lg">
+      <div style={{ marginBottom: 30 }}>
+        {/* Stepper Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', maxWidth: 500, margin: '0 auto' }}>
+          <div style={{ position: 'absolute', top: 16, left: 0, right: 0, height: 2, background: 'var(--border)', zIndex: 0 }} />
+          <div style={{ position: 'absolute', top: 16, right: 0, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: ${((step - 1) / (steps.length - 1)) * 100}% }} />
+          
+          {steps.map(s => (
+            <div key={s.num} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ 
+                width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, transition: '0.3s',
+                background: step >= s.num ? 'var(--primary)' : 'var(--bg-3)', 
+                color: step >= s.num ? '#fff' : 'var(--muted)',
+                border: 2px solid ,
+                boxShadow: step === s.num ? '0 0 0 4px var(--primary-dim)' : 'none'
+              }}>
+                {step > s.num ? <Check size={16} /> : s.num}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: step === s.num ? 700 : 500, color: step >= s.num ? 'var(--text)' : 'var(--muted)' }}>{s.title}</span>
+            </div>
+          ))}
         </div>
-        <div className="form-field" style={{ marginTop: 10 }}>
-          <label className="form-label" htmlFor="order-notes">تفاصيل المشروع</label>
-          <textarea id="order-notes" className="textarea" rows={4} maxLength={2000}
-            placeholder="صف مشروعك، مرجعياتك، وأي طلبات خاصة..."
-            value={f.notes} onChange={e => setF(p => ({ ...p, notes: e.target.value }))}
-          />
-        </div>
-        <button type="submit" className="btn btn--primary" disabled={loading} style={{ width: '100%', marginTop: 14 }}>
-          {loading ? 'جارٍ الإرسال...' : 'إرسال الطلب'}
-        </button>
-      </form>
+      </div>
+
+      <div style={{ minHeight: 280 }}>
+        {step === 1 && (
+          <div className="animation-fade-in">
+            <h3 style={{ marginBottom: 20, fontSize: 18 }}>ما هو نوع الخدمة التي تبحث عنها؟</h3>
+            <div className="grid grid-2" style={{ gap: 20 }}>
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-pkg">الباقات الجاهزة</label>
+                <select id="order-pkg" className="select" style={{ padding: 14, fontSize: 15 }} value={f.packageId} onChange={e => setF(p => ({ ...p, packageId: e.target.value, serviceId: e.target.value ? '' : p.serviceId }))}>
+                  <option value="">اختر باقة (اختياري)</option>
+                  {packages.map(p => <option key={p.id} value={p.id}>{p.title} — {money(p.price)}</option>)}
+                </select>
+              </div>
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-svc">الخدمات الفردية</label>
+                <select id="order-svc" className="select" style={{ padding: 14, fontSize: 15 }} value={f.serviceId} onChange={e => setF(p => ({ ...p, serviceId: e.target.value, packageId: e.target.value ? '' : p.packageId }))}>
+                  <option value="">اختر خدمة (اختياري)</option>
+                  {services.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                </select>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <div className="muted" style={{ fontSize: 12 }}>أو تخصيص مشروعك</div>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            </div>
+
+            <div className="form-field">
+              <label className="form-label" htmlFor="order-type">نوع المشروع المخصص</label>
+              <input id="order-type" className="input" style={{ padding: 14 }} placeholder="مثال: هوية بصرية كاملة + تصميم موقع..." value={f.projectType} onChange={e => setF(p => ({ ...p, projectType: e.target.value }))} />
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="animation-fade-in">
+            <h3 style={{ marginBottom: 20, fontSize: 18 }}>متطلبات وتفاصيل إضافية</h3>
+            <div className="form-grid">
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (اختياري)</label>
+                <div style={{ position: 'relative' }}>
+                  <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="5000" value={f.budget} onChange={e => setF(p => ({ ...p, budget: e.target.value }))} />
+                  <span style={{ position: 'absolute', right: 14, top: 14, color: 'var(--muted)', fontSize: 14 }}>ج.م</span>
+                </div>
+              </div>
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-deadline">الموعد النهائي للتسليم</label>
+                <input id="order-deadline" className="input" style={{ padding: 14 }} type="date" value={f.deadline} onChange={e => setF(p => ({ ...p, deadline: e.target.value }))} />
+              </div>
+            </div>
+            <div className="form-field" style={{ marginTop: 20 }}>
+              <label className="form-label" htmlFor="order-notes">نبذة عن المشروع وأهدافه</label>
+              <textarea id="order-notes" className="textarea" rows={4} maxLength={2000} style={{ padding: 14 }}
+                placeholder="صف لنا فكرتك، متطلباتك الخاصة، أو أي روابط مرجعية..."
+                value={f.notes} onChange={e => setF(p => ({ ...p, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="animation-fade-in">
+            <h3 style={{ marginBottom: 20, fontSize: 18 }}>كيف يمكننا التواصل معك؟</h3>
+            <div className="form-field" style={{ marginBottom: 16 }}>
+              <label className="form-label" htmlFor="order-name">الاسم الكامل *</label>
+              <input id="order-name" className="input" style={{ padding: 14 }} required placeholder="محمد أحمد" value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="form-grid">
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-phone">رقم الهاتف / الواتساب *</label>
+                <input id="order-phone" className="input" style={{ padding: 14, direction: 'ltr', textAlign: 'right' }} required placeholder="01xxxxxxxxx" value={f.phone} onChange={e => setF(p => ({ ...p, phone: e.target.value }))} />
+              </div>
+              <div className="form-field">
+                <label className="form-label" htmlFor="order-email">البريد الإلكتروني</label>
+                <input id="order-email" className="input" style={{ padding: 14 }} type="email" placeholder="email@example.com" value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="animation-fade-in">
+            <h3 style={{ marginBottom: 20, fontSize: 18, textAlign: 'center' }}>مراجعة الطلب</h3>
+            <div style={{ background: 'var(--bg-2)', borderRadius: 16, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 24px' }}>
+                <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الاسم</span><strong>{f.name}</strong></div>
+                <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>رقم التواصل</span><strong style={{ direction: 'ltr', display: 'inline-block' }}>{f.phone}</strong></div>
+                
+                {f.packageId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الباقة المختارة</span><strong style={{ color: 'var(--primary)' }}>{packages.find(p => p.id === Number(f.packageId))?.title}</strong></div>}
+                {f.serviceId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الخدمة المختارة</span><strong style={{ color: 'var(--primary)' }}>{services.find(s => s.id === Number(f.serviceId))?.title}</strong></div>}
+                {f.projectType && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>نوع المشروع</span><strong>{f.projectType}</strong></div>}
+                
+                {f.budget && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الميزانية المقترحة</span><strong>{money(Number(f.budget))}</strong></div>}
+                {f.deadline && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الموعد النهائي</span><strong>{f.deadline}</strong></div>}
+              </div>
+              {f.notes && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  <span className="muted" style={{ fontSize: 12, display: 'block' }}>ملاحظات</span>
+                  <p style={{ margin: '4px 0 0', fontSize: 14, whiteSpace: 'pre-wrap' }}>{f.notes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Stepper Footer Actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+        {step > 1 ? (
+          <button type="button" className="btn" onClick={() => setStep(s => s - 1)} disabled={loading}>السابق</button>
+        ) : (
+          <button type="button" className="btn" onClick={onClose} style={{ color: 'var(--muted)', background: 'transparent', borderColor: 'transparent' }}>إلغاء</button>
+        )}
+        
+        {step < 4 ? (
+          <button type="button" className="btn btn--primary" onClick={nextStep} style={{ minWidth: 120 }}>التالي</button>
+        ) : (
+          <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ minWidth: 140, boxShadow: '0 0 24px var(--primary-dim)' }}>
+            {loading ? 'جاري الإرسال...' : 'تأكيد وإرسال الطلب'}
+          </button>
+        )}
+      </div>
     </Modal>
   );
 }
 
-// ─── Case Study Modal ─────────────────────────────────────────────────────────
-
-interface CaseStudyModalProps {
+interface CaseStudyModalProps {interface CaseStudyModalProps {
   item:     PortfolioItem;
   onClose:  () => void;
   onOrder:  (pkg?: Package, initialProj?: string) => void;
@@ -340,7 +446,7 @@ interface CaseStudyModalProps {
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
   const waUrl = whatsapp
-    ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
+    ? waLink(whatsapp, `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø¹Ø¬Ø¨Ù†ÙŠ Ù…Ø´Ø±ÙˆØ¹ "${item.title}" ÙˆØ£Ø±ÙŠØ¯ ØªÙ†ÙÙŠØ° Ù…Ø´Ø±ÙˆØ¹ Ù…Ø´Ø§Ø¨Ù‡.`)
     : null;
 
   return (
@@ -360,7 +466,7 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {waUrl && (
                 <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn--sm" style={{ borderColor: '#25D366', color: '#25D366' }}>
-                  💬 استفسر عبر واتساب
+                  ðŸ’¬ Ø§Ø³ØªÙØ³Ø± Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨
                 </a>
               )}
               <button
@@ -370,15 +476,15 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
                   onOrder(undefined, item.title);
                 }}
               >
-                اطلب مشروعاً مماثلاً
+                Ø§Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹Ø§Ù‹ Ù…Ù…Ø§Ø«Ù„Ø§Ù‹
               </button>
             </div>
           </div>
 
           <div style={{ background: 'var(--bg-3)', padding: 18, borderRadius: 'var(--radius-sm)', lineHeight: 1.8 }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--text)' }}>عن هذا العمل:</h4>
+            <h4 style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--text)' }}>Ø¹Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¹Ù…Ù„:</h4>
             <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-              {item.description || 'مشروع تصميم وهوية بصرية رقمية متكاملة تم تطويره وفق أعلى معايير الجودة والتجربة البصرية.'}
+              {item.description || 'Ù…Ø´Ø±ÙˆØ¹ ØªØµÙ…ÙŠÙ… ÙˆÙ‡ÙˆÙŠØ© Ø¨ØµØ±ÙŠØ© Ø±Ù‚Ù…ÙŠØ© Ù…ØªÙƒØ§Ù…Ù„Ø© ØªÙ… ØªØ·ÙˆÙŠØ±Ù‡ ÙˆÙÙ‚ Ø£Ø¹Ù„Ù‰ Ù…Ø¹Ø§ÙŠÙŠØ± Ø§Ù„Ø¬ÙˆØ¯Ø© ÙˆØ§Ù„ØªØ¬Ø±Ø¨Ø© Ø§Ù„Ø¨ØµØ±ÙŠØ©.'}
             </p>
           </div>
         </div>
@@ -387,16 +493,16 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
   );
 }
 
-// ─── Floating WhatsApp Widget ──────────────────────────────────────────────────
+// â”€â”€â”€ Floating WhatsApp Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: string }) {
   const [open, setOpen] = useState(false);
   if (!whatsapp) return null;
 
   const quickLinks = [
-    { title: 'طلب عرض سعر سريع', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
-    { title: 'استفسار عن الباقات المتاحة', msg: `مرحباً ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
-    { title: 'متابعة طلب قائم', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
+    { title: 'Ø·Ù„Ø¨ Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ø³Ø±ÙŠØ¹', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø±ÙŠØ¯ Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ù…Ø´Ø±ÙˆØ¹ÙŠ Ø§Ù„Ø¬Ø¯ÙŠØ¯.` },
+    { title: 'Ø§Ø³ØªÙØ³Ø§Ø± Ø¹Ù† Ø§Ù„Ø¨Ø§Ù‚Ø§Øª Ø§Ù„Ù…ØªØ§Ø­Ø©', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ù„Ø¯ÙŠ Ø§Ø³ØªÙØ³Ø§Ø± Ø¨Ø®ØµÙˆØµ Ø¨Ø§Ù‚Ø§Øª Ø§Ù„ØªØµÙ…ÙŠÙ….` },
+    { title: 'Ù…ØªØ§Ø¨Ø¹Ø© Ø·Ù„Ø¨ Ù‚Ø§Ø¦Ù…', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø±ÙŠØ¯ Ø§Ù„Ø§Ø³ØªÙØ³Ø§Ø± Ø¹Ù† Ø­Ø§Ù„Ø© Ø·Ù„Ø¨ÙŠ.` },
   ];
 
   return (
@@ -411,16 +517,16 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
               </div>
               <div>
                 <strong>{brand || 'PREMIRALAB'}</strong>
-                <div style={{ fontSize: 11, color: '#25D366' }}>متصل الآن — نرد خلال دقائق</div>
+                <div style={{ fontSize: 11, color: '#25D366' }}>Ù…ØªØµÙ„ Ø§Ù„Ø¢Ù† â€” Ù†Ø±Ø¯ Ø®Ù„Ø§Ù„ Ø¯Ù‚Ø§Ø¦Ù‚</div>
               </div>
             </div>
-            <button className="btn btn--icon btn--sm" onClick={() => setOpen(false)} aria-label="إغلاق">
+            <button className="btn btn--icon btn--sm" onClick={() => setOpen(false)} aria-label="Ø¥ØºÙ„Ø§Ù‚">
               <X size={16} />
             </button>
           </div>
 
           <p style={{ fontSize: 13, margin: '12px 0 10px', color: 'var(--text-muted)' }}>
-            مرحباً بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
+            Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ! ÙƒÙŠÙ ÙŠÙ…ÙƒÙ†Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ Ø§Ù„ÙŠÙˆÙ…ØŸ Ø§Ø®ØªØ± Ù…Ù† Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø³Ø±ÙŠØ¹Ø©:
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -444,7 +550,7 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
       <button
         className="floating-wa-btn"
         onClick={() => setOpen(o => !o)}
-        aria-label="تواصل عبر واتساب"
+        aria-label="ØªÙˆØ§ØµÙ„ Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨"
       >
         <MessageCircle size={26} />
         <span className="floating-wa-pulse" />
