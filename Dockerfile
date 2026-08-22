@@ -21,9 +21,8 @@ COPY --from=build /app/client/dist           ./client/dist
 
 RUN npm ci --workspace=server --omit=dev && npm cache clean --force
 
-# Persistent data & uploads (must be mounted as Docker volumes)
+# Persistent data & uploads directories
 RUN mkdir -p /app/server/data /app/server/uploads
-VOLUME ["/app/server/data", "/app/server/uploads"]
 
 EXPOSE 4000
 
