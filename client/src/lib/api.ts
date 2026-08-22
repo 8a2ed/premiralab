@@ -6,21 +6,50 @@ import type {
 
 const BASE = '';  // Vite proxy handles /api → http://localhost:4000
 
-async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(BASE + url, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  });
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  if (!res.ok) {
-    let errBody: { error?: string; details?: unknown } = {};
-    try { errBody = await res.json(); } catch { /* non-JSON error body */ }
-    throw new Error(errBody.error ?? `HTTP ${res.status}`);
+async function request<T>(url: string, options: RequestInit = {}, retries = 3): Promise<T> {
+  let lastError: unknown;
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const res = await fetch(BASE + url, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...options.headers },
+        ...options,
+      });
+
+      if (!res.ok) {
+        let errBody: { error?: string; details?: unknown } = {};
+        try { errBody = await res.json(); } catch { /* non-JSON error body */ }
+        const errMsg = errBody.error ?? `HTTP ${res.status}`;
+        
+        // Only retry on 5xx server errors, not on 4xx client errors
+        if (res.status >= 500 && res.status < 600) {
+          throw new Error(errMsg);
+        }
+        
+        // Throw immediately for 4xx errors
+        throw new Error(errMsg);
+      }
+
+      if (res.status === 204) return undefined as T;
+      return await res.json() as T;
+    } catch (err: any) {
+      lastError = err;
+      
+      // If it's a 4xx error we explicitly threw above, abort retries immediately
+      if (err.message && err.message.startsWith('HTTP 4')) {
+        throw err;
+      }
+
+      console.warn(`[Network] API request to ${url} failed (attempt ${attempt + 1}/${retries}). Retrying in ${1000 * (attempt + 1)}ms...`);
+      await delay(1000 * (attempt + 1));
+    }
   }
-
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  
+  console.error(`[Network] API request to ${url} completely failed after ${retries} retries.`);
+  throw lastError;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────

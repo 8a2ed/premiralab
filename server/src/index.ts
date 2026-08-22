@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
@@ -15,9 +16,17 @@ if (!process.env.JWT_SECRET) {
   console.warn('⚠️ [security] JWT_SECRET environment variable is not set. Generated a secure runtime secret. For session persistence across restarts, set JWT_SECRET in your Railway Variables.');
 }
 
-// ─── DB (must come after dotenv, before routes) ───────────────────────────────
+// ─── DB & Services (must come after dotenv, before routes) ────────────────────
 import { db, UPLOAD_DIR } from './db.js';
 import { seed } from './seed.js';
+import { startBackupJob } from './services/backup.js';
+import { initializeLogger } from './services/logger.js';
+import { startDailyHealthReport } from './services/healthReport.js';
+
+// Start background services
+initializeLogger();
+startBackupJob();
+startDailyHealthReport();
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 import authRouter         from './routes/auth.js';
@@ -43,7 +52,11 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(helmet({ 
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false // Disable CSP to allow inline theme scripts in index.html
+}));
+app.use(compression());
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
