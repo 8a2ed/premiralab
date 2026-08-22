@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
   destination: UPLOAD_DIR,
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, \eceipt_\\\);
+    cb(null, `receipt_${crypto.randomBytes(8).toString('hex')}${ext}`);
   }
 });
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
@@ -25,7 +25,7 @@ router.get('/:orderNo', (req, res, next) => {
   try {
     const { orderNo } = req.params;
 
-    const order = db.prepare(\
+    const order = db.prepare(`
       SELECT o.*,
              c.name  client_name,
              c.phone client_phone,
@@ -36,7 +36,7 @@ router.get('/:orderNo', (req, res, next) => {
       LEFT JOIN packages p ON p.id = o.package_id
       LEFT JOIN services s ON s.id = o.service_id
       WHERE o.order_no = ?
-    \).get(orderNo) as (Order & {
+    `).get(orderNo) as (Order & {
       client_name: string; client_phone: string;
       package_title: string | null; service_title: string | null;
       paid_amount?: number; payment_receipt?: string; payment_method?: string;
@@ -71,7 +71,7 @@ router.get('/:orderNo', (req, res, next) => {
       files: (files as any[]).map(f => ({
         id: f.id,
         name: f.original_name,
-        url: \/uploads/\\,
+        url: `/uploads/${f.stored_name}`,
         mime: f.mime_type,
         size: f.size,
         createdAt: f.created_at,
@@ -105,7 +105,7 @@ router.post('/:orderNo/receipt', upload.single('receipt'), (req, res, next) => {
 
     db.prepare('UPDATE orders SET payment_receipt = ? WHERE id = ?').run(req.file.filename, order.id);
 
-    res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: \/uploads/\\ });
+    res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${req.file.filename}` });
   } catch (err) {
     next(err);
   }
