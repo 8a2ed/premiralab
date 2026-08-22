@@ -7,16 +7,12 @@ import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import fs from 'node:fs';
 
-// ─── Critical: validate JWT_SECRET before anything else ──────────────────────
-const IS_PROD = process.env.NODE_ENV === 'production';
-if (IS_PROD && !process.env.JWT_SECRET) {
-  console.error('FATAL: JWT_SECRET environment variable must be set in production.');
-  process.exit(1);
-}
+import crypto from 'node:crypto';
+
+// ─── JWT_SECRET Configuration ────────────────────────────────────────────────
 if (!process.env.JWT_SECRET) {
-  // Dev-only stable fallback (still warns loudly)
-  process.env.JWT_SECRET = 'dev-only-secret-do-not-use-in-production-32chars!!';
-  console.warn('[warning] JWT_SECRET not set — using dev fallback. Set it in .env for a stable secret.');
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+  console.warn('⚠️ [security] JWT_SECRET environment variable is not set. Generated a secure runtime secret. For session persistence across restarts, set JWT_SECRET in your Railway Variables.');
 }
 
 // ─── DB (must come after dotenv, before routes) ───────────────────────────────
