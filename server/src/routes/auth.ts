@@ -12,9 +12,11 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const getSecret = () => process.env.JWT_SECRET!;
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 8,
-  message: { error: 'Too many login attempts, try again in 15 minutes.' },
+  windowMs: 5 * 60 * 1000,
+  limit: 50,
+  skipSuccessfulRequests: true,
+  validate: { trustProxy: false },
+  message: { error: 'تم تجاوز عدد محاولات الدخول، يرجى المحاولة بعد قليل.' },
   standardHeaders: 'draft-8',
   legacyHeaders: false,
 });
