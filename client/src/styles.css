@@ -107,3 +107,22 @@ html, body {
   .order-success h3 { fontSize: 20px; }
   .stepper-header-wrap span { font-size: 10px !important; }
 }
+
+/* Enhanced Button Aesthetics */
+.btn {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.btn--primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
+  box-shadow: 0 4px 15px rgba(205, 69, 205, 0.2);
+  border: none;
+}
+.btn--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(205, 69, 205, 0.3);
+  filter: brightness(1.1);
+}
+.btn--primary:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 4px 15px rgba(205, 69, 205, 0.2);
+}
