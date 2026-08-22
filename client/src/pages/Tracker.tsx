@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, CheckCircle2, Clock, FileText, RefreshCw, XCircle, Plus, Send, CreditCard, Upload, Copy, Check } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { money, formatDate, formatBytes } from '../lib/utils.js';
@@ -110,13 +110,13 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
       <header className="tracker-head">
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button className="btn btn--sm" onClick={onHome}>
-            <ArrowLeft size={16} /> Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù„Ø±Ø¦ÙŠØ³ÙŠØ©
+            <ArrowLeft size={16} /> ╪º┘ä╪╣┘ê╪»╪⌐ ┘ä┘ä╪▒╪ª┘è╪│┘è╪⌐
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img src="/logo.png" alt="PREMIRALAB" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }} />
-            <strong>Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ù…Ø´Ø±ÙˆØ¹</strong>
+            <strong>┘à╪¬╪º╪¿╪╣╪⌐ ╪º┘ä┘à╪┤╪▒┘ê╪╣</strong>
           </div>
-          <button className="btn btn--icon btn--sm" onClick={load} aria-label="ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª">
+          <button className="btn btn--icon btn--sm" onClick={load} aria-label="╪¬╪¡╪»┘è╪½ ╪º┘ä╪¿┘è╪º┘å╪º╪¬">
             <RefreshCw size={16} className={loading ? 'spin' : ''} />
           </button>
         </div>
@@ -128,10 +128,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
         {error && (
           <div className="card text-center" style={{ padding: 48 }}>
             <XCircle size={48} className="icon--danger" style={{ margin: '0 auto 16px' }} />
-            <h3>ØªØ¹Ø°Ø± ØªØ­Ù…ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø·Ù„Ø¨</h3>
+            <h3>╪¬╪╣╪░╪▒ ╪¬╪¡┘à┘è┘ä ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä╪╖┘ä╪¿</h3>
             <p className="muted">{error}</p>
             <button className="btn btn--primary" onClick={onHome} style={{ marginTop: 20 }}>
-              Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù„Ø±Ø¦ÙŠØ³ÙŠØ©
+              ╪º┘ä╪╣┘ê╪»╪⌐ ┘ä┘ä╪▒╪ª┘è╪│┘è╪⌐
             </button>
           </div>
         )}
@@ -142,7 +142,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             <div className="card">
               <div className="tracker-card__header">
                 <div>
-                  <div className="muted">Ø±Ù‚Ù… Ø§Ù„Ø·Ù„Ø¨</div>
+                  <div className="muted">╪▒┘é┘à ╪º┘ä╪╖┘ä╪¿</div>
                   <h2>{data.orderNo}</h2>
                 </div>
                 <span
@@ -157,10 +157,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 </span>
               </div>
               <div className="tracker-meta-grid">
-                <div><div className="muted">Ø§Ù„Ø®Ø¯Ù…Ø©</div><strong>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? 'â€”'}</strong></div>
-                {data.budget ? <div><div className="muted">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠØ©</div><strong>{money(data.budget)}</strong></div> : null}
-                <div><div className="muted">Ø§Ù„Ù…ÙˆØ¹Ø¯ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ</div><strong>{data.deadline ? formatDate(data.deadline) : 'Ø­Ø³Ø¨ Ø§Ù„Ø§ØªÙØ§Ù‚'}</strong></div>
-                <div><div className="muted">ØªØ§Ø±ÙŠØ® Ø§Ù„Ø·Ù„Ø¨</div><strong>{formatDate(data.createdAt)}</strong></div>
+                <div><div className="muted">╪º┘ä╪«╪»┘à╪⌐</div><strong>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? 'ΓÇö'}</strong></div>
+                {data.budget ? <div><div className="muted">╪º┘ä┘à┘è╪▓╪º┘å┘è╪⌐ ╪º┘ä╪Ñ╪¼┘à╪º┘ä┘è╪⌐</div><strong>{money(data.budget)}</strong></div> : null}
+                <div><div className="muted">╪º┘ä┘à┘ê╪╣╪» ╪º┘ä┘å┘ç╪º╪ª┘è</div><strong>{data.deadline ? formatDate(data.deadline) : '╪¡╪│╪¿ ╪º┘ä╪º╪¬┘ü╪º┘é'}</strong></div>
+                <div><div className="muted">╪¬╪º╪▒┘è╪« ╪º┘ä╪╖┘ä╪¿</div><strong>{formatDate(data.createdAt)}</strong></div>
               </div>
             </div>
 
@@ -169,63 +169,45 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <CreditCard size={20} style={{ color: 'var(--accent)' }} />
-                  <h3 className="card-title" style={{ margin: 0 }}>Ø§Ù„Ù…Ø³ØªØ­Ù‚Ø§Øª ÙˆØ³Ø¯Ø§Ø¯ Ø§Ù„Ø¯ÙØ¹Ø§Øª</h3>
+                  <h3 className="card-title" style={{ margin: 0 }}>╪º┘ä┘à╪│╪¬╪¡┘é╪º╪¬ ┘ê╪│╪»╪º╪» ╪º┘ä╪»┘ü╪╣╪º╪¬</h3>
                 </div>
                 {data.budget != null && (
                   <span className="badge" style={{ background: 'var(--bg-3)', color: 'var(--text)', border: '1px solid var(--border)' }}>
-                    Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ: {money(Math.max(0, (data.budget || 0) - (data.paidAmount || 0)))}
+                    ╪º┘ä┘à╪¬╪¿┘é┘è: {money(Math.max(0, (data.budget || 0) - (data.paidAmount || 0)))}
                   </span>
                 )}
               </div>
 
-                            {/* Premium Invoice UI */}
-              <div style={{ background: 'var(--bg-3)', borderRadius: '16px', marginBottom: 24, overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
-                <div style={{ padding: '20px 20px 16px', background: 'linear-gradient(to right, rgba(205, 69, 205, 0.05), transparent)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                    <div>
-                      <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800 }}>فاتورة الدفع</h3>
-                      <p className="muted" style={{ margin: 0, fontSize: 13 }}>فاتورة إلكترونية لطلب #{data.orderNo}</p>
-                    </div>
-                    <CreditCard size={28} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+              
+              {/* Financial summary */}
+              <div style={{ background: 'var(--bg-3)', padding: '24px', borderRadius: 16, border: '1px solid var(--border)', marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, paddingBottom: 20, borderBottom: '1px dashed var(--border)' }}>
+                  <div>
+                    <span className="muted" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>إجمالي الميزانية</span>
+                    <strong style={{ fontSize: 24, color: 'var(--text)' }}>{money(data.budget || 0)}</strong>
                   </div>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
-                    <div style={{ background: 'var(--bg-2)', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-                      <div className="muted" style={{ fontSize: 11, marginBottom: 4 }}>الإجمالي المطلوب</div>
-                      <strong style={{ fontSize: 18, color: '#fff' }}>{data.budget ? money(data.budget) : 'حسب الاتفاق'}</strong>
-                    </div>
-                    <div style={{ background: 'var(--bg-2)', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-                      <div className="muted" style={{ fontSize: 11, marginBottom: 4 }}>المدفوع حتى الآن</div>
-                      <strong style={{ fontSize: 18, color: '#10b981' }}>{money(data.paidAmount || 0)}</strong>
-                    </div>
-                    <div style={{ background: 'var(--bg-2)', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-                      <div className="muted" style={{ fontSize: 11, marginBottom: 4 }}>حالة الدفع</div>
-                      <strong style={{ fontSize: 14, color: (data.paidAmount || 0) >= (data.budget || 0) && (data.budget || 0) > 0 ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', gap: 6, height: 27 }}>
-                        {(data.paidAmount || 0) >= (data.budget || 0) && (data.budget || 0) > 0
-                          ? <><CheckCircle2 size={16}/> مكتمل</>
-                          : (data.paidAmount || 0) > 0
-                          ? 'دفعة مقدمة'
-                          : 'بانتظار الدفع'}
-                      </strong>
-                    </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <span className="muted" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>المبلغ المدفوع</span>
+                    <strong style={{ fontSize: 20, color: 'var(--primary)' }}>{money(data.paidAmount || 0)}</strong>
                   </div>
                 </div>
-                
-                {/* Dotted separator for invoice */}
-                <div style={{ width: '100%', height: 0, borderBottom: '2px dashed var(--border)', position: 'relative' }}>
-                  <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--bg-1)', position: 'absolute', left: -8, top: -8, borderRight: '1px solid var(--border)' }} />
-                  <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--bg-1)', position: 'absolute', right: -8, top: -8, borderLeft: '1px solid var(--border)' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500 }}>المتبقي للسداد:</span>
+                  <strong style={{ fontSize: 18, color: (data.budget || 0) - (data.paidAmount || 0) > 0 ? '#ef4444' : '#10b981' }}>
+                    {money(Math.max(0, (data.budget || 0) - (data.paidAmount || 0)))}
+                  </strong>
                 </div>
 
                 {/* Payment Methods */}
                 {data.paymentInfo && (data.paymentInfo.instapayUsername || data.paymentInfo.vodafoneCash || data.paymentInfo.bankDetails) && (
-                  <div style={{ padding: '20px' }}>
-                    <h4 style={{ fontSize: 14, margin: '0 0 12px', color: 'var(--text)' }}>طرق الدفع المتاحة لإنهاء الفاتورة:</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                  <div>
+                    <h4 style={{ fontSize: 13, margin: '0 0 12px', color: 'var(--text)' }}>طرق التحويل المتاحة:</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                       {data.paymentInfo.instapayUsername && (
                         <div style={{ background: 'var(--bg-2)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--primary-dim)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.2s' }}>
                           <div>
-                            <div className="muted" style={{ fontSize: 12, marginBottom: 2 }}>إنستاباي (InstaPay)</div>
+                            <div className="muted" style={{ fontSize: 12, marginBottom: 2 }}>انستاباي (InstaPay)</div>
                             <strong style={{ fontSize: 14, direction: 'ltr', display: 'block', color: '#fff' }}>{data.paymentInfo.instapayUsername}</strong>
                           </div>
                           <button className="btn btn--icon" style={{ background: 'var(--bg-3)' }} onClick={() => copyText(data.paymentInfo!.instapayUsername!, 'insta')} title="نسخ">
@@ -237,7 +219,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                       {data.paymentInfo.vodafoneCash && (
                         <div style={{ background: 'var(--bg-2)', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(230,0,0,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.2s' }}>
                           <div>
-                            <div className="muted" style={{ fontSize: 12, marginBottom: 2 }}>فودافون كاش ومحافظ مصرية</div>
+                            <div className="muted" style={{ fontSize: 12, marginBottom: 2 }}>فودافون كاش ومحافظ كاش</div>
                             <strong style={{ fontSize: 14, direction: 'ltr', display: 'block', color: '#fff' }}>{data.paymentInfo.vodafoneCash}</strong>
                           </div>
                           <button className="btn btn--icon" style={{ background: 'var(--bg-3)' }} onClick={() => copyText(data.paymentInfo!.vodafoneCash!, 'voda')} title="نسخ">
@@ -265,56 +247,27 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               </div>
 
               {/* Receipt Upload */}
-              {receiptSuccess && (
-                <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-                  âœ… ØªÙ… Ø±ÙØ¹ Ø¥ÙŠØµØ§Ù„ Ø§Ù„Ø³Ø¯Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­ ÙˆØ¥Ø´Ø¹Ø§Ø± ÙØ±ÙŠÙ‚ Ø§Ù„Ø¹Ù…Ù„ Ù„ØªØ£ÙƒÙŠØ¯Ù‡!
-                </div>
-              )}
-
               {data.paymentReceipt ? (
-                <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <CheckCircle2 size={20} className="icon--success" />
-                    <div>
-                      <strong style={{ fontSize: 13 }}>ØªÙ… Ø¥Ø±ÙØ§Ù‚ Ø¥ÙŠØµØ§Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„</strong>
-                      <div className="muted" style={{ fontSize: 11 }}>Ø³ÙŠÙ‚ÙˆÙ… ÙØ±ÙŠÙ‚ Ø§Ù„Ø¹Ù…Ù„ Ø¨Ù…Ø·Ø§Ø¨Ù‚Ø© Ø§Ù„Ø¥ÙŠØµØ§Ù„ ÙˆØªØ£ÙƒÙŠØ¯ Ø§Ù„Ø¯ÙØ¹Ø©</div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <a href={data.paymentReceipt} target="_blank" rel="noopener noreferrer" className="btn btn--sm">
-                      Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ø¥ÙŠØµØ§Ù„
-                    </a>
-                    <button className="btn btn--sm" onClick={() => receiptFileRef.current?.click()} disabled={uploadingReceipt}>
-                      ØªØ¹Ø¯ÙŠÙ„ / Ø±ÙØ¹ Ø¬Ø¯ÙŠØ¯
-                    </button>
-                  </div>
+                <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                  تم استلام إيصال التحويل بنجاح. سيتم مراجعته وتحديث حالة الطلب.
                 </div>
               ) : (
-                <div>
+                <div style={{ marginBottom: 20 }}>
                   <button
                     className="btn btn--primary"
                     style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 8 }}
                     onClick={() => receiptFileRef.current?.click()}
                     disabled={uploadingReceipt}
                   >
-                    <Upload size={16} /> {uploadingReceipt ? 'Ø¬Ø§Ø±Ù Ø±ÙØ¹ Ø§Ù„Ø¥ÙŠØµØ§Ù„...' : 'Ø¥Ø±ÙØ§Ù‚ Ø¥ÙŠØµØ§Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ø£Ùˆ Ø§Ù„Ø³ÙƒØ±ÙŠÙ† Ø´ÙˆØª'}
+                    <Upload size={16} /> {uploadingReceipt ? 'جاري الرفع...' : 'ارفع إيصال التحويل لتأكيد الدفع'}
                   </button>
                 </div>
               )}
 
-              <input
-                ref={receiptFileRef}
-                type="file"
-                accept="image/*,.pdf"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadReceipt(f); e.target.value = ''; }}
-              />
-            </div>
-
-            {/* Project progress */}
+              {/* Project progress */}
             {data.project ? (
               <div className="card">
-                <h3 className="card-title">ØªÙ‚Ø¯Ù… Ø§Ù„Ù…Ø´Ø±ÙˆØ¹ â€” {data.project.title}</h3>
+                <h3 className="card-title">╪¬┘é╪»┘à ╪º┘ä┘à╪┤╪▒┘ê╪╣ ΓÇö {data.project.title}</h3>
                 <div className="progress-display">
                   <progress max={100} value={data.project.progress} className="progress-bar progress-bar--lg" />
                   <span className="progress-pct">{data.project.progress}%</span>
@@ -322,15 +275,15 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               </div>
             ) : (
               <div className="card">
-                <h3 className="card-title">Ø§Ù„Ù…Ø´Ø±ÙˆØ¹</h3>
-                <div className="empty">Ø³ÙŠØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…Ø´Ø±ÙˆØ¹ Ù‚Ø±ÙŠØ¨Ø§Ù‹ Ø¨Ø¹Ø¯ Ø§Ù„ØªÙˆØ§ØµÙ„ Ù…Ø¹Ùƒ.</div>
+                <h3 className="card-title">╪º┘ä┘à╪┤╪▒┘ê╪╣</h3>
+                <div className="empty">╪│┘è╪¬┘à ╪Ñ┘å╪┤╪º╪í ┘à╪│╪º╪¡╪⌐ ╪º┘ä┘à╪┤╪▒┘ê╪╣ ┘é╪▒┘è╪¿╪º┘ï ╪¿╪╣╪» ╪º┘ä╪¬┘ê╪º╪╡┘ä ┘à╪╣┘â.</div>
               </div>
             )}
 
             {/* Files */}
             {data.files.length > 0 && (
               <div className="card">
-                <h3 className="card-title">Ø§Ù„Ù…Ù„ÙØ§Øª ÙˆØ§Ù„ØªØ³Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ù…ØªØ§Ø­Ø©</h3>
+                <h3 className="card-title">╪º┘ä┘à┘ä┘ü╪º╪¬ ┘ê╪º┘ä╪¬╪│┘ä┘è┘à╪º╪¬ ╪º┘ä┘à╪¬╪º╪¡╪⌐</h3>
                 <div className="file-grid">
                   {data.files.map(f => (
                     <a
@@ -339,7 +292,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="file-tile"
-                      aria-label={`ØªØ­Ù…ÙŠÙ„ ${f.name}`}
+                      aria-label={`╪¬╪¡┘à┘è┘ä ${f.name}`}
                     >
                       <FileText size={24} aria-hidden />
                       <div className="file-tile__name">{f.name}</div>
@@ -353,44 +306,44 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             {/* Revisions & Direct Feedback */}
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-                <h3 className="card-title" style={{ margin: 0 }}>Ø·Ù„Ø¨Ø§Øª Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ ÙˆØ§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª</h3>
+                <h3 className="card-title" style={{ margin: 0 }}>╪╖┘ä╪¿╪º╪¬ ╪º┘ä╪¬╪╣╪»┘è┘ä ┘ê╪º┘ä┘à┘ä╪º╪¡╪╕╪º╪¬</h3>
                 {data.project && !revOpen && (
                   <button className="btn btn--sm btn--primary" onClick={() => setRevOpen(true)}>
-                    <Plus size={14} /> Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„ Ø¬Ø¯ÙŠØ¯
+                    <Plus size={14} /> ╪╖┘ä╪¿ ╪¬╪╣╪»┘è┘ä ╪¼╪»┘è╪»
                   </button>
                 )}
               </div>
 
               {revSuccess && (
                 <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 14, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-                  âœ… ØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ø·Ù„Ø¨ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ ÙˆØ¥Ø´Ø¹Ø§Ø± ÙØ±ÙŠÙ‚ Ø§Ù„Ø¹Ù…Ù„ Ø¨Ù†Ø¬Ø§Ø­!
+                  Γ£à ╪¬┘à ╪Ñ╪▒╪│╪º┘ä ╪╖┘ä╪¿ ╪º┘ä╪¬╪╣╪»┘è┘ä ┘ê╪Ñ╪┤╪╣╪º╪▒ ┘ü╪▒┘è┘é ╪º┘ä╪╣┘à┘ä ╪¿┘å╪¼╪º╪¡!
                 </div>
               )}
 
               {revOpen && (
                 <form onSubmit={handleSendRevision} style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 'var(--radius-sm)', marginBottom: 16, border: '1px solid var(--border)' }}>
-                  <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>Ø¥Ø±Ø³Ø§Ù„ Ù…Ù„Ø§Ø­Ø¸Ø© Ø£Ùˆ Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„</h4>
+                  <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>╪Ñ╪▒╪│╪º┘ä ┘à┘ä╪º╪¡╪╕╪⌐ ╪ú┘ê ╪╖┘ä╪¿ ╪¬╪╣╪»┘è┘ä</h4>
                   <div className="form-stack">
                     <input
                       className="input"
                       required
-                      placeholder="Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ (Ù…Ø«Ø§Ù„: ØªØ¹Ø¯ÙŠÙ„ Ø£Ù„ÙˆØ§Ù† Ø§Ù„Ø´Ø¹Ø§Ø± Ù„ØªÙƒÙˆÙ† Ø£ØºÙ…Ù‚)"
+                      placeholder="╪╣┘å┘ê╪º┘å ╪º┘ä╪¬╪╣╪»┘è┘ä (┘à╪½╪º┘ä: ╪¬╪╣╪»┘è┘ä ╪ú┘ä┘ê╪º┘å ╪º┘ä╪┤╪╣╪º╪▒ ┘ä╪¬┘â┘ê┘å ╪ú╪║┘à┘é)"
                       value={revTitle}
                       onChange={e => setRevTitle(e.target.value)}
                     />
                     <textarea
                       className="textarea"
                       rows={3}
-                      placeholder="ØªÙØ§ØµÙŠÙ„ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø·Ù„ÙˆØ¨ Ø¨Ø¯Ù‚Ø©..."
+                      placeholder="╪¬┘ü╪º╪╡┘è┘ä ╪º┘ä╪¬╪╣╪»┘è┘ä ╪º┘ä┘à╪╖┘ä┘ê╪¿ ╪¿╪»┘é╪⌐..."
                       value={revDesc}
                       onChange={e => setRevDesc(e.target.value)}
                     />
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="submit" className="btn btn--primary btn--sm" disabled={submittingRev}>
-                        <Send size={13} /> {submittingRev ? 'Ø¬Ø§Ø±Ù Ø§Ù„Ø¥Ø±Ø³Ø§Ù„...' : 'Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„'}
+                        <Send size={13} /> {submittingRev ? '╪¼╪º╪▒┘ì ╪º┘ä╪Ñ╪▒╪│╪º┘ä...' : '╪Ñ╪▒╪│╪º┘ä ╪º┘ä╪¬╪╣╪»┘è┘ä'}
                       </button>
                       <button type="button" className="btn btn--sm" onClick={() => setRevOpen(false)}>
-                        Ø¥Ù„ØºØ§Ø¡
+                        ╪Ñ┘ä╪║╪º╪í
                       </button>
                     </div>
                   </div>
@@ -409,7 +362,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   </div>
                 ))
               ) : (
-                <div className="empty" style={{ padding: '16px 0' }}>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø·Ù„Ø¨Ø§Øª ØªØ¹Ø¯ÙŠÙ„ Ø­ØªÙ‰ Ø§Ù„Ø¢Ù†. ÙŠÙ…ÙƒÙ†Ùƒ Ø¥Ø¶Ø§ÙØ© Ø£ÙŠ Ù…Ù„Ø§Ø­Ø¸Ø© Ø£Ùˆ ØªØ¹Ø¯ÙŠÙ„ Ø¹Ù†Ø¯ ØªÙˆÙØ± Ù†Ù…Ø§Ø°Ø¬ Ø§Ù„Ø¹Ù…Ù„.</div>
+                <div className="empty" style={{ padding: '16px 0' }}>┘ä╪º ╪¬┘ê╪¼╪» ╪╖┘ä╪¿╪º╪¬ ╪¬╪╣╪»┘è┘ä ╪¡╪¬┘ë ╪º┘ä╪ó┘å. ┘è┘à┘â┘å┘â ╪Ñ╪╢╪º┘ü╪⌐ ╪ú┘è ┘à┘ä╪º╪¡╪╕╪⌐ ╪ú┘ê ╪¬╪╣╪»┘è┘ä ╪╣┘å╪» ╪¬┘ê┘ü╪▒ ┘å┘à╪º╪░╪¼ ╪º┘ä╪╣┘à┘ä.</div>
               )}
             </div>
           </div>
