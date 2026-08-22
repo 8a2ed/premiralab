@@ -117,7 +117,7 @@ router.get('/:id/invoice', auth, admin, (req, res, next) => {
     }
 
     const siteRow = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
-    let site: SiteSettings = {};
+    let site: Partial<SiteSettings> = {};
     if (siteRow?.value) {
       try { site = JSON.parse(siteRow.value); } catch { /* ignore */ }
     }

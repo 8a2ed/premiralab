@@ -43,7 +43,7 @@ const storage = multer({
   },
 });
 
-router.post('/:projectId/files', auth, admin, storage.single('file'), (req: AuthRequest, res, next) => {
+router.post('/:projectId/files', auth, admin, storage.single('file'), async (req: AuthRequest, res, next) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: 'لم يتم رفع أي ملف' });

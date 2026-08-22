@@ -23,14 +23,14 @@ function getTable(name: string): { table: string; fields: string[] } {
 
 router.get('/:resource', auth, admin, (req, res, next) => {
   try {
-    const { table } = getTable(req.params.resource);
+    const { table } = getTable(String(req.params.resource));
     res.json(db.prepare(`SELECT * FROM ${table} ORDER BY id DESC`).all());
   } catch (err) { next(err); }
 });
 
 router.post('/:resource', auth, admin, (req: AuthRequest, res, next) => {
   try {
-    const { table, fields } = getTable(req.params.resource);
+    const { table, fields } = getTable(String(req.params.resource));
     if (!req.body || typeof req.body !== 'object') {
       res.status(400).json({ error: 'Invalid request body' });
       return;
@@ -47,7 +47,7 @@ router.post('/:resource', auth, admin, (req: AuthRequest, res, next) => {
 
 router.patch('/:resource/:id', auth, admin, (req: AuthRequest, res, next) => {
   try {
-    const { table, fields } = getTable(req.params.resource);
+    const { table, fields } = getTable(String(req.params.resource));
     const id = Number(req.params.id);
     if (!req.body || typeof req.body !== 'object') {
       res.status(400).json({ error: 'Invalid request body' });
@@ -75,7 +75,7 @@ router.patch('/:resource/:id', auth, admin, (req: AuthRequest, res, next) => {
 
 router.delete('/:resource/:id', auth, admin, (req: AuthRequest, res, next) => {
   try {
-    const { table } = getTable(req.params.resource);
+    const { table } = getTable(String(req.params.resource));
     const id = Number(req.params.id);
     const result = db.prepare(`DELETE FROM ${table} WHERE id=?`).run(id);
     if (result.changes === 0) {
