@@ -5,8 +5,8 @@
   "workspaces": ["client", "server"],
   "scripts": {
     "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w client && npm run build -w server",
-    "start": "npm run start -w server",
+    "build": "npm run build --workspace=design-studio-client && npm run build --workspace=design-studio-server",
+    "start": "npm run start --workspace=design-studio-server",
     "test": "npm run test -w server"
   },
   "devDependencies": { "concurrently": "^9.1.2" }
