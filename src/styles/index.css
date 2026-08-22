@@ -369,26 +369,29 @@ img { max-width: 100%; display: block }
   .sidebar nav { display: flex; flex-wrap: wrap; gap: 4px }
   .sidebar-brand { display: none }
   .side-item { padding: 8px 12px; font-size: 13px }
-  .nav-links { display: none }
-  .nav-hamburger { display: inline-flex }
-  .nav-admin-link { display: none }
-  .nav-cta-btn { display: none }
+  .nav-links { display: none !important }
+  .nav-hamburger { display: inline-flex !important }
+  .nav-admin-link { display: none !important }
+  .nav-cta-btn { display: none !important }
   .brand { max-width: 180px; font-size: 18px }
   .grid-3 { grid-template-columns: repeat(2, 1fr) }
   .grid-4 { grid-template-columns: repeat(2, 1fr) }
   .footer-inner { grid-template-columns: 1fr; gap: 20px }
 }
 @media (max-width: 600px) {
-  .nav-inner { height: 64px; gap: 8px }
-  .brand { max-width: 150px; font-size: 16px }
+  .nav-inner { height: 58px; gap: 8px; padding: 0 4px }
+  .brand { max-width: 160px; font-size: 16px }
   .brand-logo { width: 28px; height: 28px }
-  .hero { padding: 40px 0 30px }
-  .hero h1 { font-size: clamp(25px, 7.5vw, 36px); line-height: 1.25 }
-  .hero > .container > div > p { font-size: 15px; line-height: 1.7 }
+  .nav-actions { gap: 6px }
+  .theme-toggle { padding: 6px; min-width: 34px; height: 34px }
+  .nav-hamburger { padding: 6px; min-width: 34px; height: 34px }
+  .hero { padding: 36px 0 28px }
+  .hero h1 { font-size: clamp(24px, 7.5vw, 34px); line-height: 1.25 }
+  .hero > .container > div > p { font-size: 14.5px; line-height: 1.65 }
   .actions { flex-direction: column; width: 100%; gap: 10px }
   .actions .btn { width: 100%; justify-content: center }
-  .section { padding: 45px 0 }
-  .section h2 { font-size: 26px }
+  .section { padding: 40px 0 }
+  .section h2 { font-size: 24px }
   .grid-3, .grid-4, .stats, .form-grid, .dashboard-grid { grid-template-columns: 1fr }
   .main { padding: 16px }
   .tracker-meta-grid { grid-template-columns: 1fr }
@@ -397,17 +400,17 @@ img { max-width: 100%; display: block }
   
   /* Floating WhatsApp on mobile */
   .floating-wa-container {
-    bottom: 20px;
-    left: 20px;
+    bottom: 16px;
+    left: 16px;
   }
   .floating-wa-btn {
     width: 48px;
     height: 48px;
   }
   .floating-wa-card {
-    width: calc(100vw - 40px);
-    max-width: 300px;
-    bottom: 60px;
+    width: calc(100vw - 32px);
+    max-width: 290px;
+    bottom: 58px;
     left: 0;
   }
 }
