@@ -145,7 +145,7 @@ router.get('/:id/invoice', auth, admin, (req, res, next) => {
     const safeDeadline = order.deadline ? escapeHtml(formatDate(order.deadline)) : '—';
     const safeNotes = order.notes ? escapeHtml(order.notes).replace(/\n/g, '<br/>') : '';
 
-    const html = \`<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
