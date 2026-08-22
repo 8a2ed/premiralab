@@ -46,6 +46,26 @@ export const api = {
 
   track: (orderNo: string) => request<TrackerData>(`/api/track/${encodeURIComponent(orderNo)}`),
 
+  submitRevision: (orderNo: string, data: { title: string; description?: string }) =>
+    request<{ ok: boolean; revision: Revision }>(`/api/track/${encodeURIComponent(orderNo)}/revisions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  uploadReceipt: async (orderNo: string, file: File) => {
+    const fd = new FormData();
+    fd.append('receipt', file);
+    const res = await fetch(`/api/track/${encodeURIComponent(orderNo)}/receipt`, {
+      method: 'POST',
+      body: fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'فشل في رفع الإيصال');
+    }
+    return res.json() as Promise<{ ok: boolean; receiptUrl: string; status: string }>;
+  },
+
   // ─── Admin ──────────────────────────────────────────────────────────────────
 
   admin: {
@@ -60,7 +80,7 @@ export const api = {
       return request<Paginated<Order>>(`/api/admin/orders?${q}`);
     },
 
-    updateOrder: (id: number, data: { status?: string; progress?: number }) =>
+    updateOrder: (id: number, data: { status?: string; progress?: number; budget?: number; paid_amount?: number; payment_method?: string }) =>
       request<Order>(`/api/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
     invoiceUrl: (id: number) => `/api/admin/orders/${id}/invoice`,
@@ -84,6 +104,11 @@ export const api = {
       request<Revision>('/api/admin/projects/revisions', { method: 'POST', body: JSON.stringify(data) }),
     updateRevision: (id: number, status: 'pending' | 'approved' | 'rejected') =>
       request<Revision>(`/api/admin/projects/revisions/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+
+    projectFiles: (projectId: number) =>
+      request<Array<{ id: number; originalName: string; storedName: string; mimeType: string; size: number; url: string }>>(
+        `/api/admin/projects/${projectId}/files`,
+      ),
 
     upload: (projectId: number, file: File) => {
       const fd = new FormData();
@@ -111,6 +136,8 @@ export const api = {
     settings: () => request<{ site: SiteSettings }>('/api/admin/settings'),
     saveSettings: (key: string, data: SiteSettings) =>
       request<SiteSettings>(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify(data) }),
+    testTelegram: () =>
+      request<{ ok: boolean; message: string }>('/api/admin/settings/test-telegram', { method: 'POST' }),
 
     changePassword: (data: { currentPassword: string; newPassword: string }) =>
       request<{ ok: boolean }>('/api/admin/security/password', { method: 'PATCH', body: JSON.stringify(data) }),

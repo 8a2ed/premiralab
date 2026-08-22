@@ -28,8 +28,27 @@ export function NotificationBell({ onUnreadChange }: NotificationBellProps) {
 
   useEffect(() => {
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, POLL_INTERVAL);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = setInterval(fetchNotifs, POLL_INTERVAL);
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      } else {
+        fetchNotifs();
+        if (!interval) {
+          interval = setInterval(fetchNotifs, POLL_INTERVAL);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close on outside click
@@ -55,8 +74,11 @@ export function NotificationBell({ onUnreadChange }: NotificationBellProps) {
     try {
       await api.admin.markRead(id);
       setNotifs(n => n.map(x => x.id === id ? { ...x, read: 1 } : x));
-      setUnread(u => Math.max(0, u - 1));
-      onUnreadChange(Math.max(0, unread - 1));
+      setUnread(u => {
+        const next = Math.max(0, u - 1);
+        onUnreadChange(next);
+        return next;
+      });
     } catch { /* silent */ }
   };
 

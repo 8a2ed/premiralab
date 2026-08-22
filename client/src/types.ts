@@ -1,12 +1,18 @@
 // ─── Public Data ──────────────────────────────────────────────────────────────
 
 export interface SiteSettings {
-  brand:    string;
-  phone:    string;
-  email:    string;
-  currency: string;
-  whatsapp: string;
-  telegram: string;
+  brand:                string;
+  phone:                string;
+  email:                string;
+  currency:             string;
+  whatsapp:             string;
+  telegram:             string;
+  telegram_bot_token?:  string;
+  telegram_chat_id?:    string;
+  instapay_username?:   string;
+  vodafone_cash?:       string;
+  bank_details?:        string;
+  payment_instructions?: string;
 }
 
 export interface Package {
@@ -71,24 +77,27 @@ export interface Client {
 }
 
 export interface Order {
-  id:            number;
-  order_no:      string;
-  client_id:     number;
-  package_id:    number | null;
-  service_id:    number | null;
-  project_type:  string;
-  notes:         string;
-  status:        OrderStatus;
-  budget:        number | null;
-  deadline:      string | null;
-  created_at:    string;
-  updated_at:    string;
+  id:              number;
+  order_no:        string;
+  client_id:       number;
+  package_id:      number | null;
+  service_id:      number | null;
+  project_type:    string;
+  notes:           string;
+  status:          OrderStatus;
+  budget:          number | null;
+  paid_amount?:    number;
+  payment_receipt?: string;
+  payment_method?: string;
+  deadline:        string | null;
+  created_at:      string;
+  updated_at:      string;
   // joined fields
-  client_name:   string;
-  client_phone:  string;
-  client_email:  string;
-  package_title: string | null;
-  service_title: string | null;
+  client_name:     string;
+  client_phone:    string;
+  client_email:    string;
+  package_title:   string | null;
+  service_title:   string | null;
 }
 
 export type OrderStatus =
@@ -181,14 +190,24 @@ export interface Paginated<T> {
 // ─── Tracker ──────────────────────────────────────────────────────────────────
 
 export interface TrackerData {
-  orderNo:      string;
-  status:       OrderStatus;
-  projectType:  string;
-  packageTitle: string | null;
-  serviceTitle: string | null;
-  budget:       number | null;
-  deadline:     string | null;
-  createdAt:    string;
+  orderNo:         string;
+  status:          OrderStatus;
+  projectType:     string;
+  packageTitle:    string | null;
+  serviceTitle:    string | null;
+  budget?:         number | null;
+  paidAmount?:     number;
+  paymentReceipt?: string | null;
+  paymentMethod?:  string;
+  deadline:        string | null;
+  createdAt:       string;
+  paymentInfo?: {
+    instapayUsername?:    string;
+    vodafoneCash?:        string;
+    bankDetails?:         string;
+    paymentInstructions?: string;
+    currency?:            string;
+  };
   project: {
     id:       number;
     title:    string;

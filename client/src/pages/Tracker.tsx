@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle2, Clock, FileText, RefreshCw, XCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, CheckCircle2, Clock, FileText, RefreshCw, XCircle, Plus, Send, CreditCard, Upload, Copy, Check } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { money, formatDate, formatBytes } from '../lib/utils.js';
 import { ORDER_STATUS_LABELS } from '../types.js';
@@ -28,6 +28,19 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
 
+  // Client revision form state
+  const [revOpen,       setRevOpen]       = useState(false);
+  const [revTitle,      setRevTitle]      = useState('');
+  const [revDesc,       setRevDesc]       = useState('');
+  const [submittingRev, setSubmittingRev] = useState(false);
+  const [revSuccess,    setRevSuccess]    = useState(false);
+
+  // Payment receipt state
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptSuccess,   setReceiptSuccess]   = useState(false);
+  const [copiedField,      setCopiedField]      = useState<string | null>(null);
+  const receiptFileRef = useRef<HTMLInputElement>(null);
+
   const load = async () => {
     setLoading(true); setError(null);
     try {
@@ -40,58 +53,243 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
 
   useEffect(() => { load(); }, [orderNo]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handleSendRevision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revTitle.trim()) return;
+    setSubmittingRev(true);
+    try {
+      const res = await api.submitRevision(orderNo, { title: revTitle, description: revDesc });
+      if (res.ok && res.revision) {
+        setData(prev => prev ? {
+          ...prev,
+          revisions: [res.revision, ...(prev.revisions || [])],
+        } : prev);
+        setRevTitle('');
+        setRevDesc('');
+        setRevOpen(false);
+        setRevSuccess(true);
+        setTimeout(() => setRevSuccess(false), 4000);
+      }
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setSubmittingRev(false);
+    }
+  };
+
+  const copyText = (txt: string, field: string) => {
+    navigator.clipboard.writeText(txt).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2500);
+    });
+  };
+
+  const handleUploadReceipt = async (file: File) => {
+    setUploadingReceipt(true);
+    try {
+      const res = await api.uploadReceipt(orderNo, file);
+      if (res.ok) {
+        setData(prev => prev ? {
+          ...prev,
+          paymentReceipt: res.receiptUrl,
+          status: res.status as any,
+        } : prev);
+        setReceiptSuccess(true);
+        setTimeout(() => setReceiptSuccess(false), 5000);
+      }
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
   return (
     <div className="tracker">
       {/* Header */}
-      <div className="tracker-header">
-        <div className="container tracker-header-inner">
-          <button className="btn btn--ghost" onClick={onHome} aria-label="العودة للصفحة الرئيسية">
-            <ArrowLeft size={16} /> الرئيسية
+      <header className="tracker-head">
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button className="btn btn--sm" onClick={onHome}>
+            <ArrowLeft size={16} /> العودة للرئيسية
           </button>
-          <div className="brand"><b>تتبع طلبك</b></div>
-          <button className="btn btn--icon" onClick={load} aria-label="تحديث">
-            <RefreshCw size={16} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src="/logo.png" alt="PREMIRALAB" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }} />
+            <strong>متابعة المشروع</strong>
+          </div>
+          <button className="btn btn--icon btn--sm" onClick={load} aria-label="تحديث البيانات">
+            <RefreshCw size={16} className={loading ? 'spin' : ''} />
           </button>
         </div>
-      </div>
+      </header>
 
       <div className="container tracker-body">
-        {loading && (
-          <div style={{ maxWidth: 600, margin: '40px auto' }}>
-            <Skeleton height={40} width="60%" radius={12} />
-            <Skeleton height={20} count={4} gap={12} />
+        {loading && <Skeleton height={120} count={3} />}
+
+        {error && (
+          <div className="card text-center" style={{ padding: 48 }}>
+            <XCircle size={48} className="icon--danger" style={{ margin: '0 auto 16px' }} />
+            <h3>تعذر تحميل بيانات الطلب</h3>
+            <p className="muted">{error}</p>
+            <button className="btn btn--primary" onClick={onHome} style={{ marginTop: 20 }}>
+              العودة للرئيسية
+            </button>
           </div>
         )}
 
-        {error && !loading && (
-          <div className="tracker-error">
-            <XCircle size={48} className="icon--danger" />
-            <h2>الطلب غير موجود</h2>
-            <p>{error}</p>
-            <p className="muted">رقم الطلب الذي بحثت عنه: <strong>{orderNo}</strong></p>
-            <button className="btn btn--primary" onClick={onHome}>العودة للصفحة الرئيسية</button>
-          </div>
-        )}
-
-        {data && !loading && (
-          <div className="tracker-content">
-            {/* Order overview */}
-            <div className="card tracker-overview">
-              <div className="tracker-overview__id">
-                <code className="order-no">{data.orderNo}</code>
+        {data && (
+          <div className="tracker-grid">
+            {/* Order status card */}
+            <div className="card">
+              <div className="tracker-card__header">
+                <div>
+                  <div className="muted">رقم الطلب</div>
+                  <h2>{data.orderNo}</h2>
+                </div>
                 <span
-                  className="tracker-status-badge"
-                  style={{ background: `${STATUS_COLOR[data.status]}22`, color: STATUS_COLOR[data.status] }}
+                  className="badge badge--lg"
+                  style={{
+                    backgroundColor: `${STATUS_COLOR[data.status] ?? '#888'}22`,
+                    color: STATUS_COLOR[data.status] ?? '#888',
+                    border: `1px solid ${STATUS_COLOR[data.status] ?? '#888'}44`,
+                  }}
                 >
                   {ORDER_STATUS_LABELS[data.status] ?? data.status}
                 </span>
               </div>
               <div className="tracker-meta-grid">
                 <div><div className="muted">الخدمة</div><strong>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? '—'}</strong></div>
-                <div><div className="muted">الميزانية</div><strong>{data.budget ? money(data.budget) : '—'}</strong></div>
-                <div><div className="muted">الموعد النهائي</div><strong>{data.deadline ? formatDate(data.deadline) : '—'}</strong></div>
+                {data.budget ? <div><div className="muted">الميزانية الإجمالية</div><strong>{money(data.budget)}</strong></div> : null}
+                <div><div className="muted">الموعد النهائي</div><strong>{data.deadline ? formatDate(data.deadline) : 'حسب الاتفاق'}</strong></div>
                 <div><div className="muted">تاريخ الطلب</div><strong>{formatDate(data.createdAt)}</strong></div>
               </div>
+            </div>
+
+            {/* Payment & Invoice Card */}
+            <div className="card" style={{ border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CreditCard size={20} style={{ color: 'var(--accent)' }} />
+                  <h3 className="card-title" style={{ margin: 0 }}>المستحقات وسداد الدفعات</h3>
+                </div>
+                {data.budget != null && (
+                  <span className="badge" style={{ background: 'var(--bg-3)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+                    المتبقي: {money(Math.max(0, (data.budget || 0) - (data.paidAmount || 0)))}
+                  </span>
+                )}
+              </div>
+
+              {/* Financial summary */}
+              <div className="tracker-meta-grid" style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 'var(--radius-sm)', marginBottom: 16 }}>
+                <div>
+                  <div className="muted" style={{ fontSize: 12 }}>المبلغ المطلوب</div>
+                  <strong style={{ fontSize: 16 }}>{data.budget ? money(data.budget) : 'حسب الاتفاق'}</strong>
+                </div>
+                <div>
+                  <div className="muted" style={{ fontSize: 12 }}>المبلغ المسدد</div>
+                  <strong style={{ fontSize: 16, color: '#10b981' }}>{money(data.paidAmount || 0)}</strong>
+                </div>
+                <div>
+                  <div className="muted" style={{ fontSize: 12 }}>حالة السداد</div>
+                  <strong style={{ fontSize: 13, color: (data.paidAmount || 0) >= (data.budget || 0) && (data.budget || 0) > 0 ? '#10b981' : '#f59e0b' }}>
+                    {(data.paidAmount || 0) >= (data.budget || 0) && (data.budget || 0) > 0
+                      ? '✅ تم السداد بالكامل'
+                      : (data.paidAmount || 0) > 0
+                      ? '⚠️ تم سداد دفعة مقدمة'
+                      : '⏳ بانتظار السداد'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Payment Methods */}
+              {data.paymentInfo && (data.paymentInfo.instapayUsername || data.paymentInfo.vodafoneCash || data.paymentInfo.bankDetails) && (
+                <div style={{ marginBottom: 16 }}>
+                  <h4 style={{ fontSize: 13, margin: '0 0 10px', color: 'var(--text)' }}>طرق التحويل المتاحة:</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+                    {data.paymentInfo.instapayUsername && (
+                      <div style={{ background: 'var(--bg-2)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div className="muted" style={{ fontSize: 11 }}>انستاباي (InstaPay)</div>
+                          <strong style={{ fontSize: 13, direction: 'ltr', display: 'block' }}>{data.paymentInfo.instapayUsername}</strong>
+                        </div>
+                        <button className="btn btn--icon btn--sm" onClick={() => copyText(data.paymentInfo!.instapayUsername!, 'insta')} title="نسخ">
+                          {copiedField === 'insta' ? <Check size={14} className="icon--success" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    )}
+
+                    {data.paymentInfo.vodafoneCash && (
+                      <div style={{ background: 'var(--bg-2)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div className="muted" style={{ fontSize: 11 }}>فودافون كاش ومحافظ كاش</div>
+                          <strong style={{ fontSize: 13, direction: 'ltr', display: 'block' }}>{data.paymentInfo.vodafoneCash}</strong>
+                        </div>
+                        <button className="btn btn--icon btn--sm" onClick={() => copyText(data.paymentInfo!.vodafoneCash!, 'voda')} title="نسخ">
+                          {copiedField === 'voda' ? <Check size={14} className="icon--success" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {data.paymentInfo.bankDetails && (
+                    <div style={{ background: 'var(--bg-2)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', marginTop: 10 }}>
+                      <div className="muted" style={{ fontSize: 11 }}>التحويل البنكي والآيبان</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{data.paymentInfo.bankDetails}</div>
+                    </div>
+                  )}
+
+                  {data.paymentInfo.paymentInstructions && (
+                    <p className="muted" style={{ fontSize: 12, marginTop: 10, lineHeight: 1.6 }}>
+                      💡 {data.paymentInfo.paymentInstructions}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Receipt Upload */}
+              {receiptSuccess && (
+                <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                  ✅ تم رفع إيصال السداد بنجاح وإشعار فريق العمل لتأكيده!
+                </div>
+              )}
+
+              {data.paymentReceipt ? (
+                <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <CheckCircle2 size={20} className="icon--success" />
+                    <div>
+                      <strong style={{ fontSize: 13 }}>تم إرفاق إيصال التحويل</strong>
+                      <div className="muted" style={{ fontSize: 11 }}>سيقوم فريق العمل بمطابقة الإيصال وتأكيد الدفعة</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <a href={data.paymentReceipt} target="_blank" rel="noopener noreferrer" className="btn btn--sm">
+                      معاينة الإيصال
+                    </a>
+                    <button className="btn btn--sm" onClick={() => receiptFileRef.current?.click()} disabled={uploadingReceipt}>
+                      تعديل / رفع جديد
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <button
+                    className="btn btn--primary"
+                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 8 }}
+                    onClick={() => receiptFileRef.current?.click()}
+                    disabled={uploadingReceipt}
+                  >
+                    <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'إرفاق إيصال التحويل أو السكرين شوت'}
+                  </button>
+                </div>
+              )}
+
+              <input
+                ref={receiptFileRef}
+                type="file"
+                accept="image/*,.pdf"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadReceipt(f); e.target.value = ''; }}
+              />
             </div>
 
             {/* Project progress */}
@@ -113,7 +311,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             {/* Files */}
             {data.files.length > 0 && (
               <div className="card">
-                <h3 className="card-title">الملفات المتاحة</h3>
+                <h3 className="card-title">الملفات والتسليمات المتاحة</h3>
                 <div className="file-grid">
                   {data.files.map(f => (
                     <a
@@ -133,22 +331,68 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               </div>
             )}
 
-            {/* Revisions */}
-            {data.revisions.length > 0 && (
-              <div className="card">
-                <h3 className="card-title">طلبات التعديل</h3>
-                {data.revisions.map(r => (
+            {/* Revisions & Direct Feedback */}
+            <div className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                <h3 className="card-title" style={{ margin: 0 }}>طلبات التعديل والملاحظات</h3>
+                {data.project && !revOpen && (
+                  <button className="btn btn--sm btn--primary" onClick={() => setRevOpen(true)}>
+                    <Plus size={14} /> طلب تعديل جديد
+                  </button>
+                )}
+              </div>
+
+              {revSuccess && (
+                <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 14, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                  ✅ تم إرسال طلب التعديل وإشعار فريق العمل بنجاح!
+                </div>
+              )}
+
+              {revOpen && (
+                <form onSubmit={handleSendRevision} style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 'var(--radius-sm)', marginBottom: 16, border: '1px solid var(--border)' }}>
+                  <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>إرسال ملاحظة أو طلب تعديل</h4>
+                  <div className="form-stack">
+                    <input
+                      className="input"
+                      required
+                      placeholder="عنوان التعديل (مثال: تعديل ألوان الشعار لتكون أغمق)"
+                      value={revTitle}
+                      onChange={e => setRevTitle(e.target.value)}
+                    />
+                    <textarea
+                      className="textarea"
+                      rows={3}
+                      placeholder="تفاصيل التعديل المطلوب بدقة..."
+                      value={revDesc}
+                      onChange={e => setRevDesc(e.target.value)}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="submit" className="btn btn--primary btn--sm" disabled={submittingRev}>
+                        <Send size={13} /> {submittingRev ? 'جارٍ الإرسال...' : 'إرسال التعديل'}
+                      </button>
+                      <button type="button" className="btn btn--sm" onClick={() => setRevOpen(false)}>
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+
+              {data.revisions && data.revisions.length > 0 ? (
+                data.revisions.map(r => (
                   <div key={r.id} className="revision-item">
                     <div className="revision-item__head">
                       {REVISION_ICONS[r.status as keyof typeof REVISION_ICONS] ?? <Clock size={16} />}
                       <strong>{r.title}</strong>
                       <span className="muted">{formatDate(r.created_at)}</span>
                     </div>
-                    {r.description && <p className="muted">{r.description}</p>}
+                    {r.description && <p className="muted" style={{ marginTop: 4 }}>{r.description}</p>}
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="empty" style={{ padding: '16px 0' }}>لا توجد طلبات تعديل حتى الآن. يمكنك إضافة أي ملاحظة أو تعديل عند توفر نماذج العمل.</div>
+              )}
+            </div>
           </div>
         )}
       </div>

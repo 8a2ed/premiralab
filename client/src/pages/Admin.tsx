@@ -37,8 +37,8 @@ export function Admin({ onLogout, onToast }: AdminProps) {
     if (t === 'dashboard') loadAnalytics();
   };
 
-  // On initial mount, load dashboard
-  useEffect(() => { loadAnalytics(); }, [loadAnalytics]);
+  // On initial mount, load dashboard analytics
+  useEffect(() => { loadAnalytics(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refresh = () => {
     setRefreshKey(k => k + 1);

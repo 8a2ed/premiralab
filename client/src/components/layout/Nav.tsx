@@ -6,10 +6,9 @@ import type { SiteSettings } from '../../types.js';
 interface NavProps {
   site:    SiteSettings;
   onOrder: () => void;
-  onAdmin: () => void;
 }
 
-export function Nav({ site, onOrder, onAdmin }: NavProps) {
+export function Nav({ site, onOrder }: NavProps) {
   const [open, setOpen] = useState(false);
 
   const scrollTo = (id: string) => {
@@ -22,7 +21,8 @@ export function Nav({ site, onOrder, onAdmin }: NavProps) {
       <div className="container nav-inner">
         {/* Brand */}
         <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="الصفحة الرئيسية">
-          <b>{site.brand || 'Design Studio'}</b>
+          <img src="/logo.png" alt="PREMIRALAB" className="brand-logo" />
+          <b className="brand-name">{site.brand || 'PREMIRALAB'}</b>
         </div>
 
         {/* Desktop nav */}
@@ -36,7 +36,6 @@ export function Nav({ site, onOrder, onAdmin }: NavProps) {
         {/* Actions */}
         <div className="nav-actions">
           <ThemeToggle />
-          <button className="btn btn--ghost nav-admin-link" onClick={onAdmin} aria-label="لوحة الإدارة">الإدارة</button>
           <button className="btn btn--primary nav-cta-btn" onClick={onOrder}>ابدأ مشروعك</button>
           {/* Mobile hamburger */}
           <button
@@ -57,7 +56,6 @@ export function Nav({ site, onOrder, onAdmin }: NavProps) {
           <button onClick={() => scrollTo('packages')}>الباقات</button>
           <button onClick={() => scrollTo('portfolio')}>أعمالنا</button>
           <button onClick={() => scrollTo('testimonials')}>آراء العملاء</button>
-          <button onClick={() => { onAdmin(); setOpen(false); }}>لوحة الإدارة</button>
           <button className="btn btn--primary" onClick={() => { onOrder(); setOpen(false); }}>ابدأ مشروعك</button>
         </nav>
       )}

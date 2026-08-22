@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Search, Download } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, Download, MessageSquare, Phone } from 'lucide-react';
 import { api } from '../../lib/api.js';
-import { formatDate, debounce, downloadUrl } from '../../lib/utils.js';
+import { formatDate, debounce, downloadUrl, waLink } from '../../lib/utils.js';
 import type { Client, Paginated } from '../../types.js';
 import { TableSkeleton } from '../ui/Skeleton.js';
 
@@ -24,18 +24,22 @@ export function Clients({ onToast }: ClientsProps) {
     finally { setLoading(false); }
   }, [search, page, onToast]);
 
-  const loadRef = useRef(load);
-  loadRef.current = load;
-
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const debouncedSearch = useMemo(
-    () => debounce((val: string) => { setPage(1); loadRef.current(val, 1); }, 400),
-    [],
+  const debouncedSearch = useCallback(
+    debounce((val: unknown) => { setPage(1); load(val as string, 1); }, 400),
+    [], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleSearch = (val: string) => { setSearch(val); debouncedSearch(val); };
   const exportCSV = () => downloadUrl(api.admin.exportClientsUrl(), `clients-${new Date().toISOString().slice(0,10)}.csv`);
+
+  const getClientWa = (phone: string, name: string) => {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    const intlPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
+    const msg = `مرحباً ${name}، نتواصل معك من استوديو PREMIRALAB.`;
+    return waLink(intlPhone, msg);
+  };
 
   return (
     <div className="card">
@@ -72,7 +76,29 @@ export function Clients({ onToast }: ClientsProps) {
                 {data?.rows.map(c => (
                   <tr key={c.id}>
                     <td><strong>{c.name}</strong></td>
-                    <td><a href={`tel:${c.phone}`} className="link">{c.phone}</a></td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>{c.phone}</span>
+                        <a
+                          href={getClientWa(c.phone, c.name)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn--icon btn--sm"
+                          style={{ color: '#25D366', padding: 2 }}
+                          title="مراسلة عبر واتساب"
+                        >
+                          <MessageSquare size={13} />
+                        </a>
+                        <a
+                          href={`tel:${c.phone}`}
+                          className="btn btn--icon btn--sm"
+                          style={{ color: 'var(--text-muted)', padding: 2 }}
+                          title="اتصال هاتفي"
+                        >
+                          <Phone size={13} />
+                        </a>
+                      </div>
+                    </td>
                     <td>{c.email ? <a href={`mailto:${c.email}`} className="link">{c.email}</a> : '—'}</td>
                     <td><span className="badge badge--count">{c.orders_count}</span></td>
                     <td className="muted">{formatDate(c.created_at)}</td>

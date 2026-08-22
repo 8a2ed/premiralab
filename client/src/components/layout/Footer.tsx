@@ -7,14 +7,17 @@ interface FooterProps {
 
 export function Footer({ site }: FooterProps) {
   const whatsappHref = site.whatsapp
-    ? waLink(site.whatsapp, `مرحباً ${site.brand || 'Design Studio'}، أريد الاستفسار عن خدماتكم.`)
+    ? waLink(site.whatsapp, `مرحباً ${site.brand || 'PREMIRALAB'}، أريد الاستفسار عن خدماتكم.`)
     : null;
 
   return (
     <footer className="footer">
       <div className="container footer-inner">
         <div className="footer-brand">
-          <strong>{site.brand || 'Design Studio'}</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <img src="/logo.png" alt="PREMIRALAB" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain' }} />
+            <strong style={{ fontSize: 18 }}>{site.brand || 'PREMIRALAB'}</strong>
+          </div>
           <p>نحوّل أفكارك إلى تجارب بصرية قوية.</p>
         </div>
         <div className="footer-contact">
@@ -35,7 +38,7 @@ export function Footer({ site }: FooterProps) {
           )}
         </div>
         <div className="footer-copy">
-          © {new Date().getFullYear()} {site.brand || 'Design Studio'}. جميع الحقوق محفوظة.
+          © {new Date().getFullYear()} {site.brand || 'PREMIRALAB'}. جميع الحقوق محفوظة.
         </div>
       </div>
     </footer>

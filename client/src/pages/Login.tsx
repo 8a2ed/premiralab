@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { api } from '../lib/api.js';
 
 interface LoginProps {
@@ -26,10 +25,10 @@ export function Login({ onSuccess, onToast }: LoginProps) {
   return (
     <div className="modal-backdrop" style={{ position: 'fixed', zIndex: 200 }}>
       <form className="modal login-form" onSubmit={submit} aria-label="نموذج تسجيل دخول الإدارة">
-        <div className="login-header">
-          <ShieldCheck size={42} aria-hidden />
+        <div className="login-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <img src="/logo.png" alt="PREMIRALAB" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12, objectFit: 'contain' }} />
           <h2>تسجيل دخول الإدارة</h2>
-          <p className="muted">المصادقة تتم على الخادم باستخدام جلسة آمنة.</p>
+          <p className="muted">PREMIRALAB — المصادقة تتم على الخادم باستخدام جلسة آمنة.</p>
         </div>
         <div className="form-stack">
           <div className="form-field">

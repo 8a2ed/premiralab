@@ -27,7 +27,7 @@ export function ActivityLog({ onToast }: ActivityLogProps) {
     finally { setLoading(false); }
   }, [page, onToast]);
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [load]);
 
   return (
     <div className="card">

@@ -32,7 +32,10 @@ interface SidebarProps {
 export function Sidebar({ tab, onTab, unreadCount, onLogout }: SidebarProps) {
   return (
     <aside className="sidebar" aria-label="قائمة الإدارة">
-      <div className="brand sidebar-brand">Studio <b>Admin</b></div>
+      <div className="brand sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <img src="/logo.png" alt="PREMIRALAB" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }} />
+        <span>PREMIRA<b>LAB</b></span>
+      </div>
 
       <nav>
         {NAV_ITEMS.map(([id, label, Icon]) => (

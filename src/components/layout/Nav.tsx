@@ -20,9 +20,9 @@ export function Nav({ site, onOrder }: NavProps) {
     <header className="nav">
       <div className="container nav-inner">
         {/* Brand */}
-        <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="الصفحة الرئيسية" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-          <img src="/logo.png" alt="PREMIRALAB" style={{ width: 34, height: 34, borderRadius: 8, objectFit: 'contain' }} />
-          <b>{site.brand || 'PREMIRALAB'}</b>
+        <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="الصفحة الرئيسية">
+          <img src="/logo.png" alt="PREMIRALAB" className="brand-logo" />
+          <b className="brand-name">{site.brand || 'PREMIRALAB'}</b>
         </div>
 
         {/* Desktop nav */}
@@ -36,7 +36,7 @@ export function Nav({ site, onOrder }: NavProps) {
         {/* Actions */}
         <div className="nav-actions">
           <ThemeToggle />
-          <button className="btn btn--primary" onClick={onOrder}>ابدأ مشروعك</button>
+          <button className="btn btn--primary nav-cta-btn" onClick={onOrder}>ابدأ مشروعك</button>
           {/* Mobile hamburger */}
           <button
             className="btn btn--icon nav-hamburger"
