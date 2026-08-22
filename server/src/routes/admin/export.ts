@@ -78,7 +78,7 @@ router.get('/clients', auth, admin, (_req, res, next) => {
 });
 
 // GET /api/admin/activity?page=1&limit=50
-router.get('/activity', auth, admin, (req, res, next) => {
+const handleActivity = (req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {
   try {
     const page   = Math.max(1, Number(req.query.page)  || 1);
     const limit  = Math.min(200, Math.max(1, Number(req.query.limit) || 50));
@@ -91,6 +91,9 @@ router.get('/activity', auth, admin, (req, res, next) => {
     `).all(limit, offset);
     res.json({ rows, total, page, limit });
   } catch (err) { next(err); }
-});
+};
+
+router.get('/', auth, admin, handleActivity);
+router.get('/activity', auth, admin, handleActivity);
 
 export default router;

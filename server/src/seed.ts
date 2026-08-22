@@ -21,7 +21,7 @@ export async function seed(): Promise<void> {
         db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run(
           'site',
           JSON.stringify({
-            brand: 'Design Studio',
+            brand: 'PREMIRALAB',
             phone: '01000000000',
             email: 'premiralab@gmail.com',
             currency: 'EGP',
