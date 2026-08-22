@@ -40,12 +40,12 @@ export function Home({ data, onToast }: HomeProps) {
         <section className="hero">
           <div className="container hero-grid">
             <div>
-              <div className="eyebrow">Ø§Ø³ØªÙˆØ¯ÙŠÙˆ ØªØµÙ…ÙŠÙ… Ø±Ù‚Ù…ÙŠ Ù…ØªÙƒØ§Ù…Ù„</div>
-              <h1>Ù†Ø­ÙˆÙ‘Ù„ Ø§Ù„Ø£ÙÙƒØ§Ø± Ø¥Ù„Ù‰ <span className="highlight">ØªØ¬Ø§Ø±Ø¨ Ø¨ØµØ±ÙŠØ©</span> Ù‚ÙˆÙŠØ©.</h1>
-              <p>Ù…Ù† Ø§Ù„Ù‡ÙˆÙŠØ© Ø§Ù„Ø¨ØµØ±ÙŠØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø±Ù‚Ù…ÙŠØ© â€” Ù…Ù†Ø¸ÙˆÙ…Ø© ØªØµÙ…ÙŠÙ… Ø§Ø­ØªØ±Ø§ÙÙŠØ© Ù…Ø¹ Ø¥Ø¯Ø§Ø±Ø© Ù…Ø´Ø§Ø±ÙŠØ¹ ÙˆÙ…Ù„ÙØ§Øª ÙˆÙ…Ø±Ø§Ø¬Ø¹Ø§Øª Ù…Ù†Ø¸Ù…Ø©.</p>
+              <div className="eyebrow">استوديو تصميم رقمي متكامل</div>
+              <h1>نحوّل الأفكار إلى <span className="highlight">تجارب بصرية</span> قوية.</h1>
+              <p>من الهوية البصرية إلى المنتجات الرقمية — منظومة تصميم احترافية مع إدارة مشاريع وملفات ومراجعات منظمة.</p>
               <div className="actions">
                 <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
-                  Ø§Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹Ùƒ <ArrowLeft size={18} aria-hidden />
+                  اطلب مشروعك <ArrowLeft size={18} aria-hidden />
                 </button>
               </div>
             </div>
@@ -56,8 +56,8 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Services */}
         <section className="section" id="services" aria-labelledby="services-title">
           <div className="container">
-            <h2 id="services-title">Ø§Ù„Ø®Ø¯Ù…Ø§Øª</h2>
-            <p className="muted">Ø­Ù„ÙˆÙ„ ØªØµÙ…ÙŠÙ… Ù‚Ø§Ø¨Ù„Ø© Ù„Ù„ØªÙˆØ³Ø¹.</p>
+            <h2 id="services-title">الخدمات</h2>
+            <p className="muted">حلول تصميم قابلة للتوسع.</p>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.services?.map(s => (
                 <div className="card" key={s.id}>
@@ -73,22 +73,22 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Packages */}
         <section className="section" id="packages" aria-labelledby="packages-title">
           <div className="container">
-            <h2 id="packages-title">Ø§Ù„Ø¨Ø§Ù‚Ø§Øª</h2>
-            <p className="muted">Ø§Ø®ØªØ± Ù†Ù‚Ø·Ø© Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø©.</p>
+            <h2 id="packages-title">الباقات</h2>
+            <p className="muted">اختر نقطة البداية المناسبة.</p>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.packages?.map(p => (
                 <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
-                  {p.popular && <span className="tag">Ø§Ù„Ø£ÙƒØ«Ø± Ø·Ù„Ø¨Ø§Ù‹ â­</span>}
+                  {p.popular && <span className="tag">الأكثر طلباً ⭐</span>}
                   <h3>{p.title}</h3>
                   <div className="price">{money(p.price, data.site?.currency)}</div>
                   <p className="muted">{p.description}</p>
-                  <ul className="feature-list" aria-label="Ù…Ù…ÙŠØ²Ø§Øª Ø§Ù„Ø¨Ø§Ù‚Ø©">
+                  <ul className="feature-list" aria-label="مميزات الباقة">
                     {p.features.map(f => (
                       <li key={f}><CheckCircle2 size={14} aria-hidden /> {f}</li>
                     ))}
                   </ul>
                   <button className="btn btn--primary" onClick={() => openOrder(p)} style={{ marginTop: 'auto' }}>
-                    Ø§Ø·Ù„Ø¨ Ø§Ù„Ø¨Ø§Ù‚Ø©
+                    اطلب الباقة
                   </button>
                 </div>
               ))}
@@ -101,8 +101,8 @@ export function Home({ data, onToast }: HomeProps) {
           <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 id="portfolio-title">Ø£Ø¹Ù…Ø§Ù„ Ù…Ø®ØªØ§Ø±Ø©</h2>
-                <p className="muted">Ù†Ù…Ø§Ø°Ø¬ ÙˆØªØ¬Ø§Ø±Ø¨ Ø¨ØµØ±ÙŠØ© ØµÙ…Ù…Ù†Ø§Ù‡Ø§ Ù„Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§ (Ø§Ø¶ØºØ· Ø¹Ù„Ù‰ Ø£ÙŠ Ø¹Ù…Ù„ Ù„Ø§Ø³ØªØ¹Ø±Ø§Ø¶ Ø§Ù„ØªÙØ§ØµÙŠÙ„ Ø§Ù„ÙƒØ§Ù…Ù„Ø©).</p>
+                <h2 id="portfolio-title">أعمال مختارة</h2>
+                <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا (اضغط على أي عمل لاستعراض التفاصيل الكاملة).</p>
               </div>
             </div>
 
@@ -114,13 +114,13 @@ export function Home({ data, onToast }: HomeProps) {
                   onClick={() => setActivePortfolio(p)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Ø¹Ø±Ø¶ ØªÙØ§ØµÙŠÙ„ ${p.title}`}
+                  aria-label={`عرض تفاصيل ${p.title}`}
                 >
                   {p.image_url && (
                     <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
                       <ImageWithSkeleton skeletonHeight={240} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
                       <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(4px)', zIndex: 2 }}>
-                        <Eye size={12} /> Ø§Ø³ØªØ¹Ø±Ø§Ø¶ Ø§Ù„Ø¹Ù…Ù„
+                        <Eye size={12} /> استعراض العمل
                       </div>
                     </div>
                   )}
@@ -129,7 +129,7 @@ export function Home({ data, onToast }: HomeProps) {
                   <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>{p.description}</p>
                 </div>
               )) : (
-                <div className="empty">Ø£Ø¶Ù Ø£Ø¹Ù…Ø§Ù„Ùƒ Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©.</div>
+                <div className="empty">أضف أعمالك من لوحة الإدارة.</div>
               )}
             </div>
           </div>
@@ -138,11 +138,11 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Testimonials */}
         <section className="section" id="testimonials" aria-labelledby="testimonials-title">
           <div className="container">
-            <h2 id="testimonials-title">Ø¢Ø±Ø§Ø¡ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</h2>
+            <h2 id="testimonials-title">آراء العملاء</h2>
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.testimonials?.map(t => (
                 <div className="card testimonial-card" key={t.id}>
-                  <div className="stars" aria-label={`ØªÙ‚ÙŠÙŠÙ… ${t.rating} Ù…Ù† 5`}>
+                  <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
                     {Array.from({ length: t.rating }).map((_, i) => (
                       <Star key={i} size={16} fill="currentColor" aria-hidden />
                     ))}
@@ -193,7 +193,7 @@ export function Home({ data, onToast }: HomeProps) {
   );
 }
 
-// â”€â”€â”€ Order Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Order Modal ──────────────────────────────────────────────────────────────
 
 interface OrderModalProps {
   packages:           Package[];
@@ -243,7 +243,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   };
 
   if (submitted) {
-    const trackerUrl = ${window.location.origin}/?track=;
+    const trackerUrl = `${window.location.origin}/?track=${submitted.orderNo}`;
     return (
       <Modal title="تم استلام طلبك بنجاح ✨" onClose={onClose}>
         <div className="order-success" style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -291,7 +291,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         {/* Stepper Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', maxWidth: 500, margin: '0 auto' }}>
           <div style={{ position: 'absolute', top: 16, left: 0, right: 0, height: 2, background: 'var(--border)', zIndex: 0 }} />
-          <div style={{ position: 'absolute', top: 16, right: 0, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: ${((step - 1) / (steps.length - 1)) * 100}% }} />
+          <div style={{ position: 'absolute', top: 16, right: 0, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: `${((step - 1) / (steps.length - 1)) * 100}%` }} />
           
           {steps.map(s => (
             <div key={s.num} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -299,7 +299,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                 width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, transition: '0.3s',
                 background: step >= s.num ? 'var(--primary)' : 'var(--bg-3)', 
                 color: step >= s.num ? '#fff' : 'var(--muted)',
-                border: 2px solid ,
+                border: `2px solid ${step >= s.num ? 'var(--primary)' : 'var(--border)'}`,
                 boxShadow: step === s.num ? '0 0 0 4px var(--primary-dim)' : 'none'
               }}>
                 {step > s.num ? <Check size={16} /> : s.num}
@@ -436,7 +436,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   );
 }
 
-interface CaseStudyModalProps {interface CaseStudyModalProps {
+interface CaseStudyModalProps {
   item:     PortfolioItem;
   onClose:  () => void;
   onOrder:  (pkg?: Package, initialProj?: string) => void;
@@ -446,7 +446,7 @@ interface CaseStudyModalProps {interface CaseStudyModalProps {
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
   const waUrl = whatsapp
-    ? waLink(whatsapp, `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø¹Ø¬Ø¨Ù†ÙŠ Ù…Ø´Ø±ÙˆØ¹ "${item.title}" ÙˆØ£Ø±ÙŠØ¯ ØªÙ†ÙÙŠØ° Ù…Ø´Ø±ÙˆØ¹ Ù…Ø´Ø§Ø¨Ù‡.`)
+    ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
     : null;
 
   return (
@@ -466,7 +466,7 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {waUrl && (
                 <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn--sm" style={{ borderColor: '#25D366', color: '#25D366' }}>
-                  ðŸ’¬ Ø§Ø³ØªÙØ³Ø± Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨
+                  💬 استفسر عبر واتساب
                 </a>
               )}
               <button
@@ -476,15 +476,15 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
                   onOrder(undefined, item.title);
                 }}
               >
-                Ø§Ø·Ù„Ø¨ Ù…Ø´Ø±ÙˆØ¹Ø§Ù‹ Ù…Ù…Ø§Ø«Ù„Ø§Ù‹
+                اطلب مشروعاً مماثلاً
               </button>
             </div>
           </div>
 
           <div style={{ background: 'var(--bg-3)', padding: 18, borderRadius: 'var(--radius-sm)', lineHeight: 1.8 }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--text)' }}>Ø¹Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¹Ù…Ù„:</h4>
+            <h4 style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--text)' }}>عن هذا العمل:</h4>
             <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-              {item.description || 'Ù…Ø´Ø±ÙˆØ¹ ØªØµÙ…ÙŠÙ… ÙˆÙ‡ÙˆÙŠØ© Ø¨ØµØ±ÙŠØ© Ø±Ù‚Ù…ÙŠØ© Ù…ØªÙƒØ§Ù…Ù„Ø© ØªÙ… ØªØ·ÙˆÙŠØ±Ù‡ ÙˆÙÙ‚ Ø£Ø¹Ù„Ù‰ Ù…Ø¹Ø§ÙŠÙŠØ± Ø§Ù„Ø¬ÙˆØ¯Ø© ÙˆØ§Ù„ØªØ¬Ø±Ø¨Ø© Ø§Ù„Ø¨ØµØ±ÙŠØ©.'}
+              {item.description || 'مشروع تصميم وهوية بصرية رقمية متكاملة تم تطويره وفق أعلى معايير الجودة والتجربة البصرية.'}
             </p>
           </div>
         </div>
@@ -493,16 +493,16 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
   );
 }
 
-// â”€â”€â”€ Floating WhatsApp Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Floating WhatsApp Widget ──────────────────────────────────────────────────
 
 function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: string }) {
   const [open, setOpen] = useState(false);
   if (!whatsapp) return null;
 
   const quickLinks = [
-    { title: 'Ø·Ù„Ø¨ Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ø³Ø±ÙŠØ¹', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø±ÙŠØ¯ Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ù…Ø´Ø±ÙˆØ¹ÙŠ Ø§Ù„Ø¬Ø¯ÙŠØ¯.` },
-    { title: 'Ø§Ø³ØªÙØ³Ø§Ø± Ø¹Ù† Ø§Ù„Ø¨Ø§Ù‚Ø§Øª Ø§Ù„Ù…ØªØ§Ø­Ø©', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ù„Ø¯ÙŠ Ø§Ø³ØªÙØ³Ø§Ø± Ø¨Ø®ØµÙˆØµ Ø¨Ø§Ù‚Ø§Øª Ø§Ù„ØªØµÙ…ÙŠÙ….` },
-    { title: 'Ù…ØªØ§Ø¨Ø¹Ø© Ø·Ù„Ø¨ Ù‚Ø§Ø¦Ù…', msg: `Ù…Ø±Ø­Ø¨Ø§Ù‹ ${brand || 'PREMIRALAB'}ØŒ Ø£Ø±ÙŠØ¯ Ø§Ù„Ø§Ø³ØªÙØ³Ø§Ø± Ø¹Ù† Ø­Ø§Ù„Ø© Ø·Ù„Ø¨ÙŠ.` },
+    { title: 'طلب عرض سعر سريع', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
+    { title: 'استفسار عن الباقات المتاحة', msg: `مرحباً ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
+    { title: 'متابعة طلب قائم', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
   ];
 
   return (
@@ -517,16 +517,16 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
               </div>
               <div>
                 <strong>{brand || 'PREMIRALAB'}</strong>
-                <div style={{ fontSize: 11, color: '#25D366' }}>Ù…ØªØµÙ„ Ø§Ù„Ø¢Ù† â€” Ù†Ø±Ø¯ Ø®Ù„Ø§Ù„ Ø¯Ù‚Ø§Ø¦Ù‚</div>
+                <div style={{ fontSize: 11, color: '#25D366' }}>متصل الآن — نرد خلال دقائق</div>
               </div>
             </div>
-            <button className="btn btn--icon btn--sm" onClick={() => setOpen(false)} aria-label="Ø¥ØºÙ„Ø§Ù‚">
+            <button className="btn btn--icon btn--sm" onClick={() => setOpen(false)} aria-label="إغلاق">
               <X size={16} />
             </button>
           </div>
 
           <p style={{ fontSize: 13, margin: '12px 0 10px', color: 'var(--text-muted)' }}>
-            Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ! ÙƒÙŠÙ ÙŠÙ…ÙƒÙ†Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ Ø§Ù„ÙŠÙˆÙ…ØŸ Ø§Ø®ØªØ± Ù…Ù† Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø³Ø±ÙŠØ¹Ø©:
+            مرحباً بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -550,7 +550,7 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
       <button
         className="floating-wa-btn"
         onClick={() => setOpen(o => !o)}
-        aria-label="ØªÙˆØ§ØµÙ„ Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨"
+        aria-label="تواصل عبر واتساب"
       >
         <MessageCircle size={26} />
         <span className="floating-wa-pulse" />
