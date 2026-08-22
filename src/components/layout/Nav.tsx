@@ -1,0 +1,64 @@
+import { useState } from 'react';
+import { Menu, X } from 'lucide-react';
+import { ThemeToggle } from '../ui/ThemeToggle.js';
+import type { SiteSettings } from '../../types.js';
+
+interface NavProps {
+  site:    SiteSettings;
+  onOrder: () => void;
+}
+
+export function Nav({ site, onOrder }: NavProps) {
+  const [open, setOpen] = useState(false);
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setOpen(false);
+  };
+
+  return (
+    <header className="nav">
+      <div className="container nav-inner">
+        {/* Brand */}
+        <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="الصفحة الرئيسية" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+          <img src="/logo.png" alt="PREMIRALAB" style={{ width: 34, height: 34, borderRadius: 8, objectFit: 'contain' }} />
+          <b>{site.brand || 'PREMIRALAB'}</b>
+        </div>
+
+        {/* Desktop nav */}
+        <nav className="nav-links" aria-label="التنقل الرئيسي">
+          <button onClick={() => scrollTo('services')} aria-label="انتقل إلى الخدمات">الخدمات</button>
+          <button onClick={() => scrollTo('packages')} aria-label="انتقل إلى الباقات">الباقات</button>
+          <button onClick={() => scrollTo('portfolio')} aria-label="انتقل إلى أعمالنا">أعمالنا</button>
+          <button onClick={() => scrollTo('testimonials')} aria-label="انتقل إلى آراء العملاء">العملاء</button>
+        </nav>
+
+        {/* Actions */}
+        <div className="nav-actions">
+          <ThemeToggle />
+          <button className="btn btn--primary" onClick={onOrder}>ابدأ مشروعك</button>
+          {/* Mobile hamburger */}
+          <button
+            className="btn btn--icon nav-hamburger"
+            onClick={() => setOpen(o => !o)}
+            aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
+            aria-expanded={open}
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown */}
+      {open && (
+        <nav className="nav-mobile" aria-label="قائمة الجوال">
+          <button onClick={() => scrollTo('services')}>الخدمات</button>
+          <button onClick={() => scrollTo('packages')}>الباقات</button>
+          <button onClick={() => scrollTo('portfolio')}>أعمالنا</button>
+          <button onClick={() => scrollTo('testimonials')}>آراء العملاء</button>
+          <button className="btn btn--primary" onClick={() => { onOrder(); setOpen(false); }}>ابدأ مشروعك</button>
+        </nav>
+      )}
+    </header>
+  );
+}

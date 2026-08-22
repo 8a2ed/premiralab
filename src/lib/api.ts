@@ -1,0 +1,156 @@
+import type {
+  PublicData, Order, Client, Project, Revision, Notification,
+  ActivityLogEntry, Analytics, SiteSettings, Package, Service,
+  PortfolioItem, Testimonial, TrackerData, Paginated,
+} from '../types.js';
+
+const BASE = '';  // Vite proxy handles /api → http://localhost:4000
+
+async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const res = await fetch(BASE + url, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    ...options,
+  });
+
+  if (!res.ok) {
+    let errBody: { error?: string; details?: unknown } = {};
+    try { errBody = await res.json(); } catch { /* non-JSON error body */ }
+    throw new Error(errBody.error ?? `HTTP ${res.status}`);
+  }
+
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+export const api = {
+  public: () => request<PublicData>('/api/public'),
+  me:     () => request<{ user: { id: number; username: string; role: string } }>('/api/auth/me'),
+
+  login: (username: string, password: string) =>
+    request<{ user: { id: number; username: string; role: string } }>(
+      '/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) },
+    ),
+
+  logout: () => request('/api/auth/logout', { method: 'POST' }),
+
+  order: (data: {
+    name: string; phone: string; email?: string;
+    packageId?: number; serviceId?: number; projectType?: string;
+    notes?: string; budget?: number; deadline?: string;
+  }) => request<{ ok: boolean; id: number; orderNo: string }>(
+    '/api/orders', { method: 'POST', body: JSON.stringify(data) },
+  ),
+
+  track: (orderNo: string) => request<TrackerData>(`/api/track/${encodeURIComponent(orderNo)}`),
+
+  submitRevision: (orderNo: string, data: { title: string; description?: string }) =>
+    request<{ ok: boolean; revision: Revision }>(`/api/track/${encodeURIComponent(orderNo)}/revisions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  uploadReceipt: async (orderNo: string, file: File) => {
+    const fd = new FormData();
+    fd.append('receipt', file);
+    const res = await fetch(`/api/track/${encodeURIComponent(orderNo)}/receipt`, {
+      method: 'POST',
+      body: fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'فشل في رفع الإيصال');
+    }
+    return res.json() as Promise<{ ok: boolean; receiptUrl: string; status: string }>;
+  },
+
+  // ─── Admin ──────────────────────────────────────────────────────────────────
+
+  admin: {
+    analytics: () => request<Analytics>('/api/admin/analytics'),
+
+    orders: (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.page)   q.set('page',   String(params.page));
+      if (params?.limit)  q.set('limit',  String(params.limit));
+      if (params?.status && params.status !== 'all') q.set('status', params.status);
+      if (params?.search) q.set('search', params.search);
+      return request<Paginated<Order>>(`/api/admin/orders?${q}`);
+    },
+
+    updateOrder: (id: number, data: { status?: string; progress?: number; budget?: number; paid_amount?: number; payment_method?: string }) =>
+      request<Order>(`/api/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+    invoiceUrl: (id: number) => `/api/admin/orders/${id}/invoice`,
+
+    clients: (params?: { page?: number; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.page)   q.set('page',   String(params.page));
+      if (params?.search) q.set('search', params.search);
+      return request<Paginated<Client>>(`/api/admin/clients?${q}`);
+    },
+
+    projects: () => request<Project[]>('/api/admin/projects'),
+    createProject: (data: { orderId: number; title: string }) =>
+      request<Project>('/api/admin/projects', { method: 'POST', body: JSON.stringify(data) }),
+    updateProject: (id: number, data: { progress?: number; status?: string; title?: string }) =>
+      request<Project>(`/api/admin/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+    revisions: (projectId: number) =>
+      request<Revision[]>(`/api/admin/projects/${projectId}/revisions`),
+    createRevision: (data: { projectId: number; title: string; description?: string }) =>
+      request<Revision>('/api/admin/projects/revisions', { method: 'POST', body: JSON.stringify(data) }),
+    updateRevision: (id: number, status: 'pending' | 'approved' | 'rejected') =>
+      request<Revision>(`/api/admin/projects/revisions/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+
+    projectFiles: (projectId: number) =>
+      request<Array<{ id: number; originalName: string; storedName: string; mimeType: string; size: number; url: string }>>(
+        `/api/admin/projects/${projectId}/files`,
+      ),
+
+    upload: (projectId: number, file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetch(`/api/admin/projects/${projectId}/files`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      }).then(async r => {
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as { error?: string }).error ?? `HTTP ${r.status}`); }
+        return r.json();
+      });
+    },
+
+    notifications: () => request<{ rows: Notification[]; unreadCount: number }>('/api/admin/notifications'),
+    markRead:    (id: number) => request(`/api/admin/notifications/${id}/read`, { method: 'PATCH' }),
+    markAllRead: ()           => request('/api/admin/notifications/read-all',   { method: 'POST' }),
+
+    activity: (params?: { page?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.page) q.set('page', String(params.page));
+      return request<Paginated<ActivityLogEntry>>(`/api/admin/activity?${q}`);
+    },
+
+    settings: () => request<{ site: SiteSettings }>('/api/admin/settings'),
+    saveSettings: (key: string, data: SiteSettings) =>
+      request<SiteSettings>(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify(data) }),
+    testTelegram: () =>
+      request<{ ok: boolean; message: string }>('/api/admin/settings/test-telegram', { method: 'POST' }),
+
+    changePassword: (data: { currentPassword: string; newPassword: string }) =>
+      request<{ ok: boolean }>('/api/admin/security/password', { method: 'PATCH', body: JSON.stringify(data) }),
+
+    // Generic CRUD for packages/services/portfolio/testimonials
+    crud: (resource: string) => ({
+      list:   ()                      => request<unknown[]>(`/api/admin/${resource}`),
+      create: (data: unknown)         => request<unknown>(`/api/admin/${resource}`, { method: 'POST', body: JSON.stringify(data) }),
+      update: (id: number, data: unknown) => request<unknown>(`/api/admin/${resource}/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+      remove: (id: number)            => request(`/api/admin/${resource}/${id}`, { method: 'DELETE' }),
+    }),
+
+    exportOrdersUrl:  () => '/api/admin/export/orders',
+    exportClientsUrl: () => '/api/admin/export/clients',
+  },
+} as const;
