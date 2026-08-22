@@ -264,7 +264,9 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 </div>
               )}
 
-              {/* Project progress */}
+              </div>
+
+            {/* Project progress */}
             {data.project ? (
               <div className="card">
                 <h3 className="card-title">╪¬┘é╪»┘à ╪º┘ä┘à╪┤╪▒┘ê╪╣ ΓÇö {data.project.title}</h3>
