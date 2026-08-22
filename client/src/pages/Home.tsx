@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Star, CheckCircle2, Palette, Monitor, Layout, Copy, Check, MessageCircle, ExternalLink, X, Eye } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle2, Palette, Monitor, Layout, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle } from 'lucide-react';
 import { Nav } from '../components/layout/Nav.js';
 import { Footer } from '../components/layout/Footer.js';
 import { Modal } from '../components/ui/Modal.js';
@@ -206,6 +206,7 @@ interface OrderModalProps {
 
 function OrderModal({ packages, services, defaultPackage, initialProjectType, onClose, onDone }: OrderModalProps) {
   const [step, setStep] = useState(1);
+  const [error, setError] = useState('');
   const [f, setF] = useState({
     name: '', phone: '', email: '',
     packageId: defaultPackage ? String(defaultPackage.id) : '',
@@ -216,8 +217,15 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const [loading,   setLoading]   = useState(false);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
 
+  // Clear error when user types
+  const updateF = (updates: Partial<typeof f>) => {
+    setError('');
+    setF(prev => ({ ...prev, ...updates }));
+  };
+
   const submit = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await api.order({
         name: f.name, phone: f.phone, email: f.email || undefined,
@@ -230,7 +238,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       });
       setSubmitted({ orderNo: res.orderNo });
     } catch (err) {
-      onDone((err as Error).message, 'error');
+      setError((err as Error).message);
     } finally { setLoading(false); }
   };
 
@@ -266,14 +274,21 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   }
 
   const nextStep = () => {
+    setError('');
     if (step === 1) {
-      if (!f.packageId && !f.serviceId && !f.projectType) return onDone('يرجى اختيار باقة أو خدمة أو تحديد نوع المشروع', 'error');
+      if (!f.packageId && !f.serviceId && !f.projectType) {
+        setError('يرجى اختيار باقة أو خدمة أو كتابة نوع المشروع المخصص للمتابعة');
+        return;
+      }
     }
     if (step === 2) {
       // notes/budget are optional
     }
     if (step === 3) {
-      if (!f.name || !f.phone) return onDone('الاسم ورقم الهاتف مطلوبان', 'error');
+      if (!f.name || !f.phone) {
+        setError('يرجى إدخال الاسم ورقم الهاتف للتواصل معك');
+        return;
+      }
     }
     setStep(s => s + 1);
   };
@@ -289,9 +304,9 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
     <Modal title="ابدأ مشروعك الآن" onClose={onClose} size="lg">
       <div style={{ marginBottom: 30 }}>
         {/* Stepper Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', maxWidth: 500, margin: '0 auto' }}>
-          <div style={{ position: 'absolute', top: 16, left: 0, right: 0, height: 2, background: 'var(--border)', zIndex: 0 }} />
-          <div style={{ position: 'absolute', top: 16, right: 0, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: `${((step - 1) / (steps.length - 1)) * 100}%` }} />
+        <div className="stepper-header-wrap" style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', maxWidth: 500, margin: '0 auto', padding: '0 10px' }}>
+          <div style={{ position: 'absolute', top: 16, left: 10, right: 10, height: 2, background: 'var(--border)', zIndex: 0 }} />
+          <div style={{ position: 'absolute', top: 16, right: 10, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: `calc(${((step - 1) / (steps.length - 1)) * 100}% - 20px)` }} />
           
           {steps.map(s => (
             <div key={s.num} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -310,21 +325,28 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         </div>
       </div>
 
-      <div style={{ minHeight: 280 }}>
+      <div style={{ minHeight: 280, position: 'relative' }}>
+        {error && (
+          <div className="animation-fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px 16px', borderRadius: 8, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <AlertCircle size={18} />
+            <span>{error}</span>
+          </div>
+        )}
+
         {step === 1 && (
           <div className="animation-fade-in">
             <h3 style={{ marginBottom: 20, fontSize: 18 }}>ما هو نوع الخدمة التي تبحث عنها؟</h3>
             <div className="grid grid-2" style={{ gap: 20 }}>
               <div className="form-field">
                 <label className="form-label" htmlFor="order-pkg">الباقات الجاهزة</label>
-                <select id="order-pkg" className="select" style={{ padding: 14, fontSize: 15 }} value={f.packageId} onChange={e => setF(p => ({ ...p, packageId: e.target.value, serviceId: e.target.value ? '' : p.serviceId }))}>
+                <select id="order-pkg" className="select" style={{ padding: 14, fontSize: 15, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} value={f.packageId} onChange={e => updateF({ packageId: e.target.value, serviceId: e.target.value ? '' : f.serviceId })}>
                   <option value="">اختر باقة (اختياري)</option>
                   {packages.map(p => <option key={p.id} value={p.id}>{p.title} — {money(p.price)}</option>)}
                 </select>
               </div>
               <div className="form-field">
                 <label className="form-label" htmlFor="order-svc">الخدمات الفردية</label>
-                <select id="order-svc" className="select" style={{ padding: 14, fontSize: 15 }} value={f.serviceId} onChange={e => setF(p => ({ ...p, serviceId: e.target.value, packageId: e.target.value ? '' : p.packageId }))}>
+                <select id="order-svc" className="select" style={{ padding: 14, fontSize: 15, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} value={f.serviceId} onChange={e => updateF({ serviceId: e.target.value, packageId: e.target.value ? '' : f.packageId })}>
                   <option value="">اختر خدمة (اختياري)</option>
                   {services.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
                 </select>
@@ -339,7 +361,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
             <div className="form-field">
               <label className="form-label" htmlFor="order-type">نوع المشروع المخصص</label>
-              <input id="order-type" className="input" style={{ padding: 14 }} placeholder="مثال: هوية بصرية كاملة + تصميم موقع..." value={f.projectType} onChange={e => setF(p => ({ ...p, projectType: e.target.value }))} />
+              <input id="order-type" className="input" style={{ padding: 14, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} placeholder="مثال: هوية بصرية كاملة + تصميم موقع..." value={f.projectType} onChange={e => updateF({ projectType: e.target.value })} />
             </div>
           </div>
         )}
@@ -351,20 +373,20 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
               <div className="form-field">
                 <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (اختياري)</label>
                 <div style={{ position: 'relative' }}>
-                  <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="5000" value={f.budget} onChange={e => setF(p => ({ ...p, budget: e.target.value }))} />
+                  <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="5000" value={f.budget} onChange={e => updateF({ budget: e.target.value })} />
                   <span style={{ position: 'absolute', right: 14, top: 14, color: 'var(--muted)', fontSize: 14 }}>ج.م</span>
                 </div>
               </div>
               <div className="form-field">
                 <label className="form-label" htmlFor="order-deadline">الموعد النهائي للتسليم</label>
-                <input id="order-deadline" className="input" style={{ padding: 14 }} type="date" value={f.deadline} onChange={e => setF(p => ({ ...p, deadline: e.target.value }))} />
+                <input id="order-deadline" className="input" style={{ padding: 14 }} type="date" value={f.deadline} onChange={e => updateF({ deadline: e.target.value })} />
               </div>
             </div>
             <div className="form-field" style={{ marginTop: 20 }}>
               <label className="form-label" htmlFor="order-notes">نبذة عن المشروع وأهدافه</label>
               <textarea id="order-notes" className="textarea" rows={4} maxLength={2000} style={{ padding: 14 }}
                 placeholder="صف لنا فكرتك، متطلباتك الخاصة، أو أي روابط مرجعية..."
-                value={f.notes} onChange={e => setF(p => ({ ...p, notes: e.target.value }))}
+                value={f.notes} onChange={e => updateF({ notes: e.target.value })}
               />
             </div>
           </div>
@@ -375,16 +397,16 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
             <h3 style={{ marginBottom: 20, fontSize: 18 }}>كيف يمكننا التواصل معك؟</h3>
             <div className="form-field" style={{ marginBottom: 16 }}>
               <label className="form-label" htmlFor="order-name">الاسم الكامل *</label>
-              <input id="order-name" className="input" style={{ padding: 14 }} required placeholder="محمد أحمد" value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} />
+              <input id="order-name" className="input" style={{ padding: 14, borderColor: error && !f.name ? '#ef4444' : undefined }} required placeholder="محمد أحمد" value={f.name} onChange={e => updateF({ name: e.target.value })} />
             </div>
             <div className="form-grid">
               <div className="form-field">
                 <label className="form-label" htmlFor="order-phone">رقم الهاتف / الواتساب *</label>
-                <input id="order-phone" className="input" style={{ padding: 14, direction: 'ltr', textAlign: 'right' }} required placeholder="01xxxxxxxxx" value={f.phone} onChange={e => setF(p => ({ ...p, phone: e.target.value }))} />
+                <input id="order-phone" className="input" style={{ padding: 14, direction: 'ltr', textAlign: 'right', borderColor: error && !f.phone ? '#ef4444' : undefined }} required placeholder="01xxxxxxxxx" value={f.phone} onChange={e => updateF({ phone: e.target.value })} />
               </div>
               <div className="form-field">
-                <label className="form-label" htmlFor="order-email">البريد الإلكتروني</label>
-                <input id="order-email" className="input" style={{ padding: 14 }} type="email" placeholder="email@example.com" value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} />
+                <label className="form-label" htmlFor="order-email">البريد الإلكتروني (اختياري)</label>
+                <input id="order-email" className="input" style={{ padding: 14 }} type="email" placeholder="email@example.com" value={f.email} onChange={e => updateF({ email: e.target.value })} />
               </div>
             </div>
           </div>

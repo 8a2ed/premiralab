@@ -84,3 +84,26 @@ html, body {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Modern Form Enhancements */
+.form-field .input, .form-field .select, .form-field .textarea {
+  transition: all 0.2s ease;
+}
+.form-field .input:focus, .form-field .select:focus, .form-field .textarea:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(205, 69, 205, 0.15);
+  border-color: var(--primary);
+}
+.stepper-header-wrap {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.stepper-header-wrap::-webkit-scrollbar {
+  height: 0px;
+}
+@media(max-width:600px){
+  .modal { padding: 24px 16px; border-radius: 20px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .order-success h3 { fontSize: 20px; }
+  .stepper-header-wrap span { font-size: 10px !important; }
+}
