@@ -83,6 +83,14 @@ db.exec(`
     updated_at  TEXT    NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS faqs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    question    TEXT    NOT NULL,
+    answer      TEXT    NOT NULL,
+    sort_order  INTEGER DEFAULT 0
+  );
+  
+
   CREATE TABLE IF NOT EXISTS promo_codes (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     code           TEXT    NOT NULL UNIQUE,
