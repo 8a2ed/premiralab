@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { ArrowLeft, Star, CheckCircle2, Palette, Monitor, Layout, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import * as LucideIcons from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle } from 'lucide-react';
 import { Nav } from '../components/layout/Nav.js';
 import { Footer } from '../components/layout/Footer.js';
 import { Modal } from '../components/ui/Modal.js';
@@ -8,16 +9,16 @@ import { money, waLink } from '../lib/utils.js';
 import { api } from '../lib/api.js';
 import type { PublicData, Package, PortfolioItem } from '../types.js';
 
-const ICON_MAP: Record<string, React.ReactNode> = {
-  palette: <Palette size={28} className="service-icon" />,
-  monitor: <Monitor size={28} className="service-icon" />,
-  layout:  <Layout  size={28} className="service-icon" />,
-};
-
 interface HomeProps {
   data:    PublicData;
   onToast: (msg: string, type?: 'success' | 'error') => void;
 }
+
+const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?: number, className?: string }) => {
+  if (!name) return <LucideIcons.Palette size={size} className={className} />;
+  const Icon = (LucideIcons as any)[name];
+  return Icon ? <Icon size={size} className={className} /> : <LucideIcons.Palette size={size} className={className} />;
+};
 
 export function Home({ data, onToast }: HomeProps) {
   const [orderOpen,          setOrderOpen]          = useState(false);
@@ -31,39 +32,105 @@ export function Home({ data, onToast }: HomeProps) {
     setOrderOpen(true);
   };
 
+  useEffect(() => {
+    if (data.site?.favicon_url) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = data.site.favicon_url;
+    }
+    if (data.site?.brand) {
+      document.title = data.site.brand;
+    }
+  }, [data.site]);
+
   return (
     <>
+      <style>{`
+        :root {
+          ${data.site?.primary_color ? `--primary: ${data.site.primary_color};` : ''}
+          ${data.site?.accent_color ? `--accent: ${data.site.accent_color};` : ''}
+          ${data.site?.accent_color ? `--accent-dim: ${data.site.accent_color}1a;` : ''}
+        }
+      `}</style>
       <Nav site={data.site} onOrder={() => openOrder()} />
 
       <main id="top">
         {/* Hero */}
         <section className="hero">
           <div className="container hero-grid">
-            <div>
-              <div className="eyebrow">استوديو تصميم رقمي متكامل</div>
-              <h1>نحوّل الأفكار إلى <span className="highlight">تجارب بصرية</span> قوية.</h1>
-              <p>من الهوية البصرية إلى المنتجات الرقمية — منظومة تصميم احترافية مع إدارة مشاريع وملفات ومراجعات منظمة.</p>
-              <div className="actions">
-                <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
-                  اطلب مشروعك <ArrowLeft size={18} aria-hidden />
+            <div className="animation-fade-in">
+              <div className="eyebrow" style={{ color: 'var(--accent)' }}>استوديو رقمي متكامل</div>
+              <h1 style={{ lineHeight: 1.3 }}>
+                {data.site?.hero_title ? data.site.hero_title.split(' ').map((word, i, arr) => 
+                  i === arr.length - 1 ? <span key={i} className="highlight">{word}</span> : word + ' '
+                ) : <>نحول أفكارك إلى واقع رقمي <span className="highlight">مذهل</span></>}
+              </h1>
+              <p style={{ fontSize: '1.1rem', opacity: 0.9 }}>
+                {data.site?.hero_subtitle ?? 'من الهوية البصرية إلى المنصات المتقدمة، نحن هنا لنبني لك حضوراً استثنائياً ينمو ويتفوق.'}
+              </p>
+              <div className="actions" style={{ marginTop: 32 }}>
+                <button className="btn btn--primary btn--lg" onClick={() => openOrder()} style={{ padding: '14px 28px', fontSize: 16 }}>
+                  {data.site?.hero_primary_btn ?? 'ابدأ مشروعك الآن'} <ArrowLeft size={18} aria-hidden />
                 </button>
+                <a href="#portfolio" className="btn btn--lg btn--outline" style={{ padding: '14px 28px', fontSize: 16 }}>
+                  {data.site?.hero_secondary_btn ?? 'تصفح أعمالنا'}
+                </a>
               </div>
             </div>
-            <div className="hero-art" aria-hidden="true" />
+            <div className="hero-art" aria-hidden="true" style={{ backgroundImage: `url(${data.site?.logo_url ?? '/logo.png'})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', opacity: 0.8 }} />
           </div>
         </section>
+
+        {/* Testimonials (Social Proof First) */}
+        {data.testimonials && data.testimonials.length > 0 && (
+          <section className="section" style={{ background: 'var(--bg-2)' }}>
+            <div className="container">
+              <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                <h2 style={{ marginBottom: 8 }}>قالوا عنا</h2>
+                <p className="muted">ثقة عملائنا هي سر نجاحنا</p>
+              </div>
+              <div className="grid grid-3">
+                {data.testimonials.map(t => (
+                  <div className="card" key={t.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={16} fill={i < t.rating ? 'var(--warning)' : 'none'} color={i < t.rating ? 'var(--warning)' : 'var(--border)'} />
+                      ))}
+                    </div>
+                    <p style={{ flex: 1, margin: '16px 0', fontStyle: 'italic', opacity: 0.9 }}>"{t.content}"</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+                      {t.avatar_url && <img src={t.avatar_url} alt={t.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} loading="lazy" />}
+                      <div>
+                        <strong style={{ display: 'block', fontSize: 14 }}>{t.name}</strong>
+                        {t.role && <span className="muted" style={{ fontSize: 12 }}>{t.role}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Services */}
         <section className="section" id="services" aria-labelledby="services-title">
           <div className="container">
-            <h2 id="services-title">الخدمات</h2>
-            <p className="muted">حلول تصميم قابلة للتوسع.</p>
-            <div className="grid grid-3" style={{ marginTop: 28 }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <h2 id="services-title">خدماتنا</h2>
+              <p className="muted">حلول رقمية متكاملة لجميع احتياجاتك</p>
+            </div>
+            <div className="grid grid-3">
               {data.services?.map(s => (
-                <div className="card" key={s.id}>
-                  {ICON_MAP[s.icon] ?? <Palette size={28} className="service-icon" />}
-                  <h3>{s.title}</h3>
-                  <p className="muted">{s.description}</p>
+                <div className="card" key={s.id} style={{ transition: 'transform 0.2s', cursor: 'default' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', marginBottom: 16 }}>
+                    <DynamicIcon name={s.icon} size={24} />
+                  </div>
+                  <h3 style={{ marginBottom: 8 }}>{s.title}</h3>
+                  <p className="muted" style={{ lineHeight: 1.6 }}>{s.description}</p>
                 </div>
               ))}
             </div>
@@ -73,22 +140,35 @@ export function Home({ data, onToast }: HomeProps) {
         {/* Packages */}
         <section className="section" id="packages" aria-labelledby="packages-title">
           <div className="container">
-            <h2 id="packages-title">الباقات</h2>
-            <p className="muted">اختر نقطة البداية المناسبة.</p>
-            <div className="grid grid-3" style={{ marginTop: 28 }}>
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <h2 id="packages-title">باقات متكاملة لنجاحك</h2>
+              <p className="muted">اختر الباقة الأنسب لمشروعك، وابدأ رحلة التفوق الرقمي</p>
+            </div>
+            <div className="grid grid-3">
               {data.packages?.map(p => (
-                <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
-                  {p.popular && <span className="tag">الأكثر طلباً ⭐</span>}
-                  <h3>{p.title}</h3>
-                  <div className="price">{money(p.price, data.site?.currency)}</div>
-                  <p className="muted">{p.description}</p>
-                  <ul className="feature-list" aria-label="مميزات الباقة">
+                <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id} style={{ display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', padding: 32 }}>
+                  {p.popular && (
+                    <div style={{ position: 'absolute', top: 16, left: 16, background: 'var(--accent)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999 }}>
+                      الأكثر طلباً ⭐
+                    </div>
+                  )}
+                  <h3 style={{ fontSize: 22, marginBottom: 8 }}>{p.title}</h3>
+                  <div className="price" style={{ fontSize: 32, fontWeight: 900, marginBottom: 16, color: 'var(--accent)' }}>
+                    {money(p.price, data.site?.currency)}
+                  </div>
+                  <p className="muted" style={{ marginBottom: 24, minHeight: 48 }}>{p.description}</p>
+                  
+                  <ul className="feature-list" aria-label="مميزات الباقة" style={{ flex: 1, marginBottom: 32 }}>
                     {p.features.map(f => (
-                      <li key={f}><CheckCircle2 size={14} aria-hidden /> {f}</li>
+                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+                        <CheckCircle2 size={18} style={{ color: 'var(--success)', flexShrink: 0, marginTop: 2 }} aria-hidden /> 
+                        <span style={{ fontSize: 14 }}>{f}</span>
+                      </li>
                     ))}
                   </ul>
-                  <button className="btn btn--primary" onClick={() => openOrder(p)} style={{ marginTop: 'auto' }}>
-                    اطلب الباقة
+                  
+                  <button className={`btn btn--lg ${p.popular ? 'btn--primary' : 'btn--outline'}`} onClick={() => openOrder(p)} style={{ width: '100%', fontSize: 16 }}>
+                    اطلب الباقة الآن
                   </button>
                 </div>
               ))}
@@ -97,13 +177,11 @@ export function Home({ data, onToast }: HomeProps) {
         </section>
 
         {/* Portfolio */}
-        <section className="section" id="portfolio" aria-labelledby="portfolio-title">
+        <section className="section" id="portfolio" aria-labelledby="portfolio-title" style={{ background: 'var(--bg-2)' }}>
           <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10 }}>
-              <div>
-                <h2 id="portfolio-title">أعمال مختارة</h2>
-                <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا (اضغط على أي عمل لاستعراض التفاصيل الكاملة).</p>
-              </div>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <h2 id="portfolio-title">أعمال مختارة</h2>
+              <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا بكل فخر</p>
             </div>
 
             <div className="grid grid-3" style={{ marginTop: 28 }}>

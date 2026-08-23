@@ -15,10 +15,10 @@ export function Footer({ site }: FooterProps) {
       <div className="container footer-inner">
         <div className="footer-brand">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <img src="/logo.png" alt="PREMIRALAB" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain' }} />
+            <img src={site.logo_url || '/logo.png'} alt={site.brand || 'PREMIRALAB'} style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain' }} />
             <strong style={{ fontSize: 18 }}>{site.brand || 'PREMIRALAB'}</strong>
           </div>
-          <p>نحوّل أفكارك إلى تجارب بصرية قوية.</p>
+          <p style={{ opacity: 0.8, maxWidth: 300, lineHeight: 1.6 }}>{site.footer_text || 'نحوّل أفكارك إلى تجارب بصرية قوية.'}</p>
         </div>
         <div className="footer-contact">
           {site.email && (

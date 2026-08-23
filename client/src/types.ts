@@ -21,6 +21,17 @@ export interface SiteSettings {
   smtp_pass?:           string;
   smtp_from_name?:      string;
   smtp_from_email?:     string;
+  // --- Appearance & Hero Settings ---
+  logo_url?:            string;
+  favicon_url?:         string;
+  primary_color?:       string;
+  accent_color?:        string;
+  hero_title?:          string;
+  hero_subtitle?:       string;
+  hero_primary_btn?:    string;
+  hero_secondary_btn?:  string;
+  about_text?:          string;
+  footer_text?:         string;
 }
 
 export interface Package {

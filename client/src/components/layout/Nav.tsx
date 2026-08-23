@@ -20,8 +20,8 @@ export function Nav({ site, onOrder }: NavProps) {
     <header className="nav">
       <div className="container nav-inner">
         {/* Brand */}
-        <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="الصفحة الرئيسية">
-          <img src="/logo.png" alt="PREMIRALAB" className="brand-logo" />
+        <div className="brand" onClick={() => scrollTo('top')} role="button" tabIndex={0} aria-label="العودة للرئيسية">
+          <img src={site.logo_url || '/logo.png'} alt={site.brand || 'PREMIRALAB'} className="brand-logo" />
           <b className="brand-name">{site.brand || 'PREMIRALAB'}</b>
         </div>
 

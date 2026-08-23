@@ -13,6 +13,11 @@ const DEFAULT_SETTINGS: SiteSettings = {
   instapay_username: '', vodafone_cash: '', bank_details: '', payment_instructions: '',
   google_analytics_id: '', meta_pixel_id: '',
   smtp_host: '', smtp_port: '', smtp_user: '', smtp_pass: '', smtp_from_name: '', smtp_from_email: '',
+  logo_url: '/logo.png', favicon_url: '/logo.png', primary_color: '#c084fc', accent_color: '#a855f7',
+  hero_title: 'نحول أفكارك إلى واقع رقمي مذهل.',
+  hero_subtitle: 'من الهوية البصرية إلى المنصات المتقدمة، نحن هنا لنبني لك حضوراً استثنائياً ينمو ويتفوق.',
+  hero_primary_btn: 'تصفح باقاتنا', hero_secondary_btn: 'معرض الأعمال',
+  footer_text: 'جميع الحقوق محفوظة',
 };
 
 export function SettingsPanel({ onToast }: SettingsPanelProps) {
@@ -72,6 +77,42 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Appearance & Content Settings */}
+      <div className="card" style={{ border: '1px solid var(--accent-dim)' }}>
+        <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Palette size={20} className="icon--accent" /> المظهر والمحتوى (الرئيسية)
+        </h3>
+        <div className="form-stack">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <Field label="رابط اللوجو (Logo)" value={s.logo_url ?? ''} onChange={v => setS(x => ({ ...x, logo_url: v }))} placeholder="/logo.png" />
+            <Field label="رابط أيقونة المتصفح (Favicon)" value={s.favicon_url ?? ''} onChange={v => setS(x => ({ ...x, favicon_url: v }))} placeholder="/logo.png" />
+            <Field label="اللون الرئيسي (Primary)" value={s.primary_color ?? ''} onChange={v => setS(x => ({ ...x, primary_color: v }))} placeholder="#c084fc" />
+            <Field label="اللون الفرعي (Accent)" value={s.accent_color ?? ''} onChange={v => setS(x => ({ ...x, accent_color: v }))} placeholder="#a855f7" />
+          </div>
+          <hr style={{ margin: '10px 0', border: 'none', borderBottom: '1px solid var(--border)' }} />
+          <Field label="العنوان الرئيسي (Hero Title)" value={s.hero_title ?? ''} onChange={v => setS(x => ({ ...x, hero_title: v }))} />
+          
+          <div className="form-field">
+            <label className="form-label">النص الفرعي (Hero Subtitle)</label>
+            <textarea className="textarea" rows={2} value={s.hero_subtitle ?? ''} onChange={e => setS(x => ({ ...x, hero_subtitle: e.target.value }))} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+            <Field label="نص الزر الأساسي" value={s.hero_primary_btn ?? ''} onChange={v => setS(x => ({ ...x, hero_primary_btn: v }))} />
+            <Field label="نص الزر الثانوي" value={s.hero_secondary_btn ?? ''} onChange={v => setS(x => ({ ...x, hero_secondary_btn: v }))} />
+          </div>
+          
+          <div className="form-field">
+            <label className="form-label">نص تذييل الموقع (Footer)</label>
+            <input className="input" value={s.footer_text ?? ''} onChange={e => setS(x => ({ ...x, footer_text: e.target.value }))} />
+          </div>
+
+          <button className="btn btn--primary" onClick={save} disabled={saving}>
+            {saving ? 'جارٍ الحفظ...' : 'حفظ المظهر'}
+          </button>
+        </div>
+      </div>
+
       {/* General Settings */}
       <div className="card">
         <h3 className="card-title">إعدادات الموقع والهوية</h3>
