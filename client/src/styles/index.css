@@ -762,6 +762,7 @@ img { max-width: 100%; display: block }
     position: fixed !important;
     z-index: 99 !important;
   }
+  .auth-brand-side { display: none !important; }
   .floating-wa-btn {
     width: 44px !important;
     height: 44px !important;

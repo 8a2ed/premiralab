@@ -49,11 +49,26 @@ export function Home({ data, onToast }: HomeProps) {
   const [initialProjectType, setInitialProjectType] = useState<string | undefined>(undefined);
   const [activePortfolio,    setActivePortfolio]    = useState<PortfolioItem | null>(null);
 
-  const openOrder = (pkg?: Package, initialProj?: string) => {
-    setSelected(pkg ?? null);
-    setInitialProjectType(initialProj);
-    setOrderOpen(true);
+  const openOrder = async (pkg?: Package, initialProj?: string) => {
+    try {
+      await api.client.me();
+      setSelected(pkg ?? null);
+      setInitialProjectType(initialProj);
+      setOrderOpen(true);
+    } catch {
+      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لتقديم طلب', 'info');
+      window.location.href = '/client?redirect=order';
+    }
   };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('order') === '1') {
+      openOrder();
+      url.searchParams.delete('order');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
 
   useEffect(() => {
     if (data.site?.favicon_url) {
@@ -311,6 +326,19 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
     budget: '', deadline: '', notes: '',
     promoCode: '',
   });
+
+  useEffect(() => {
+    // Auto-fill client details if logged in
+    api.client.me().then(res => {
+      setF(prev => ({
+        ...prev,
+        name: res.client.name,
+        phone: res.client.phone || '',
+        email: res.client.email || ''
+      }));
+    }).catch(() => {});
+  }, []);
+
   const [loading,   setLoading]   = useState(false);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
 
