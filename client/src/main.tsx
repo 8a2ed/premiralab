@@ -8,12 +8,12 @@ import { api } from './lib/api.js';
 import { applyTheme, getInitialTheme } from './lib/utils.js';
 import type { PublicData } from './types.js';
 import './styles/index.css';
+import { ClientPortal } from './pages/ClientPortal.js';
 
 // Lazy load secondary routes so initial homepage load is ultra-fast
-const Tracker      = React.lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
-const Login        = React.lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
-const Admin        = React.lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
-const ClientPortal = React.lazy(() => import('./pages/ClientPortal.js').then(m => ({ default: m.ClientPortal })));
+const Tracker      = lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
+const Login        = lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
+const Admin        = lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
 
 type AppView = 'home' | 'admin' | 'tracker' | 'client';
 
@@ -154,9 +154,7 @@ function App() {
       <ErrorBoundary>
         {/* Client Portal view */}
         {view === 'client' && (
-          <Suspense fallback={<div className="container" style={{ padding: 40 }}><Skeleton height={120} count={3} /></div>}>
-            <ClientPortal onToast={showToast} onNavigateHome={goHome} />
-          </Suspense>
+          <ClientPortal onToast={showToast} onNavigateHome={goHome} />
         )}
 
         {/* Tracker view */}

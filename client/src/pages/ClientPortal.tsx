@@ -163,7 +163,20 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
   };
 
   if (loading && !client && view !== 'reset') {
-    return <div className="container" style={{ marginTop: 100, textAlign: 'center' }}>جاري التحميل...</div>;
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-card)' }}>
+        <div className="auth-brand-side" style={{ flex: 1, background: 'linear-gradient(135deg, var(--bg-1), var(--accent-dim))', borderLeft: '1px solid var(--border)' }} />
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 20px' }}>
+          <div style={{ width: '100%', maxWidth: 400 }}>
+            <div style={{ height: 40, width: '60%', background: 'var(--bg-3)', borderRadius: 8, marginBottom: 10, margin: '0 auto' }} />
+            <div style={{ height: 20, width: '40%', background: 'var(--bg-3)', borderRadius: 8, marginBottom: 40, margin: '0 auto' }} />
+            <div style={{ height: 48, background: 'var(--bg-3)', borderRadius: 8, marginBottom: 15 }} />
+            <div style={{ height: 48, background: 'var(--bg-3)', borderRadius: 8, marginBottom: 25 }} />
+            <div style={{ height: 48, background: 'var(--accent-dim)', borderRadius: 8 }} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Render Dashboard
