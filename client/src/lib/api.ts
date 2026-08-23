@@ -68,7 +68,7 @@ export const api = {
   order: (data: {
     name: string; phone: string; email?: string;
     packageId?: number; serviceId?: number; projectType?: string;
-    notes?: string; budget?: number; deadline?: string;
+    notes?: string; budget?: number; deadline?: string; promoCode?: string;
   }) => request<{ ok: boolean; id: number; orderNo: string }>(
     '/api/orders', { method: 'POST', body: JSON.stringify(data) },
   ),

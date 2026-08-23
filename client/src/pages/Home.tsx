@@ -255,8 +255,9 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         serviceId:   f.serviceId ? Number(f.serviceId) : undefined,
         projectType: f.projectType,
         notes:       f.notes,
-        budget:      f.budget ? Number(f.budget) : undefined,
+        budget:      f.budget && !f.packageId ? Number(f.budget) : undefined,
         deadline:    f.deadline || undefined,
+        promoCode:   f.promoCode && promoResult?.success ? f.promoCode : undefined,
       });
       setSubmitted({ orderNo: res.orderNo });
       
@@ -420,24 +421,29 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
         {step === 2 && (
           <div className="animation-fade-in">
-            <h3 style={{ marginBottom: 20, fontSize: 18 }}>متطلبات وتفاصيل إضافية</h3>
+            <h3 style={{ marginBottom: 20, fontSize: 18 }}>تفاصيل {f.packageId ? 'الباقة الإضافية' : 'المشروع'}</h3>
+            
             <div className="form-grid">
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (اختياري)</label>
-                <div style={{ position: 'relative' }}>
-                  <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="5000" value={f.budget} onChange={e => updateF({ budget: e.target.value })} />
-                  <span style={{ position: 'absolute', right: 14, top: 14, color: 'var(--muted)', fontSize: 14 }}>ج.م</span>
+              {!f.packageId && (
+                <div className="form-field">
+                  <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (اختياري)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="مثال: 5000" value={f.budget} onChange={e => updateF({ budget: e.target.value })} />
+                    <span style={{ position: 'absolute', right: 14, top: 14, color: 'var(--muted)', fontSize: 14 }}>ج.م</span>
+                  </div>
                 </div>
-              </div>
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-deadline">الموعد النهائي للتسليم</label>
+              )}
+              
+              <div className="form-field" style={{ gridColumn: f.packageId ? '1 / -1' : undefined }}>
+                <label className="form-label" htmlFor="order-deadline">الموعد النهائي لتسليم المشروع (اختياري)</label>
                 <input id="order-deadline" className="input" style={{ padding: 14 }} type="date" value={f.deadline} onChange={e => updateF({ deadline: e.target.value })} />
               </div>
             </div>
+
             <div className="form-field" style={{ marginTop: 20 }}>
               <label className="form-label" htmlFor="order-notes">نبذة عن المشروع وأهدافه</label>
               <textarea id="order-notes" className="textarea" rows={4} maxLength={2000} style={{ padding: 14 }}
-                placeholder="صف لنا فكرتك، متطلباتك الخاصة، أو أي روابط مرجعية..."
+                placeholder="صف لنا فكرتك، متطلباتك الخاصة، الروابط المرجعية، أو أي تفاصيل أخرى ترغب بإضافتها..."
                 value={f.notes} onChange={e => updateF({ notes: e.target.value })}
               />
             </div>
@@ -476,7 +482,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                 {f.serviceId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الخدمة المختارة</span><strong style={{ color: 'var(--primary)' }}>{services.find(s => s.id === Number(f.serviceId))?.title}</strong></div>}
                 {f.projectType && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>نوع المشروع</span><strong>{f.projectType}</strong></div>}
                 
-                {f.budget && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الميزانية المقترحة</span><strong>{money(Number(f.budget))}</strong></div>}
+                {f.budget && !f.packageId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الميزانية المقترحة</span><strong>{money(Number(f.budget))}</strong></div>}
                 {f.deadline && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الموعد النهائي</span><strong>{f.deadline}</strong></div>}
               </div>
               {f.notes && (
