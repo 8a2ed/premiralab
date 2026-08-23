@@ -113,7 +113,7 @@ export function Home({ data, onToast }: HomeProps) {
           <section className="section" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
               <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <h2 style={{ marginBottom: 8 }}>\u0622\u0631\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0627\u0621</h2>
+                <h2 style={{ marginBottom: 8 }}>{"\u0622\u0631\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0627\u0621"}</h2>
                 <p className="muted">ثقة عملائنا هي سر نجاحنا</p>
               </div>
               <Carousel autoPlay={true} intervalMs={3000}>
@@ -245,8 +245,8 @@ export function Home({ data, onToast }: HomeProps) {
           <section className="section" id="faqs" aria-labelledby="faqs-title">
             <div className="container" style={{ maxWidth: 800 }}>
               <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <h2 id="faqs-title">\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629</h2>
-                <p className="muted">\u0625\u062C\u0627\u0628\u0627\u062A \u0633\u0631\u064A\u0639\u0629 \u0644\u0623\u0643\u062B\u0631 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0634\u064A\u0648\u0639\u0627\u064B.</p>
+                <h2 id="faqs-title">{"\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629"}</h2>
+                <p className="muted">{"\u0625\u062C\u0627\u0628\u0627\u062A \u0633\u0631\u064A\u0639\u0629 \u0644\u0623\u0643\u062B\u0631 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0634\u064A\u0648\u0639\u0627\u064B."}</p>
               </div>
               <div style={{ background: 'var(--bg-2)', borderRadius: 16, padding: '24px 32px' }}>
                 {data.faqs.map(faq => (
