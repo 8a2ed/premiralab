@@ -16,18 +16,23 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3000 }: Carou
     if (!autoPlay || isHovered) return;
     
     const interval = setInterval(() => {
-      if (scrollRef.current) {
+      if (scrollRef.current && scrollRef.current.firstElementChild) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
         const startScroll = scrollLeft;
         
-        scrollRef.current.scrollBy({ left: clientWidth > 600 ? -320 : -clientWidth, behavior: 'smooth' });
+        // Measure exact width of a child + gap
+        const itemWidth = (scrollRef.current.firstElementChild as HTMLElement).offsetWidth;
+        const gap = 24; 
+        const scrollStep = itemWidth + gap;
         
+        scrollRef.current.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+        
+        // If we didn't move (reached end), reset to beginning
         setTimeout(() => {
           if (scrollRef.current && scrollRef.current.scrollLeft === startScroll) {
-            // Reset to beginning (RTL makes scrollWidth max right)
             scrollRef.current.scrollTo({ left: scrollWidth, behavior: 'smooth' });
           }
-        }, 500);
+        }, 600);
       }
     }, intervalMs);
     
@@ -35,11 +40,11 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3000 }: Carou
   }, [autoPlay, isHovered, intervalMs]);
 
   const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth > 600 ? 320 : clientWidth;
-      // In RTL, "right" is the forward direction (negative scroll offset usually or just opposite of left)
-      scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    if (scrollRef.current && scrollRef.current.firstElementChild) {
+      const itemWidth = (scrollRef.current.firstElementChild as HTMLElement).offsetWidth;
+      const gap = 24;
+      const scrollStep = itemWidth + gap;
+      scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollStep : scrollStep, behavior: 'smooth' });
     }
   };
 

@@ -191,5 +191,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_notifications_read  ON notifications(read);
 `);
 
+try { db.exec('ALTER TABLE portfolio ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore if exists */ }
+try { db.exec('ALTER TABLE testimonials ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore if exists */ }
+
 export { db };
 export const now = () => new Date().toISOString();

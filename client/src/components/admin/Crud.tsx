@@ -10,15 +10,15 @@ type ResourceName = 'packages' | 'services' | 'portfolio' | 'testimonials';
 const RESOURCE_FIELDS: Record<ResourceName, string[]> = {
   packages:     ['title', 'price', 'description', 'features', 'popular'],
   services:     ['title', 'description', 'icon'],
-  portfolio:    ['title', 'category', 'description', 'image_url'],
-  testimonials: ['name', 'role', 'content', 'rating', 'avatar_url'],
+  portfolio:    ['title', 'category', 'description', 'image_url', 'sort_order'],
+  testimonials: ['name', 'role', 'content', 'rating', 'avatar_url', 'sort_order'],
 };
 
 const FIELD_LABELS: Record<string, string> = {
   title: 'العنوان', name: 'الاسم', price: 'السعر', description: 'الوصف',
   features: 'المميزات', popular: 'باقة مميزة (1=نعم، 0=لا)', icon: 'الأيقونة',
   category: 'الفئة', image_url: 'رابط الصورة', role: 'الدور/الوظيفة',
-  content: 'التقييم/الرأي', rating: 'التقييم (1-5)', avatar_url: 'صورة العميل',
+  content: 'التقييم/الرأي', rating: 'التقييم (1-5)', avatar_url: 'صورة العميل', sort_order: 'أولوية العرض (رقم)',
 };
 
 const FIELD_TIPS: Record<string, { desc: string; template?: string }> = {
@@ -28,7 +28,11 @@ const FIELD_TIPS: Record<string, { desc: string; template?: string }> = {
   },
   icon: {
     desc: 'اسم الأيقونة باللغة الإنجليزية من مكتبة Lucide.',
-    template: 'Code\n// أمثلة أخرى: PenTool, Monitor, Image, Layout'
+    template: 'Monitor'
+  },
+  sort_order: {
+    desc: 'الرقم الأقل يظهر أولاً (مثال: 1 يظهر قبل 2). الأرقام المتساوية تترتب حسب الأحدث.',
+    template: '1'
   },
   image_url: {
     desc: 'رابط مباشر للصورة (يجب أن يبدأ بـ http)',
@@ -73,6 +77,7 @@ export function Crud({ resource, title, onToast }: CrudProps) {
       if (f === 'popular') defaults[f] = '0';
       else if (f === 'rating') defaults[f] = '5';
       else if (f === 'features') defaults[f] = '[]';
+      else if (f === 'sort_order') defaults[f] = '0';
       else defaults[f] = '';
     });
     setForm(defaults);
