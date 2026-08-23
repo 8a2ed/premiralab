@@ -22,8 +22,6 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick }: NavPr
 
   return (
     <>
-      {/* Spacer so fixed nav doesn't hide content */}
-      <div style={{ height: 70 }} />
       <header className="nav">
         <div className="container nav-inner">
           {/* Brand */}
