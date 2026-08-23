@@ -1,10 +1,10 @@
 /** Format number as Arabic currency (EGP) */
 export function money(n: number | null | undefined, currency = 'EGP'): string {
-  return new Intl.NumberFormat('ar-EG', {
+  return new Intl.NumberFormat('en-EG', {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,
-  }).format(n ?? 0);
+  }).format(n ?? 0).replace('EGP', 'ج.م');
 }
 
 /** Format ISO date string as Arabic locale date */

@@ -140,27 +140,46 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           <div className="tracker-grid">
             {/* Order status card */}
             <div className="card">
-              <div className="tracker-card__header">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
                 <div>
-                  <div className="muted">رقم الطلب</div>
-                  <h2>{data.orderNo}</h2>
+                  <div className="muted" style={{ fontSize: 13, marginBottom: 4 }}>رقم الطلب</div>
+                  <h2 style={{ fontSize: 24, margin: 0, letterSpacing: 1 }}>{data.orderNo}</h2>
                 </div>
-                <span
-                  className="badge badge--lg"
-                  style={{
-                    backgroundColor: `${STATUS_COLOR[data.status] ?? '#888'}22`,
-                    color: STATUS_COLOR[data.status] ?? '#888',
-                    border: `1px solid ${STATUS_COLOR[data.status] ?? '#888'}44`,
-                  }}
-                >
-                  {ORDER_STATUS_LABELS[data.status] ?? data.status}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span
+                    className="badge badge--lg"
+                    style={{
+                      backgroundColor: `${STATUS_COLOR[data.status] ?? '#888'}22`,
+                      color: STATUS_COLOR[data.status] ?? '#888',
+                      border: `1px solid ${STATUS_COLOR[data.status] ?? '#888'}44`,
+                      fontSize: 14,
+                      padding: '8px 16px'
+                    }}
+                  >
+                    {ORDER_STATUS_LABELS[data.status] ?? data.status}
+                  </span>
+                </div>
               </div>
-              <div className="tracker-meta-grid">
-                <div><div className="muted">الخدمة</div><strong>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? '—'}</strong></div>
-                {data.budget ? <div><div className="muted">الميزانية الإجمالية</div><strong>{money(data.budget)}</strong></div> : null}
-                <div><div className="muted">الموعد النهائي</div><strong>{data.deadline ? formatDate(data.deadline) : 'حسب الاتفاق'}</strong></div>
-                <div><div className="muted">تاريخ الطلب</div><strong>{formatDate(data.createdAt)}</strong></div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 20, background: 'var(--bg-3)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
+                <div>
+                  <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>الخدمة / المشروع</div>
+                  <strong style={{ fontSize: 15 }}>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? '—'}</strong>
+                </div>
+                {data.budget ? (
+                  <div>
+                    <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>الميزانية الإجمالية</div>
+                    <strong style={{ fontSize: 15 }}>{money(data.budget)}</strong>
+                  </div>
+                ) : null}
+                <div>
+                  <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>الموعد النهائي</div>
+                  <strong style={{ fontSize: 15 }}>{data.deadline ? formatDate(data.deadline) : 'حسب الاتفاق'}</strong>
+                </div>
+                <div>
+                  <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>تاريخ الطلب</div>
+                  <strong style={{ fontSize: 15 }}>{formatDate(data.createdAt)}</strong>
+                </div>
               </div>
             </div>
 
@@ -179,7 +198,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               </div>
 
               {/* Financial summary */}
-              <div className="tracker-meta-grid" style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 'var(--radius-sm)', marginBottom: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, background: 'var(--bg-3)', padding: 16, borderRadius: 12, marginBottom: 20, border: '1px solid var(--border)' }}>
                 <div>
                   <div className="muted" style={{ fontSize: 12 }}>المبلغ المطلوب</div>
                   <strong style={{ fontSize: 16 }}>{data.budget ? money(data.budget) : 'حسب الاتفاق'}</strong>
@@ -247,26 +266,26 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
 
               {/* Receipt Upload */}
               {receiptSuccess && (
-                <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-                  ✅ تم رفع إيصال السداد بنجاح وإشعار فريق العمل لتأكيده!
+                <div className="animation-fade-in" style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                  ✅ تم رفع إيصال الدفع بنجاح وسيتم مراجعته قريباً!
                 </div>
               )}
 
               {data.paymentReceipt ? (
-                <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <CheckCircle2 size={20} className="icon--success" />
+                <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px dashed var(--border)', flexWrap: 'wrap', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <CheckCircle2 size={24} className="icon--success" />
                     <div>
-                      <strong style={{ fontSize: 13 }}>تم إرفاق إيصال التحويل</strong>
-                      <div className="muted" style={{ fontSize: 11 }}>سيقوم فريق العمل بمطابقة الإيصال وتأكيد الدفعة</div>
+                      <strong style={{ fontSize: 14, display: 'block', marginBottom: 2 }}>تم رفع إيصال الدفع بنجاح</strong>
+                      <div className="muted" style={{ fontSize: 12 }}>تم استلام إيصال الدفع المرفق ويجري المراجعة من قبل الإدارة</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <a href={data.paymentReceipt} target="_blank" rel="noopener noreferrer" className="btn btn--sm">
-                      معاينة الإيصال
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <a href={data.paymentReceipt} target="_blank" rel="noopener noreferrer" className="btn btn--sm btn--outline">
+                      عرض الإيصال
                     </a>
                     <button className="btn btn--sm" onClick={() => receiptFileRef.current?.click()} disabled={uploadingReceipt}>
-                      تعديل / رفع جديد
+                      تحديث الإيصال
                     </button>
                   </div>
                 </div>
@@ -274,11 +293,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 <div>
                   <button
                     className="btn btn--primary"
-                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 8 }}
+                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 10, padding: 14 }}
                     onClick={() => receiptFileRef.current?.click()}
                     disabled={uploadingReceipt}
                   >
-                    <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'إرفاق إيصال التحويل أو السكرين شوت'}
+                    <Upload size={18} /> {uploadingReceipt ? 'جاري الرفع...' : 'إرفاق إيصال التحويل أو صورة الدفع'}
                   </button>
                 </div>
               )}

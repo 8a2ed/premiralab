@@ -53,6 +53,8 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
     const patchSchema = z.object({
       status:   z.string().min(2).max(50).optional(),
       progress: z.number().int().min(0).max(100).optional(),
+      budget:   z.number().nonnegative().optional(),
+      paid_amount: z.number().nonnegative().optional(),
     });
     const parsed = patchSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -67,6 +69,12 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
     }
     if (d.progress !== undefined) {
       db.prepare('UPDATE projects SET progress=?,updated_at=? WHERE order_id=?').run(d.progress, now(), id);
+    }
+    if (d.budget !== undefined) {
+      db.prepare('UPDATE orders SET budget=?,updated_at=? WHERE id=?').run(d.budget, now(), id);
+    }
+    if (d.paid_amount !== undefined) {
+      db.prepare('UPDATE orders SET paid_amount=?,updated_at=? WHERE id=?').run(d.paid_amount, now(), id);
     }
 
     // Return fresh data
