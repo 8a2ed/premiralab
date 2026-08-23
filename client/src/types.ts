@@ -15,6 +15,12 @@ export interface SiteSettings {
   payment_instructions?: string;
   google_analytics_id?: string;
   meta_pixel_id?:       string;
+  smtp_host?:           string;
+  smtp_port?:           string;
+  smtp_user?:           string;
+  smtp_pass?:           string;
+  smtp_from_name?:      string;
+  smtp_from_email?:     string;
 }
 
 export interface Package {

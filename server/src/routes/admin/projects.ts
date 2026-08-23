@@ -73,7 +73,7 @@ router.get('/:projectId/revisions', auth, admin, (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/revisions', auth, admin, (req: AuthRequest, res, next) => {
+router.post('/revisions', auth, admin, async (req: AuthRequest, res, next) => {
   try {
     const schema = z.object({
       projectId:   z.number().int().positive(),
@@ -85,6 +85,34 @@ router.post('/revisions', auth, admin, (req: AuthRequest, res, next) => {
     const r = db.prepare('INSERT INTO revisions(project_id,title,description,created_at,updated_at) VALUES(?,?,?,?,?)')
       .run(parsed.data.projectId, parsed.data.title, parsed.data.description, now(), now());
     audit(req, 'create', 'revisions', Number(r.lastInsertRowid));
+
+    // Send Revision Email to Client asynchronously
+    try {
+      const orderInfo = db.prepare(`
+        SELECT o.order_no, c.name, c.email 
+        FROM projects p
+        JOIN orders o ON o.id = p.order_id
+        JOIN clients c ON c.id = o.client_id
+        WHERE p.id = ?
+      `).get(parsed.data.projectId) as { order_no: string; name: string; email: string } | undefined;
+      
+      if (orderInfo && orderInfo.email) {
+        const { sendEmail, revisionReadyEmail } = await import('../../services/email.js');
+        const trackerUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/?track=${orderInfo.order_no}`;
+        
+        const emailOpts = revisionReadyEmail({
+          clientName: orderInfo.name,
+          orderNo: orderInfo.order_no,
+          trackerUrl,
+          revisionTitle: parsed.data.title
+        });
+        emailOpts.to = orderInfo.email;
+        sendEmail(emailOpts).catch(console.error);
+      }
+    } catch (emailErr) {
+      console.error('[Revision Email Error]', emailErr);
+    }
+
     res.status(201).json(db.prepare('SELECT * FROM revisions WHERE id=?').get(r.lastInsertRowid));
   } catch (err) { next(err); }
 });

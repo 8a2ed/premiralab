@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard, LineChart } from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart, Mail } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   telegram_bot_token: '', telegram_chat_id: '',
   instapay_username: '', vodafone_cash: '', bank_details: '', payment_instructions: '',
   google_analytics_id: '', meta_pixel_id: '',
+  smtp_host: '', smtp_port: '', smtp_user: '', smtp_pass: '', smtp_from_name: '', smtp_from_email: '',
 };
 
 export function SettingsPanel({ onToast }: SettingsPanelProps) {
@@ -195,6 +196,38 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
           />
           <button className="btn btn--primary" onClick={save} disabled={saving}>
             {saving ? 'جارٍ الحفظ...' : 'حفظ بيانات التتبع'}
+          </button>
+        </div>
+      </div>
+
+      {/* SMTP Email Settings */}
+      <div className="card" style={{ border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <Mail size={22} style={{ color: 'var(--accent)' }} />
+          <h3 className="card-title" style={{ margin: 0 }}>إعدادات البريد الإلكتروني (SMTP Emails)</h3>
+        </div>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+          قم بربط خادم بريد SMTP (مثل Gmail App Passwords أو Resend أو Namecheap) لإرسال رسائل تأكيد الطلب للعملاء بشكل احترافي.
+        </p>
+
+        <div className="form-stack">
+          <div className="grid-2">
+            <Field label="اسم المرسل (From Name)" value={s.smtp_from_name ?? ''} onChange={v => setS(x => ({ ...x, smtp_from_name: v }))} placeholder="مثال: Design Studio" />
+            <Field label="إيميل المرسل (From Email)" value={s.smtp_from_email ?? ''} onChange={v => setS(x => ({ ...x, smtp_from_email: v }))} placeholder="مثال: no-reply@example.com" />
+          </div>
+          <div className="grid-2">
+            <Field label="خادم SMTP (Host)" value={s.smtp_host ?? ''} onChange={v => setS(x => ({ ...x, smtp_host: v }))} placeholder="مثال: smtp.gmail.com" />
+            <Field label="المنفذ (Port)" value={s.smtp_port ?? ''} onChange={v => setS(x => ({ ...x, smtp_port: v }))} placeholder="مثال: 465 أو 587" />
+          </div>
+          <div className="grid-2">
+            <Field label="اسم المستخدم (SMTP User)" value={s.smtp_user ?? ''} onChange={v => setS(x => ({ ...x, smtp_user: v }))} placeholder="مثال: youremail@gmail.com" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>كلمة المرور (SMTP Password)</label>
+              <input type="password" className="input" value={s.smtp_pass ?? ''} onChange={e => setS(x => ({ ...x, smtp_pass: e.target.value }))} placeholder="كلمة مرور التطبيق (App Password)" />
+            </div>
+          </div>
+          <button className="btn btn--primary" onClick={save} disabled={saving}>
+            {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات البريد'}
           </button>
         </div>
       </div>

@@ -69,7 +69,7 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
       db.prepare('UPDATE projects SET progress=?,updated_at=? WHERE order_id=?').run(d.progress, now(), id);
     }
 
-    // Return fresh data (FIX: was returning stale record fetched before update)
+    // Return fresh data
     const updated = db.prepare(`
       SELECT o.*,c.name client_name,c.phone client_phone,c.email client_email,p.title package_title,s.title service_title
       FROM orders o
@@ -78,6 +78,24 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
       LEFT JOIN services s ON s.id=o.service_id
       WHERE o.id=?
     `).get(id) as OrderRow;
+
+    // Send Project Completion Email
+    if (d.status === 'completed' && updated && updated.client_email) {
+      try {
+        const { sendEmail, projectCompleteEmail } = await import('../../services/email.js');
+        const trackerUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/?track=${updated.order_no}`;
+        
+        const emailOpts = projectCompleteEmail({
+          clientName: updated.client_name,
+          orderNo: updated.order_no,
+          trackerUrl
+        });
+        emailOpts.to = updated.client_email;
+        sendEmail(emailOpts).catch(console.error);
+      } catch (emailErr) {
+        console.error('[Completion Email Error]', emailErr);
+      }
+    }
     if (!updated) {
       res.status(404).json({ error: 'Order not found' });
       return;
