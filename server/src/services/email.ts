@@ -16,12 +16,12 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
   const siteRow = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
   const site = siteRow ? JSON.parse(siteRow.value) : {};
 
-  const host = site.smtp_host || process.env.SMTP_HOST;
-  const port = site.smtp_port || process.env.SMTP_PORT || '587';
-  const user = site.smtp_user || process.env.SMTP_USER;
-  const pass = site.smtp_pass || process.env.SMTP_PASS;
-  const fromName = site.smtp_from_name || site.brand || 'Design Studio';
-  const fromEmail = site.smtp_from_email || user;
+  const host = (site.smtp_host || process.env.SMTP_HOST || '').trim();
+  const port = (site.smtp_port || process.env.SMTP_PORT || '587').trim();
+  const user = (site.smtp_user || process.env.SMTP_USER || '').trim();
+  const pass = (site.smtp_pass || process.env.SMTP_PASS || '').trim();
+  const fromName = (site.smtp_from_name || site.brand || 'Design Studio').trim();
+  const fromEmail = (site.smtp_from_email || user).trim();
 
   if (!host || !user || !pass) {
     if (opts.throwOnError) throw new Error('يرجى ملء جميع إعدادات SMTP (الخادم، المستخدم، كلمة المرور)');
@@ -43,7 +43,8 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
       connectionTimeout: 10000, // Fail fast if blocked
       greetingTimeout: 5000,
       socketTimeout: 10000,
-    });
+      family: 4, // FORCE IPv4 to fix Railway / Docker network timeouts
+    } as any);
 
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
