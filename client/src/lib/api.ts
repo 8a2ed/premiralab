@@ -75,7 +75,7 @@ export const api = {
 
   track: (orderNo: string) => request<TrackerData>(`/api/track/${encodeURIComponent(orderNo)}`),
 
-  checkPromo: (code: string) => request<{ code: string; discount_type: string; discount_value: number }>(`/api/promo/${encodeURIComponent(code)}`),
+  checkPromo: (code: string) => request<{ code: string; discount_type: string; discount_value: number }>(`/api/public/promo/${encodeURIComponent(code)}`),
 
   submitRevision: (orderNo: string, data: { title: string; description?: string }) =>
     request<{ ok: boolean; revision: Revision }>(`/api/track/${encodeURIComponent(orderNo)}/revisions`, {
