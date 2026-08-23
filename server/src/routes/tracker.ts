@@ -5,6 +5,7 @@ import multer from 'multer';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { sendTelegramAlert } from '../services/telegram.js';
+import { optimizeImage } from '../services/image.js';
 
 const router = Router();
 
@@ -90,7 +91,7 @@ router.get('/:orderNo', (req, res, next) => {
   }
 });
 
-router.post('/:orderNo/receipt', upload.single('receipt'), (req, res, next) => {
+router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next) => {
   try {
     const { orderNo } = req.params;
     if (!req.file) {
@@ -104,7 +105,14 @@ router.post('/:orderNo/receipt', upload.single('receipt'), (req, res, next) => {
       return;
     }
 
-    db.prepare('UPDATE orders SET payment_receipt = ? WHERE id = ?').run(req.file.filename, order.id);
+    // Optimize image (compress & convert to WebP)
+    let finalFilename = req.file.filename;
+    const opt = await optimizeImage(req.file.path);
+    if (opt) {
+      finalFilename = opt.newFilename;
+    }
+
+    db.prepare('UPDATE orders SET payment_receipt = ? WHERE id = ?').run(finalFilename, order.id);
 
     const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
     const message = `🧾 <b>إيصال دفع جديد!</b>
@@ -115,7 +123,7 @@ router.post('/:orderNo/receipt', upload.single('receipt'), (req, res, next) => {
       buttons: [{ text: '💻 مراجعة في لوحة التحكم', url: adminUrl }]
     }).catch(console.error);
 
-    res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${req.file.filename}` });
+    res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${finalFilename}` });
   } catch (err) {
     next(err);
   }
