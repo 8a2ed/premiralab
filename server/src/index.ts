@@ -63,8 +63,8 @@ app.use(helmet({
         "'unsafe-inline'", // For theme toggles in index.html & GA inline scripts
         "https://www.googletagmanager.com", // Google Analytics
       ],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://*.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "blob:", "http:", "https:"], // Allow images from external sources
       connectSrc: [
         "'self'", 
