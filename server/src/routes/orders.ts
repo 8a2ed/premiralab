@@ -4,6 +4,7 @@ import rateLimit from 'express-rate-limit';
 import crypto from 'node:crypto';
 import { db, now } from '../db.js';
 import { sendEmail, orderConfirmationEmail } from '../services/email.js';
+import { sendTelegramAlert } from '../services/telegram.js';
 import type { Client } from '../types.js';
 
 const router = Router();
@@ -89,6 +90,18 @@ router.post('/', orderLimiter, async (req, res, next) => {
       emailOpts.to = d.email;
       sendEmail(emailOpts).catch(console.error);
     }
+
+    // Non-blocking Telegram alert
+    const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
+    const message = `🎉 <b>طلب جديد!</b>
+<b>الرقم:</b> #${orderNo}
+<b>العميل:</b> ${d.name}
+<b>الهاتف:</b> <code>${d.phone}</code>
+${d.email ? `<b>الإيميل:</b> ${d.email}\n` : ''}${d.projectType ? `<b>نوع المشروع:</b> ${d.projectType}\n` : ''}${d.budget ? `<b>الميزانية:</b> ${d.budget}\n` : ''}${d.notes ? `\n<b>ملاحظات:</b>\n<i>${d.notes}</i>` : ''}`;
+
+    sendTelegramAlert(message, {
+      buttons: [{ text: '💻 فتح لوحة التحكم', url: adminUrl }]
+    }).catch(console.error);
 
     res.status(201).json({ ok: true, id: orderId, orderNo });
   } catch (err) {

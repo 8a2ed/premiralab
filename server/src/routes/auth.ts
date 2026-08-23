@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { db, now } from '../db.js';
 import { auth } from '../middleware/auth.js';
+import { sendTelegramAlert } from '../services/telegram.js';
 import type { AuthRequest, User } from '../types.js';
 
 const router = Router();
@@ -51,6 +52,9 @@ router.post('/login', loginLimiter, async (req, res, next) => {
       maxAge: 8 * 60 * 60 * 1000,
       path: '/',
     });
+
+    sendTelegramAlert(`🔐 <b>دخول مدير جديد</b>\n<b>المستخدم:</b> ${row.username}\n<b>الوقت:</b> ${new Date().toLocaleString('ar-EG')}`).catch(() => {});
+
     res.json({ user: { id: row.id, username: row.username, role: row.role } });
   } catch (err) {
     next(err);

@@ -4,6 +4,7 @@ import type { Order, Package } from '../types.js';
 import multer from 'multer';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import { sendTelegramAlert } from '../services/telegram.js';
 
 const router = Router();
 
@@ -104,6 +105,15 @@ router.post('/:orderNo/receipt', upload.single('receipt'), (req, res, next) => {
     }
 
     db.prepare('UPDATE orders SET payment_receipt = ? WHERE id = ?').run(req.file.filename, order.id);
+
+    const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
+    const message = `🧾 <b>إيصال دفع جديد!</b>
+<b>رقم الطلب:</b> #${orderNo}
+العميل قام برفع إيصال دفع جديد. يُرجى مراجعته.`;
+
+    sendTelegramAlert(message, {
+      buttons: [{ text: '💻 مراجعة في لوحة التحكم', url: adminUrl }]
+    }).catch(console.error);
 
     res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${req.file.filename}` });
   } catch (err) {
