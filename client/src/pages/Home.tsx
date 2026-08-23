@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
-import { ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle, ChevronDown } from 'lucide-react';
 import { Nav } from '../components/layout/Nav.js';
 import { Footer } from '../components/layout/Footer.js';
 import { Modal } from '../components/ui/Modal.js';
 import { ImageWithSkeleton } from '../components/ui/ImageWithSkeleton.js';
 import { money, waLink } from '../lib/utils.js';
 import { api } from '../lib/api.js';
-import type { PublicData, Package, PortfolioItem } from '../types.js';
+import type { PublicData, Package, PortfolioItem, FAQ } from '../types.js';
 
 interface HomeProps {
   data:    PublicData;
@@ -21,6 +21,27 @@ const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?
 };
 
 import { Carousel } from '../components/ui/Carousel.js';
+
+
+const FaqItem = ({ faq }: { faq: FAQ }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: '1px solid var(--border)', padding: '16px 0' }}>
+      <button 
+        onClick={() => setOpen(!open)}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: 0, color: 'var(--text)', cursor: 'pointer', textAlign: 'right', fontSize: 16, fontWeight: 600 }}
+      >
+        <span>{faq.question}</span>
+        <ChevronDown size={20} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+      {open && (
+        <div style={{ marginTop: 12, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 15 }}>
+          {faq.answer.split('\n').map((line, i) => <p key={i} style={{ margin: '0 0 8px' }}>{line}</p>)}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function Home({ data, onToast }: HomeProps) {
   const [orderOpen,          setOrderOpen]          = useState(false);
@@ -92,7 +113,7 @@ export function Home({ data, onToast }: HomeProps) {
           <section className="section" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
               <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <h2 style={{ marginBottom: 8 }}>قالوا عنا</h2>
+                <h2 style={{ marginBottom: 8 }}>\u0622\u0631\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0627\u0621</h2>
                 <p className="muted">ثقة عملائنا هي سر نجاحنا</p>
               </div>
               <Carousel autoPlay={true} intervalMs={3000}>
@@ -219,31 +240,22 @@ export function Home({ data, onToast }: HomeProps) {
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className="section" id="testimonials" aria-labelledby="testimonials-title">
-          <div className="container">
-            <h2 id="testimonials-title">آراء العملاء</h2>
-            <div className="grid grid-3" style={{ marginTop: 28 }}>
-              {data.testimonials?.map(t => (
-                <div className="card testimonial-card" key={t.id}>
-                  <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} size={16} fill="currentColor" aria-hidden />
-                    ))}
-                  </div>
-                  <p className="testimonial-quote">"{t.content}"</p>
-                  <div className="testimonial-author">
-                    {t.avatar_url && <ImageWithSkeleton skeletonHeight={48} src={t.avatar_url} alt={t.name} className="avatar" />}
-                    <div>
-                      <strong>{t.name}</strong>
-                      <div className="muted">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* FAQs */}
+        {data.faqs && data.faqs.length > 0 && (
+          <section className="section" id="faqs" aria-labelledby="faqs-title">
+            <div className="container" style={{ maxWidth: 800 }}>
+              <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                <h2 id="faqs-title">\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629</h2>
+                <p className="muted">\u0625\u062C\u0627\u0628\u0627\u062A \u0633\u0631\u064A\u0639\u0629 \u0644\u0623\u0643\u062B\u0631 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0634\u064A\u0648\u0639\u0627\u064B.</p>
+              </div>
+              <div style={{ background: 'var(--bg-2)', borderRadius: 16, padding: '24px 32px' }}>
+                {data.faqs.map(faq => (
+                  <FaqItem key={faq.id} faq={faq} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       <Footer site={data.site} />

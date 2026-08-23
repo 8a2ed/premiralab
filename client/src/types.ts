@@ -75,7 +75,10 @@ export interface Testimonial {
   updated_at: string;
 }
 
+export interface FAQ { id: number; question: string; answer: string; sort_order?: number; }
+
 export interface PublicData {
+  faqs?: FAQ[];
   site:         SiteSettings;
   packages:     Package[];
   services:     Service[];

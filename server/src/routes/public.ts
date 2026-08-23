@@ -29,10 +29,11 @@ router.get('/', (_req, res, next) => {
     const services     = db.prepare('SELECT * FROM services     ORDER BY id ASC').all();
     const portfolio    = db.prepare('SELECT * FROM portfolio    ORDER BY sort_order ASC, id DESC').all();
     const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order ASC, id DESC').all();
+    const faqs         = db.prepare('SELECT * FROM faqs         ORDER BY sort_order ASC, id DESC').all();
 
     // Cache for 60 s, allow serving stale for 5 min while revalidating
     res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-    res.json({ site, packages, services, portfolio, testimonials });
+    res.json({ site, packages, services, portfolio, testimonials, faqs });
   } catch (err) {
     next(err);
   }
