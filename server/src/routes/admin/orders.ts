@@ -216,15 +216,34 @@ router.get('/:id/invoice', auth, admin, (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { UPLOAD_DIR } from '../../db.js';
+
 // DELETE /api/admin/orders/:id
-router.delete('/:id', auth, admin, (req, res, next) => {
+router.delete('/:id', auth, admin, async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const result = db.prepare('DELETE FROM orders WHERE id=?').run(id);
     
+    // Find files to delete BEFORE deleting the order (because of CASCADE)
+    const order = db.prepare('SELECT payment_receipt FROM orders WHERE id=?').get(id) as { payment_receipt?: string } | undefined;
+    const projectFiles = db.prepare('SELECT stored_name FROM files WHERE project_id IN (SELECT id FROM projects WHERE order_id=?)').all(id) as { stored_name: string }[];
+    
+    const result = db.prepare('DELETE FROM orders WHERE id=?').run(id);
     if (result.changes === 0) {
       res.status(404).json({ error: 'Order not found' });
       return;
+    }
+
+    // Clean up physical disk
+    const filesToDelete = projectFiles.map(f => f.stored_name);
+    if (order?.payment_receipt) filesToDelete.push(order.payment_receipt);
+
+    for (const filename of filesToDelete) {
+      if (!filename) continue;
+      try {
+        await fs.unlink(path.join(UPLOAD_DIR, filename));
+      } catch { /* ignore if already deleted */ }
     }
 
     audit(req, 'delete', 'orders', id);

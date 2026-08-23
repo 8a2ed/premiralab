@@ -21,9 +21,16 @@ export function startBackupJob() {
       
       // SQLite Backup API allows safe hot backups without locking the DB
       db.backup(backupPath)
-        .then(() => {
+        .then(async () => {
           console.log(`[Backup] Successfully created backup: ${backupPath}`);
           cleanOldBackups(BACKUP_DIR);
+          
+          // Send to Telegram as an off-site cloud backup!
+          const { sendTelegramDocument } = await import('./telegram.js');
+          await sendTelegramDocument(
+            backupPath, 
+            `💾 <b>نسخة احتياطية لقاعدة البيانات</b>\n<b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}\nتم إنشاء النسخة بنجاح.`
+          ).catch(console.error);
         })
         .catch((err: any) => {
           console.error('[Backup] Failed to create backup:', err);

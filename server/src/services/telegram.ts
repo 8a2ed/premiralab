@@ -1,4 +1,4 @@
-﻿import { db } from '../db.js';
+import { db } from '../db.js';
 
 interface TelegramButton {
   text: string;
@@ -55,6 +55,49 @@ export async function sendTelegramAlert(
     return { ok: true };
   } catch (err) {
     console.error('[Telegram Alert Exception]', err);
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
+import fs from 'node:fs';
+import path from 'node:path';
+
+export async function sendTelegramDocument(filePath: string, caption?: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const siteRow = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
+    const site = siteRow ? JSON.parse(siteRow.value) : {};
+
+    const botToken = site.telegram_bot_token || process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = site.telegram_chat_id || process.env.TELEGRAM_CHAT_ID;
+
+    if (!botToken || !chatId) {
+      return { ok: false, error: 'Telegram config missing' };
+    }
+
+    const form = new FormData();
+    form.append('chat_id', chatId);
+    if (caption) {
+      form.append('caption', caption);
+      form.append('parse_mode', 'HTML');
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const blob = new Blob([buffer]);
+    form.append('document', blob, path.basename(filePath));
+
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+      method: 'POST',
+      body: form,
+    });
+
+    const data = (await res.json()) as { ok: boolean; description?: string };
+    if (!data.ok) {
+      console.error('[Telegram Document Error]', data.description);
+      return { ok: false, error: data.description };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error('[Telegram Document Exception]', err);
     return { ok: false, error: (err as Error).message };
   }
 }
