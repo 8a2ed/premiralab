@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Download, FileText, LayoutGrid, List, MessageSquare, Phone, DollarSign, Paperclip } from 'lucide-react';
+import { Search, Download, FileText, LayoutGrid, List, MessageSquare, Phone, DollarSign, Paperclip, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { money, formatDate, debounce, downloadUrl, waLink } from '../../lib/utils.js';
 import { ORDER_STATUS_LABELS, type Order, type OrderStatus, type Paginated } from '../../types.js';
@@ -65,6 +65,17 @@ export function Orders({ onToast }: OrdersProps) {
     } catch (e) {
       onToast((e as Error).message, 'error');
       await load();
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الطلب بشكل نهائي؟ سيتم حذف جميع الملفات المرتبطة به أيضاً.')) return;
+    try {
+      await api.admin.deleteOrder(id);
+      onToast('تم حذف الطلب بنجاح', 'success');
+      load();
+    } catch (e) {
+      onToast((e as Error).message, 'error');
     }
   };
 
@@ -221,6 +232,14 @@ export function Orders({ onToast }: OrdersProps) {
                         >
                           <FileText size={15} />
                         </button>
+                        <button
+                          className="btn btn--icon"
+                          title="حذف الطلب"
+                          onClick={() => handleDelete(o.id)}
+                          style={{ color: 'var(--danger, #ef4444)' }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -261,6 +280,14 @@ export function Orders({ onToast }: OrdersProps) {
                                 onClick={() => openInvoice(o.id)}
                               >
                                 <FileText size={13} />
+                              </button>
+                              <button
+                                className="btn btn--icon btn--sm"
+                                title="حذف"
+                                onClick={() => handleDelete(o.id)}
+                                style={{ color: 'var(--danger, #ef4444)' }}
+                              >
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           </div>

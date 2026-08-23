@@ -109,8 +109,10 @@ export const api = {
       return request<Paginated<Order>>(`/api/admin/orders?${q}`);
     },
 
-    updateOrder: (id: number, data: { status?: string; progress?: number; budget?: number; paid_amount?: number; payment_method?: string }) =>
+    updateOrder: (id: number, data: Partial<Order>) =>
       request<Order>(`/api/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    deleteOrder: (id: number) =>
+      request<void>(`/api/admin/orders/${id}`, { method: 'DELETE' }),
 
     invoiceUrl: (id: number) => `/api/admin/orders/${id}/invoice`,
 

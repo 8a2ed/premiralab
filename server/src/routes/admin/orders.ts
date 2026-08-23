@@ -216,4 +216,20 @@ router.get('/:id/invoice', auth, admin, (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// DELETE /api/admin/orders/:id
+router.delete('/:id', auth, admin, (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const result = db.prepare('DELETE FROM orders WHERE id=?').run(id);
+    
+    if (result.changes === 0) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    audit(req, 'delete', 'orders', id);
+    res.status(204).end();
+  } catch (err) { next(err); }
+});
+
 export default router;
