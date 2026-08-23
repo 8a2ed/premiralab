@@ -627,9 +627,11 @@ img { max-width: 100%; display: block }
 }
 
 @media (max-width: 900px) {
-  .hero { padding: 50px 0 35px; }
-  .hero-grid { grid-template-columns: 1fr; gap: 24px; }
-  .hero-art { display: none; }
+  .hero { padding: 40px 0 35px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+  .hero-grid > div:first-child { display: flex; flex-direction: column; align-items: center; }
+  .hero-art { display: flex !important; max-width: 250px; width: 100%; margin: 0 auto 24px; order: -1; }
+  .actions { justify-content: center; }
   .admin-layout { grid-template-columns: 1fr; }
   .sidebar { position: relative; height: auto; border-left: 0; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; padding: 12px; }
   .sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -696,6 +698,9 @@ img { max-width: 100%; display: block }
     text-overflow: ellipsis !important;
     display: inline-block !important;
   }
+    
+  .card { padding: 18px !important; }
+  .section { padding: 40px 0 !important; }
   .nav-actions {
     display: flex !important;
     align-items: center !important;
