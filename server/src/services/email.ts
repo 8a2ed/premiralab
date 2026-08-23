@@ -5,6 +5,7 @@ export interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  throwOnError?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
   const fromEmail = site.smtp_from_email || user;
 
   if (!host || !user || !pass) {
+    if (opts.throwOnError) throw new Error('يرجى ملء جميع إعدادات SMTP (الخادم، المستخدم، كلمة المرور)');
     console.log(`\n[Email Stub - No SMTP Configured] 📨`);
     console.log(`  To:      ${opts.to}`);
     console.log(`  Subject: ${opts.subject}`);
@@ -38,6 +40,9 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
       secure: Number(port) === 465, // true for 465, false for other ports
       auth: { user, pass: cleanPass },
       tls: { rejectUnauthorized: false }, // Prevent self-signed cert issues on some hosts
+      connectionTimeout: 10000, // Fail fast if blocked
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
 
     await transporter.sendMail({
@@ -47,8 +52,14 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
       html: opts.html,
     });
     console.log(`[Email] Successfully sent to ${opts.to}`);
-  } catch (err) {
+  } catch (err: any) {
     console.error(`[Email Error] Failed to send to ${opts.to}:`, err);
+    if (opts.throwOnError) {
+      if (err.message.includes('Invalid login') || err.message.includes('535')) {
+        throw new Error('فشل تسجيل الدخول: كلمة المرور أو الإيميل غير صحيح. تأكد من تطابق الحساب الذي أنشأت منه كلمة المرور.');
+      }
+      throw new Error(`خطأ في الإرسال: ${err.message}`);
+    }
   }
 }
 

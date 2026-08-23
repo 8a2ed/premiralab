@@ -40,6 +40,7 @@ router.post('/test-email', auth, admin, async (req: AuthRequest, res, next) => {
     await sendEmail({
       to: testTo,
       subject: 'رسالة اختبار من النظام ✉️',
+      throwOnError: true,
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px;">
           <h2>مرحباً!</h2>
