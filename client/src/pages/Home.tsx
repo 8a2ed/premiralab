@@ -20,6 +20,8 @@ const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?
   return Icon ? <Icon size={size} className={className} /> : <LucideIcons.Palette size={size} className={className} />;
 };
 
+import { Carousel } from '../components/ui/Carousel.js';
+
 export function Home({ data, onToast }: HomeProps) {
   const [orderOpen,          setOrderOpen]          = useState(false);
   const [selected,           setSelected]           = useState<Package | null>(null);
@@ -93,9 +95,9 @@ export function Home({ data, onToast }: HomeProps) {
                 <h2 style={{ marginBottom: 8 }}>قالوا عنا</h2>
                 <p className="muted">ثقة عملائنا هي سر نجاحنا</p>
               </div>
-              <div className="grid grid-3">
+              <Carousel autoPlay={true} intervalMs={3000}>
                 {data.testimonials.map(t => (
-                  <div className="card" key={t.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="card carousel-item-wrapper" key={t.id} style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} size={16} fill={i < t.rating ? 'var(--warning)' : 'none'} color={i < t.rating ? 'var(--warning)' : 'var(--border)'} />
@@ -111,7 +113,7 @@ export function Home({ data, onToast }: HomeProps) {
                     </div>
                   </div>
                 ))}
-              </div>
+              </Carousel>
             </div>
           </section>
         )}
@@ -184,29 +186,33 @@ export function Home({ data, onToast }: HomeProps) {
               <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا بكل فخر</p>
             </div>
 
-            <div className="grid grid-3" style={{ marginTop: 28 }}>
-              {data.portfolio?.length ? data.portfolio.map(p => (
-                <div
-                  className="card portfolio-card-clickable"
-                  key={p.id}
-                  onClick={() => setActivePortfolio(p)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`عرض تفاصيل ${p.title}`}
-                >
-                  {p.image_url && (
-                    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
-                      <ImageWithSkeleton skeletonHeight={240} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
-                      <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(4px)', zIndex: 2 }}>
-                        <Eye size={12} /> استعراض العمل
-                      </div>
+            <div style={{ marginTop: 28 }}>
+              {data.portfolio?.length ? (
+                <Carousel autoPlay={true} intervalMs={4000}>
+                  {data.portfolio.map(p => (
+                    <div
+                      className="card portfolio-card-clickable carousel-item-wrapper"
+                      key={p.id}
+                      onClick={() => setActivePortfolio(p)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`عرض تفاصيل ${p.title}`}
+                    >
+                      {p.image_url && (
+                        <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
+                          <ImageWithSkeleton skeletonHeight={240} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
+                          <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(4px)', zIndex: 2 }}>
+                            <Eye size={12} /> استعراض العمل
+                          </div>
+                        </div>
+                      )}
+                      <h3 style={{ marginTop: 14, marginBottom: 4 }}>{p.title}</h3>
+                      {p.category && <span className="tag tag--sm">{p.category}</span>}
+                      <p className="muted" style={{ marginTop: 8, fontSize: 13, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.description}</p>
                     </div>
-                  )}
-                  <h3 style={{ marginTop: 14, marginBottom: 4 }}>{p.title}</h3>
-                  {p.category && <span className="tag tag--sm">{p.category}</span>}
-                  <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>{p.description}</p>
-                </div>
-              )) : (
+                  ))}
+                </Carousel>
+              ) : (
                 <div className="empty">أضف أعمالك من لوحة الإدارة.</div>
               )}
             </div>
@@ -636,8 +642,8 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
     <Modal title={item.title} onClose={onClose} size="lg">
       <div className="case-study-modal">
         {item.image_url && (
-          <div className="case-study-hero-img-wrap">
-            <ImageWithSkeleton skeletonHeight={400} src={item.image_url} alt={item.title} className="case-study-hero-img" />
+          <div className="case-study-hero-img-wrap" style={{ maxHeight: '70vh', background: 'transparent' }}>
+            <ImageWithSkeleton skeletonHeight={400} objectFit="contain" src={item.image_url} alt={item.title} className="case-study-hero-img" style={{ maxHeight: '70vh' }} />
           </div>
         )}
         <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   skeletonHeight?: string | number;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 }
 
-export function ImageWithSkeleton({ skeletonHeight = '100%', className = '', style, ...props }: ImageProps) {
+export function ImageWithSkeleton({ skeletonHeight = '100%', objectFit = 'cover', className = '', style, ...props }: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -23,7 +24,7 @@ export function ImageWithSkeleton({ skeletonHeight = '100%', className = '', sty
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          objectFit,
           opacity: isLoaded ? 1 : 0,
           transition: 'opacity 0.3s ease-in-out',
         }}
