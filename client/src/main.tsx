@@ -171,6 +171,10 @@ function App() {
           <Home
             data={data ?? { site: { brand: 'PREMIRALAB', phone: '', email: '', currency: 'EGP', whatsapp: '', telegram: '' }, packages: [], services: [], portfolio: [], testimonials: [] }}
             onToast={showToast}
+            onClientClick={() => {
+              window.history.pushState({}, '', '/client');
+              setView('client');
+            }}
           />
         )}
 

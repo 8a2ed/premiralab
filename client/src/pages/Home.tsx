@@ -12,6 +12,7 @@ import type { PublicData, Package, PortfolioItem, FAQ } from '../types.js';
 interface HomeProps {
   data:    PublicData;
   onToast: (msg: string, type?: 'success' | 'error') => void;
+  onClientClick: () => void;
 }
 
 const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?: number, className?: string }) => {
@@ -43,7 +44,7 @@ const FaqItem = ({ faq }: { faq: FAQ }) => {
   );
 };
 
-export function Home({ data, onToast }: HomeProps) {
+export function Home({ data, onToast, onClientClick }: HomeProps) {
   const [orderOpen,          setOrderOpen]          = useState(false);
   const [selected,           setSelected]           = useState<Package | null>(null);
   const [initialProjectType, setInitialProjectType] = useState<string | undefined>(undefined);
@@ -94,7 +95,7 @@ export function Home({ data, onToast }: HomeProps) {
           ${data.site?.accent_color ? `--accent-dim: ${data.site.accent_color}1a;` : ''}
         }
       `}</style>
-      <Nav site={data.site} onOrder={() => openOrder()} />
+      <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} />
 
       <main id="top">
         {/* Hero */}
