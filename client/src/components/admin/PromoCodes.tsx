@@ -128,8 +128,20 @@ export function PromoCodes({ onToast }: PromoCodesProps) {
             <h3>{editing.id ? 'تعديل الكوبون' : 'إضافة كوبون جديد'}</h3>
             <form onSubmit={handleSave}>
               <div className="form-field">
-                <label className="form-label">كود الخصم (عربي أو إنجليزي)</label>
-                <input required className="input" value={editing.code || ''} onChange={e => setEditing({ ...editing, code: e.target.value.toUpperCase() })} placeholder="مثال: NEWYEAR25" />
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>كود الخصم (حساس لحالة الأحرف)</span>
+                  <button 
+                    type="button" 
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 12, fontWeight: 500 }}
+                    onClick={() => {
+                      const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase() + Math.floor(Math.random() * 1000);
+                      setEditing({ ...editing, code: randomCode });
+                    }}
+                  >
+                    ✨ إنشاء عشوائي
+                  </button>
+                </label>
+                <input required className="input" style={{ letterSpacing: 1 }} value={editing.code || ''} onChange={e => setEditing({ ...editing, code: e.target.value.replace(/\s/g, '') })} placeholder="أدخل الكود... (مثال: Promo2026)" />
               </div>
               <div className="grid-2">
                 <div className="form-field">
@@ -146,16 +158,21 @@ export function PromoCodes({ onToast }: PromoCodesProps) {
               </div>
               <div className="grid-2">
                 <div className="form-field">
-                  <label className="form-label">الحد الأقصى للاستخدام (اختياري)</label>
-                  <input type="number" min="1" className="input" value={editing.max_uses || ''} onChange={e => setEditing({ ...editing, max_uses: e.target.value ? Number(e.target.value) : null })} placeholder="يترك فارغاً لعدد لا محدود" />
+                  <label className="form-label">الحد الأقصى للاستخدام <span className="muted" style={{ fontWeight: 'normal', fontSize: 11 }}>(اختياري)</span></label>
+                  <input type="number" min="1" className="input" value={editing.max_uses || ''} onChange={e => setEditing({ ...editing, max_uses: e.target.value ? Number(e.target.value) : null })} placeholder="لا محدود" />
                 </div>
                 <div className="form-field">
-                  <label className="form-label">تاريخ الانتهاء (اختياري)</label>
+                  <label className="form-label">تاريخ الانتهاء <span className="muted" style={{ fontWeight: 'normal', fontSize: 11 }}>(اختياري)</span></label>
                   <input type="date" className="input" value={editing.expires_at ? editing.expires_at.split('T')[0] : ''} onChange={e => setEditing({ ...editing, expires_at: e.target.value || null })} />
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-                <button type="submit" className="btn btn--primary">حفظ</button>
+
+              <div style={{ padding: 12, background: 'var(--bg-2)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+                💡 <b>تلميح:</b> إذا تركت الحد الأقصى أو تاريخ الانتهاء فارغاً، سيبقى الكوبون فعالاً دائماً حتى تقوم بتعطيله يدوياً.
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                <button type="submit" className="btn btn--primary" style={{ flex: 1 }}>{editing.id ? 'حفظ التعديلات' : 'إضافة الكوبون'}</button>
                 <button type="button" className="btn btn--outline" onClick={() => setEditing(null)}>إلغاء</button>
               </div>
             </form>

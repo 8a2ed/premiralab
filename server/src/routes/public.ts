@@ -40,7 +40,7 @@ router.get('/', (_req, res, next) => {
 
 router.get('/promo/:code', (req, res, next) => {
   try {
-    const code = req.params.code.toUpperCase();
+    const code = req.params.code;
     const promo = db.prepare('SELECT * FROM promo_codes WHERE code = ? AND active = 1').get(code) as any;
     
     if (!promo) {

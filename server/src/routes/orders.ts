@@ -27,7 +27,7 @@ const orderSchema = z.object({
   notes:       z.string().trim().max(2000).default(''),
   budget:      z.number().nonnegative().optional(),
   deadline:    z.string().max(30).optional(),
-  promoCode:   z.string().trim().toUpperCase().max(20).optional(),
+  promoCode:   z.string().trim().max(20).optional(),
 });
 
 router.post('/', orderLimiter, async (req, res, next) => {
