@@ -31,6 +31,22 @@ router.get('/:resource', auth, admin, (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.patch('/:resource/reorder', auth, admin, (req, res, next) => {
+  try {
+    const { table } = getTable(String(req.params.resource));
+    const items = req.body.items as { id: number; sort_order: number }[];
+    if (!Array.isArray(items)) return res.status(400).json({ error: 'Invalid items array' });
+    
+    const stmt = db.prepare(`UPDATE ${table} SET sort_order = ? WHERE id = ?`);
+    db.transaction(() => {
+      for (const item of items) {
+        stmt.run(item.sort_order, item.id);
+      }
+    })();
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
 router.post('/:resource', auth, admin, (req: AuthRequest, res, next) => {
   try {
     const { table, fields } = getTable(String(req.params.resource));

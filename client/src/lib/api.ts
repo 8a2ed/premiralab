@@ -192,6 +192,7 @@ export const api = {
       create: (data: unknown)         => request<unknown>(`/api/admin/${resource}`, { method: 'POST', body: JSON.stringify(data) }),
       update: (id: number, data: unknown) => request<unknown>(`/api/admin/${resource}/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
       remove: (id: number)            => request(`/api/admin/${resource}/${id}`, { method: 'DELETE' }),
+      reorder: (items: { id: number; sort_order: number }[]) => request<{ success: boolean }>(`/api/admin/${resource}/reorder`, { method: 'PATCH', body: JSON.stringify({ items }) }),
     }),
 
     exportOrdersUrl:  () => '/api/admin/export/orders',

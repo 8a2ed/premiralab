@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Lightbulb, Copy, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Lightbulb, Copy, Check, Eye, GripVertical } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { ConfirmDialog } from '../ui/ConfirmDialog.js';
 import { TableSkeleton } from '../ui/Skeleton.js';
@@ -58,7 +58,39 @@ export function Crud({ resource, title, onToast }: CrudProps) {
   const [activeTip, setActiveTip] = useState<string | null>(null);
   const [copiedTip, setCopiedTip] = useState<string | null>(null);
 
+  // Drag & Drop
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
+
   const fields = RESOURCE_FIELDS[resource];
+  const supportsSort = fields.includes('sort_order');
+
+  const handleDrop = async (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+    setDragOverId(null);
+    if (draggedId === null || draggedId === targetId) return;
+
+    const items = [...rows];
+    const draggedIndex = items.findIndex(r => r.id === draggedId);
+    const targetIndex = items.findIndex(r => r.id === targetId);
+    if (draggedIndex < 0 || targetIndex < 0) return;
+
+    const [draggedItem] = items.splice(draggedIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+
+    // Re-assign sort_order based on new visual index
+    const reordered = items.map((r, i) => ({ ...r, sort_order: i + 1 }));
+    setRows(reordered);
+
+    try {
+      await api.admin.crud(resource).reorder(reordered.map(r => ({ id: r.id as number, sort_order: r.sort_order as number })));
+      onToast('تم تحديث ترتيب العرض بنجاح', 'success');
+    } catch (err) {
+      onToast('فشل تحديث الترتيب', 'error');
+      load(); // revert
+    }
+    setDraggedId(null);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -153,10 +185,37 @@ export function Crud({ resource, title, onToast }: CrudProps) {
             </thead>
             <tbody>
               {rows.map(r => (
-                <tr key={r.id as number}>
-                  <td><strong>{String(r.title ?? r.name ?? '—')}</strong></td>
+                <tr 
+                  key={r.id as number}
+                  draggable={supportsSort}
+                  onDragStart={(e) => {
+                    setDraggedId(r.id as number);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggedId && draggedId !== r.id) setDragOverId(r.id as number);
+                  }}
+                  onDragLeave={() => setDragOverId(null)}
+                  onDrop={(e) => handleDrop(e, r.id as number)}
+                  style={{
+                    opacity: draggedId === r.id ? 0.5 : 1,
+                    background: dragOverId === r.id ? 'var(--accent-dim)' : undefined,
+                    transition: 'background 0.2s',
+                    cursor: supportsSort ? 'grab' : 'default'
+                  }}
+                >
+                  <td style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {supportsSort && <GripVertical size={16} className="muted" style={{ cursor: 'grab' }} />}
+                    <strong>{String(r.title ?? r.name ?? '—')}</strong>
+                  </td>
                   <td className="muted">{String((r.description ?? r.content ?? r.price ?? '—')).slice(0, 80)}</td>
                   <td className="actions-cell">
+                    {r.image_url && (
+                      <button className="btn btn--icon" onClick={() => window.open(r.image_url as string, '_blank')} aria-label="معاينة الصورة" title="معاينة الصورة">
+                        <Eye size={14} />
+                      </button>
+                    )}
                     <button className="btn btn--icon" onClick={() => openEdit(r)} aria-label="تعديل">
                       <Pencil size={14} />
                     </button>
@@ -179,7 +238,7 @@ export function Crud({ resource, title, onToast }: CrudProps) {
           onClose={() => setEditing(null)}
         >
           <div className="form-stack">
-            {fields.map(f => (
+            {fields.filter(f => f !== 'sort_order').map(f => (
               <div key={f} className="form-field" style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <label className="form-label" htmlFor={`field-${f}`} style={{ margin: 0 }}>
