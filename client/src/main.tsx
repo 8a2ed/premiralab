@@ -168,14 +168,25 @@ function App() {
 
         {/* Home view */}
         {view === 'home' && (
-          <Home
-            data={data ?? { site: { brand: 'PREMIRALAB', phone: '', email: '', currency: 'EGP', whatsapp: '', telegram: '' }, packages: [], services: [], portfolio: [], testimonials: [] }}
-            onToast={showToast}
-            onClientClick={() => {
-              window.history.pushState({}, '', '/client');
-              setView('client');
-            }}
-          />
+          !data ? (
+            <div className="container" style={{ padding: '100px 20px' }}>
+              <Skeleton height={60} width="40%" style={{ marginBottom: 40 }} />
+              <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+                <Skeleton height={250} />
+                <Skeleton height={250} />
+                <Skeleton height={250} />
+              </div>
+            </div>
+          ) : (
+            <Home
+              data={data}
+              onToast={showToast}
+              onClientClick={() => {
+                window.history.pushState({}, '', '/client');
+                setView('client');
+              }}
+            />
+          )
         )}
 
         {/* Admin view (lazy loaded) */}
