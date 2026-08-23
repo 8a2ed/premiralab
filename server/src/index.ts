@@ -55,7 +55,27 @@ app.set('trust proxy', 1);
 
 app.use(helmet({ 
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false // Disable CSP to allow inline theme scripts in index.html
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", // For theme toggles in index.html & GA inline scripts
+        "https://www.googletagmanager.com", // Google Analytics
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'"], // For styled-components or inline styles
+      imgSrc: ["'self'", "data:", "blob:", "http:", "https:"], // Allow images from external sources
+      connectSrc: [
+        "'self'", 
+        "https://www.google-analytics.com",
+        "https://analytics.google.com",
+        "https://stats.g.doubleclick.net"
+      ],
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    }
+  }
 }));
 app.use(compression());
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
