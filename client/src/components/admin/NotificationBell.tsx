@@ -86,7 +86,10 @@ export function NotificationBell({ onUnreadChange }: NotificationBellProps) {
     <div className="notification-bell" ref={panelRef}>
       <button
         className="btn btn--icon"
-        onClick={() => setOpen(o => !o)}
+        onClick={() => {
+          if (!open && unread > 0) markAllRead();
+          setOpen(o => !o);
+        }}
         aria-label={`الإشعارات${unread ? ` — ${unread} غير مقروء` : ''}`}
         aria-expanded={open}
         aria-haspopup="true"

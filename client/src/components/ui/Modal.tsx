@@ -10,16 +10,25 @@ interface ModalProps {
 export function Modal({ title, onClose, children, size = 'md' }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Focus trap
+  // Use ref to keep latest onClose without triggering effect
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Focus trap - run ONCE on mount
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
-    focusable?.[0]?.focus();
+    // Don't steal focus if already inside modal
+    if (!dialogRef.current?.contains(document.activeElement)) {
+      focusable?.[0]?.focus();
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'Escape') { onCloseRef.current(); return; }
       if (e.key !== 'Tab' || !focusable?.length) return;
       const first = focusable[0];
       const last  = focusable[focusable.length - 1];
@@ -35,7 +44,7 @@ export function Modal({ title, onClose, children, size = 'md' }: ModalProps) {
       document.removeEventListener('keydown', handleKeyDown);
       prev?.focus();
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div

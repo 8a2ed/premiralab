@@ -15,6 +15,7 @@ async function request<T>(url: string, options: RequestInit = {}, retries = 3): 
     try {
       const res = await fetch(BASE + url, {
         credentials: 'include',
+        cache: 'no-store', // Prevent browser caching issues for admin endpoints
         headers: { 'Content-Type': 'application/json', ...options.headers },
         ...options,
       });
