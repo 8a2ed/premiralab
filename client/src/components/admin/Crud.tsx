@@ -5,17 +5,18 @@ import { ConfirmDialog } from '../ui/ConfirmDialog.js';
 import { TableSkeleton } from '../ui/Skeleton.js';
 import { Modal } from '../ui/Modal.js';
 
-type ResourceName = 'packages' | 'services' | 'portfolio' | 'testimonials';
+type ResourceName = 'packages' | 'services' | 'portfolio' | 'testimonials' | 'faqs';
 
 const RESOURCE_FIELDS: Record<ResourceName, string[]> = {
   packages:     ['title', 'price', 'description', 'features', 'popular'],
   services:     ['title', 'description', 'icon'],
   portfolio:    ['title', 'category', 'description', 'image_url', 'sort_order'],
   testimonials: ['name', 'role', 'content', 'rating', 'avatar_url', 'sort_order'],
+    faqs:         ['question', 'answer', 'sort_order'],
 };
 
 const FIELD_LABELS: Record<string, string> = {
-  title: 'العنوان', name: 'الاسم', price: 'السعر', description: 'الوصف',
+  title: 'العنوان', name: 'الاسم', price: 'السعر', description: 'الوصف', question: '\u0627\u0644\u0633\u0624\u0627\u0644', answer: '\u0627\u0644\u0625\u062C\u0627\u0628\u0629',
   features: 'المميزات', popular: 'باقة مميزة (1=نعم، 0=لا)', icon: 'الأيقونة',
   category: 'الفئة', image_url: 'رابط الصورة', role: 'الدور/الوظيفة',
   content: 'التقييم/الرأي', rating: 'التقييم (1-5)', avatar_url: 'صورة العميل', sort_order: 'أولوية العرض (رقم)',
