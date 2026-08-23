@@ -18,7 +18,7 @@ const NAV_ITEMS: Array<[AdminTab, string, typeof LayoutDashboard]> = [
   ['services',     'الخدمات',       Palette],
   ['portfolio',    'الأعمال',       FileText],
   ['testimonials', 'التقييمات',     Star],
-  ['faqs',         '\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629', HelpCircle],
+  ['faqs',         'الأسئلة الشائعة', HelpCircle],
   ['activity',     'سجل النشاط',   Activity],
   ['settings',     'الإعدادات',    Settings],
   ['security',     'الأمان',        LockKeyhole],

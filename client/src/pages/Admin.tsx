@@ -79,7 +79,7 @@ export function Admin({ onLogout, onToast }: AdminProps) {
             {tab === 'services'     && <Crud resource="services"     title="الخدمات"    onToast={onToast} />}
             {tab === 'portfolio'    && <Crud resource="portfolio"    title="الأعمال"    onToast={onToast} />}
             {tab === 'testimonials' && <Crud resource="testimonials" title="التقييمات"  onToast={onToast} />}
-            {tab === 'faqs'         && <Crud resource="faqs"         title="\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629" onToast={onToast} />}
+            {tab === 'faqs'         && <Crud resource="faqs"         title="الأسئلة الشائعة" onToast={onToast} />}
             {tab === 'activity'     && <ActivityLog onToast={onToast} />}
             {tab === 'settings'     && <SettingsPanel onToast={onToast} />}
             {tab === 'security'     && <Security     onToast={onToast} />}

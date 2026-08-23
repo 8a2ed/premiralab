@@ -13,6 +13,7 @@ const ALLOWED_CRUD: Record<string, string[]> = {
   services:     ['title', 'description', 'icon'],
   portfolio:    ['title', 'category', 'description', 'image_url', 'sort_order'],
   testimonials: ['name', 'role', 'content', 'rating', 'avatar_url', 'sort_order'],
+  faqs:         ['question', 'answer', 'sort_order'],
 };
 
 function getTable(name: string): { table: string; fields: string[] } {
@@ -24,7 +25,7 @@ function getTable(name: string): { table: string; fields: string[] } {
 router.get('/:resource', auth, admin, (req, res, next) => {
   try {
     const { table } = getTable(String(req.params.resource));
-    const orderClause = (table === 'portfolio' || table === 'testimonials') 
+    const orderClause = (table === 'portfolio' || table === 'testimonials' || table === 'faqs') 
       ? 'ORDER BY sort_order ASC, id DESC' 
       : 'ORDER BY id DESC';
     res.json(db.prepare(`SELECT * FROM ${table} ${orderClause}`).all());
