@@ -1,11 +1,11 @@
 import {
   LayoutDashboard, Package, Users, BriefcaseBusiness, Palette, Star,
-  Activity, Settings, LockKeyhole, FileText, LogOut,
+  Activity, Settings, LockKeyhole, FileText, LogOut, Ticket,
 } from 'lucide-react';
 
 export type AdminTab =
   | 'dashboard' | 'orders' | 'clients' | 'projects'
-  | 'packages'  | 'services' | 'portfolio' | 'testimonials'
+  | 'packages'  | 'services' | 'portfolio' | 'testimonials' | 'promo'
   | 'activity'  | 'settings' | 'security';
 
 const NAV_ITEMS: Array<[AdminTab, string, typeof LayoutDashboard]> = [
@@ -13,6 +13,7 @@ const NAV_ITEMS: Array<[AdminTab, string, typeof LayoutDashboard]> = [
   ['orders',       'الطلبات',       Package],
   ['clients',      'العملاء',       Users],
   ['projects',     'المشاريع',      BriefcaseBusiness],
+  ['promo',        'كوبونات الخصم', Ticket],
   ['packages',     'الباقات',       Package],
   ['services',     'الخدمات',       Palette],
   ['portfolio',    'الأعمال',       FileText],

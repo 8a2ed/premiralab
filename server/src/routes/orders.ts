@@ -27,6 +27,7 @@ const orderSchema = z.object({
   notes:       z.string().trim().max(2000).default(''),
   budget:      z.number().nonnegative().optional(),
   deadline:    z.string().max(30).optional(),
+  promoCode:   z.string().trim().toUpperCase().max(20).optional(),
 });
 
 router.post('/', orderLimiter, async (req, res, next) => {
@@ -39,7 +40,19 @@ router.post('/', orderLimiter, async (req, res, next) => {
     const d = parsed.data;
     const t = now();
 
-    const { id: orderId, orderNo } = db.transaction(() => {
+    const { id: orderId, orderNo, promoUsed, promoDiscountInfo } = db.transaction(() => {
+      // Validate Promo Code inside transaction to prevent race conditions
+      let validPromo = null;
+      let discountInfo = null;
+      if (d.promoCode) {
+        const promo = db.prepare('SELECT * FROM promo_codes WHERE code = ? AND active = 1').get(d.promoCode) as any;
+        if (promo && (!promo.expires_at || new Date(promo.expires_at) >= new Date()) && (!promo.max_uses || promo.current_uses < promo.max_uses)) {
+          validPromo = promo;
+          discountInfo = promo.discount_type === 'percentage' ? `${promo.discount_value}%` : `${promo.discount_value}`;
+          db.prepare('UPDATE promo_codes SET current_uses = current_uses + 1 WHERE id = ?').run(promo.id);
+        }
+      }
+
       // Upsert client by phone without clobbering existing email
       let client = db.prepare('SELECT id, email FROM clients WHERE phone=?').get(d.phone) as { id: number; email: string } | undefined;
       if (client) {
@@ -54,12 +67,13 @@ router.post('/', orderLimiter, async (req, res, next) => {
 
       const orderNo = `ORD-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
       const r = db.prepare(
-        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,deadline,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,deadline,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
       ).run(
         orderNo, client.id,
         d.packageId ?? null, d.serviceId ?? null,
         d.projectType, d.notes, 'new',
         d.budget ?? null, d.deadline ?? null,
+        validPromo ? validPromo.code : null, discountInfo,
         t, t,
       );
 
@@ -80,7 +94,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
           t,
         );
 
-      return { id: Number(r.lastInsertRowid), orderNo };
+      return { id: Number(r.lastInsertRowid), orderNo, promoUsed: validPromo?.code, promoDiscountInfo: discountInfo };
     })();
 
     // Non-blocking email (stub)
@@ -97,7 +111,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
 <b>الرقم:</b> #${orderNo}
 <b>العميل:</b> ${d.name}
 <b>الهاتف:</b> <code>${d.phone}</code>
-${d.email ? `<b>الإيميل:</b> ${d.email}\n` : ''}${d.projectType ? `<b>نوع المشروع:</b> ${d.projectType}\n` : ''}${d.budget ? `<b>الميزانية:</b> ${d.budget}\n` : ''}${d.notes ? `\n<b>ملاحظات:</b>\n<i>${d.notes}</i>` : ''}`;
+${d.email ? `<b>الإيميل:</b> ${d.email}\n` : ''}${d.projectType ? `<b>نوع المشروع:</b> ${d.projectType}\n` : ''}${d.budget ? `<b>الميزانية:</b> ${d.budget}\n` : ''}${promoUsed ? `🎁 <b>كود الخصم:</b> ${promoUsed} (خصم ${promoDiscountInfo})\n` : ''}${d.notes ? `\n<b>ملاحظات:</b>\n<i>${d.notes}</i>` : ''}`;
 
     sendTelegramAlert(message, {
       buttons: [{ text: '💻 فتح لوحة التحكم', url: adminUrl }]

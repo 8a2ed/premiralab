@@ -98,6 +98,8 @@ export interface Order {
   payment_receipt?: string;
   payment_method?: string;
   deadline:        string | null;
+  promo_code?:     string;
+  promo_discount?: string;
   created_at:      string;
   updated_at:      string;
   // joined fields
@@ -196,6 +198,19 @@ export interface Paginated<T> {
 }
 
 // ─── Tracker ──────────────────────────────────────────────────────────────────
+
+export interface PromoCode {
+  id: number;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  max_uses: number | null;
+  current_uses: number;
+  expires_at: string | null;
+  active: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface TrackerData {
   orderNo:         string;

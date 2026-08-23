@@ -10,6 +10,7 @@ import { Crud } from '../components/admin/Crud.js';
 import { SettingsPanel } from '../components/admin/SettingsPanel.js';
 import { Security } from '../components/admin/Security.js';
 import { ActivityLog } from '../components/admin/ActivityLog.js';
+import { PromoCodes } from '../components/admin/PromoCodes.js';
 import { api } from '../lib/api.js';
 import type { Analytics } from '../types.js';
 
@@ -73,6 +74,7 @@ export function Admin({ onLogout, onToast }: AdminProps) {
             {tab === 'orders'       && <Orders    onToast={onToast} />}
             {tab === 'clients'      && <Clients   onToast={onToast} />}
             {tab === 'projects'     && <Projects  onToast={onToast} />}
+            {tab === 'promo'        && <PromoCodes onToast={onToast} />}
             {tab === 'packages'     && <Crud resource="packages"     title="الباقات"    onToast={onToast} />}
             {tab === 'services'     && <Crud resource="services"     title="الخدمات"    onToast={onToast} />}
             {tab === 'portfolio'    && <Crud resource="portfolio"    title="الأعمال"    onToast={onToast} />}

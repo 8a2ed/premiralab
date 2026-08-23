@@ -213,13 +213,36 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
     serviceId: '',
     projectType: initialProjectType || '',
     budget: '', deadline: '', notes: '',
+    promoCode: '',
   });
   const [loading,   setLoading]   = useState(false);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
 
+  // Promo states
+  const [checkingPromo, setCheckingPromo] = useState(false);
+  const [promoResult, setPromoResult] = useState<{ success?: string; error?: string; discount?: number; type?: string } | null>(null);
+
   const updateF = (updates: Partial<typeof f>) => {
-    setError('');
     setF(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleCheckPromo = async () => {
+    if (!f.promoCode) return;
+    setCheckingPromo(true);
+    setPromoResult(null);
+    try {
+      const data = await api.checkPromo(f.promoCode);
+      setPromoResult({
+        success: `تم تفعيل الخصم: ${data.discount_type === 'percentage' ? `${data.discount_value}%` : `${data.discount_value} ج.م`}`,
+        discount: data.discount_value,
+        type: data.discount_type
+      });
+    } catch (e: any) {
+      setPromoResult({ error: e.message || 'كود غير صالح' });
+      updateF({ promoCode: '' });
+    } finally {
+      setCheckingPromo(false);
+    }
   };
 
   const submit = async () => {
@@ -462,6 +485,19 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                   <p style={{ margin: '4px 0 0', fontSize: 14, whiteSpace: 'pre-wrap' }}>{f.notes}</p>
                 </div>
               )}
+
+              {/* Promo Code Section */}
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                <label className="form-label">لديك كود خصم؟ (اختياري)</label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <input className="input" style={{ flex: 1, padding: '10px 14px' }} placeholder="أدخل الكود هنا" value={f.promoCode} onChange={e => { updateF({ promoCode: e.target.value }); setPromoResult(null); }} />
+                  <button type="button" className="btn btn--outline" onClick={handleCheckPromo} disabled={!f.promoCode || checkingPromo}>
+                    {checkingPromo ? 'جاري التحقق...' : 'تطبيق'}
+                  </button>
+                </div>
+                {promoResult?.success && <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>✔️ {promoResult.success}</div>}
+                {promoResult?.error && <div style={{ color: 'var(--error)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>❌ {promoResult.error}</div>}
+              </div>
               
               <div style={{ marginTop: 24, padding: '16px', background: 'rgba(205, 69, 205, 0.05)', borderRadius: 12, border: '1px dashed var(--primary-dim)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>

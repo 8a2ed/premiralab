@@ -75,6 +75,8 @@ export const api = {
 
   track: (orderNo: string) => request<TrackerData>(`/api/track/${encodeURIComponent(orderNo)}`),
 
+  checkPromo: (code: string) => request<{ code: string; discount_type: string; discount_value: number }>(`/api/promo/${encodeURIComponent(code)}`),
+
   submitRevision: (orderNo: string, data: { title: string; description?: string }) =>
     request<{ ok: boolean; revision: Revision }>(`/api/track/${encodeURIComponent(orderNo)}/revisions`, {
       method: 'POST',
@@ -171,6 +173,14 @@ export const api = {
       request<{ ok: boolean; message: string }>('/api/admin/settings/test-telegram', { method: 'POST' }),
     testEmail: () =>
       request<{ message: string }>('/api/admin/settings/test-email', { method: 'POST' }),
+
+    // Promo Codes
+    promo: {
+      list:   () => request<PromoCode[]>('/api/admin/promo'),
+      create: (data: Partial<PromoCode>) => request<PromoCode>('/api/admin/promo', { method: 'POST', body: JSON.stringify(data) }),
+      update: (id: number, data: Partial<PromoCode>) => request<PromoCode>(`/api/admin/promo/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+      remove: (id: number) => request<{ success: boolean }>(`/api/admin/promo/${id}`, { method: 'DELETE' }),
+    },
 
     changePassword: (data: { currentPassword: string; newPassword: string }) =>
       request<{ ok: boolean }>('/api/admin/security/password', { method: 'PATCH', body: JSON.stringify(data) }),

@@ -24,6 +24,8 @@ db.pragma('busy_timeout = 5000');
 try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE orders ADD COLUMN payment_receipt TEXT;'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN promo_code TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN promo_discount TEXT;'); } catch (e) { /* ignore */ }
 
 // â”€â”€â”€ Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 db.exec(`
@@ -79,6 +81,19 @@ db.exec(`
     avatar_url  TEXT    NOT NULL DEFAULT '',
     created_at  TEXT    NOT NULL,
     updated_at  TEXT    NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS promo_codes (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    code           TEXT    NOT NULL UNIQUE,
+    discount_type  TEXT    NOT NULL, /* 'percentage' | 'fixed' */
+    discount_value REAL    NOT NULL,
+    max_uses       INTEGER DEFAULT NULL,
+    current_uses   INTEGER NOT NULL DEFAULT 0,
+    expires_at     TEXT    DEFAULT NULL,
+    active         INTEGER NOT NULL DEFAULT 1,
+    created_at     TEXT    NOT NULL,
+    updated_at     TEXT    NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS clients (

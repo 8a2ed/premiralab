@@ -217,6 +217,11 @@ export function Orders({ onToast }: OrdersProps) {
                             </a>
                           )}
                         </div>
+                        {o.promo_code && (
+                          <div style={{ marginTop: 4, fontSize: 11, color: 'var(--primary)' }}>
+                            🎁 كود: {o.promo_code} ({o.promo_discount})
+                          </div>
+                        )}
                         {o.paid_amount != null && o.paid_amount > 0 && (
                           <div style={{ fontSize: 11, color: '#10b981', marginTop: 2 }}>
                             مسدد: {money(o.paid_amount)}
@@ -309,14 +314,21 @@ export function Orders({ onToast }: OrdersProps) {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn btn--icon btn--sm"
-                                  style={{ color: '#22c55e', padding: 2 }}
-                                  title="إيصال التحويل المرفوع"
+                                  style={{ color: '#22c55e', marginLeft: 4 }}
+                                  title="معاينة الإيصال"
                                 >
-                                  <Paperclip size={12} />
+                                  <Paperclip size={13} />
                                 </a>
                               )}
                             </div>
-                            <span style={{ fontSize: 11 }}>{formatDate(o.created_at)}</span>
+                            {o.promo_code && (
+                              <div style={{ marginTop: 4, fontSize: 11, color: 'var(--primary)' }}>
+                                🎁 {o.promo_code}
+                              </div>
+                            )}
+                            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>
+                              {formatDate(o.created_at)}
+                            </div>
                           </div>
 
                           {o.paid_amount != null && o.paid_amount > 0 && (

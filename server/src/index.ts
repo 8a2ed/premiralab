@@ -43,6 +43,7 @@ import analyticsRouter    from './routes/admin/analytics.js';
 import settingsRouter     from './routes/admin/settings.js';
 import securityRouter     from './routes/admin/security.js';
 import exportRouter       from './routes/admin/export.js';
+import promoRouter        from './routes/admin/promo.js';
 import { errorHandler }   from './middleware/errorHandler.js';
 
 const PORT = Number(process.env.PORT || 4000);
@@ -94,6 +95,7 @@ app.use('/api/admin/notifications', notifRouter);
 app.use('/api/admin/settings',     settingsRouter);
 app.use('/api/admin/security',     securityRouter);
 app.use('/api/admin/export',       exportRouter);
+app.use('/api/admin/promo',        promoRouter);
 app.use('/api/admin/activity',     exportRouter);  // activity is also in the export router
 
 // File uploads (scoped to project)

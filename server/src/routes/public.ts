@@ -38,4 +38,32 @@ router.get('/', (_req, res, next) => {
   }
 });
 
+router.get('/promo/:code', (req, res, next) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const promo = db.prepare('SELECT * FROM promo_codes WHERE code = ? AND active = 1').get(code) as any;
+    
+    if (!promo) {
+      res.status(404).json({ error: 'كود الخصم غير صحيح أو منتهي الصلاحية' });
+      return;
+    }
+
+    if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+      res.status(400).json({ error: 'كود الخصم منتهي الصلاحية' });
+      return;
+    }
+
+    if (promo.max_uses && promo.current_uses >= promo.max_uses) {
+      res.status(400).json({ error: 'تم تجاوز الحد الأقصى لاستخدام الكود' });
+      return;
+    }
+
+    res.json({
+      code: promo.code,
+      discount_type: promo.discount_type,
+      discount_value: promo.discount_value
+    });
+  } catch (err) { next(err); }
+});
+
 export default router;
