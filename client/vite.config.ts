@@ -9,11 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'logo.png', 'og-image.png'],
       manifest: {
-        name: 'PremiraLab Design Studio',
-        short_name: 'PremiraLab',
-        description: 'Advanced design studio platform for PremiraLab clients',
-        theme_color: '#000000',
-        background_color: '#000000',
+        name: 'PREMIRALAB | منصة تصميم رقمية',
+        short_name: 'PREMIRALAB',
+        description: 'منصة تصميم احترافية — هوية بصرية، سوشيال ميديا، واجهات رقمية.',
+        theme_color: '#cd45cd',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [

@@ -63,8 +63,10 @@ function App() {
     try {
       const d = await api.public();
       setData(d);
-      // Update page title from settings
-      if (d.site?.brand) document.title = d.site.brand;
+      // Update page title from settings with SEO descriptor
+      if (d.site?.brand) {
+        document.title = `${d.site.brand} | منصة تصميم رقمية احترافية`;
+      }
     } catch (e) { showToast((e as Error).message, 'error'); }
   };
 
