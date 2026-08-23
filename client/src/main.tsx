@@ -11,9 +11,9 @@ import './styles/index.css';
 import { ClientPortal } from './pages/ClientPortal.js';
 
 // Lazy load secondary routes so initial homepage load is ultra-fast
-const Tracker      = lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
-const Login        = lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
-const Admin        = lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
+const Tracker      = React.lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
+const Login        = React.lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
+const Admin        = React.lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
 
 type AppView = 'home' | 'admin' | 'tracker' | 'client';
 
