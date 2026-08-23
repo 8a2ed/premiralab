@@ -13,6 +13,8 @@ export interface SiteSettings {
   vodafone_cash?:       string;
   bank_details?:        string;
   payment_instructions?: string;
+  google_analytics_id?: string;
+  meta_pixel_id?:       string;
 }
 
 export interface Package {

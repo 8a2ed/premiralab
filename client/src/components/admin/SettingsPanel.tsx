@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard } from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   brand: '', phone: '', email: '', currency: 'EGP', whatsapp: '', telegram: '',
   telegram_bot_token: '', telegram_chat_id: '',
   instapay_username: '', vodafone_cash: '', bank_details: '', payment_instructions: '',
+  google_analytics_id: '', meta_pixel_id: '',
 };
 
 export function SettingsPanel({ onToast }: SettingsPanelProps) {
@@ -166,6 +167,35 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
               <Send size={15} /> {testingTg ? 'جارٍ الإرسال...' : 'إرسال إشعار تجريبي'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Analytics & Tracking */}
+      <div className="card" style={{ border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <LineChart size={22} style={{ color: 'var(--accent)' }} />
+          <h3 className="card-title" style={{ margin: 0 }}>تحليلات وتتبع الزوار (Analytics & Tracking)</h3>
+        </div>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+          قم بإضافة معرفات التتبع الخاصة بك لمراقبة الزيارات وقياس أداء الموقع والحملات الإعلانية. سيتم دمجها تلقائياً بالصفحات العامة.
+        </p>
+
+        <div className="form-stack">
+          <Field
+            label="Google Analytics Measurement ID (G-XXXXXXXXXX)"
+            value={s.google_analytics_id ?? ''}
+            onChange={v => setS(x => ({ ...x, google_analytics_id: v }))}
+            placeholder="مثال: G-1234567890"
+          />
+          <Field
+            label="Meta / Facebook Pixel ID"
+            value={s.meta_pixel_id ?? ''}
+            onChange={v => setS(x => ({ ...x, meta_pixel_id: v }))}
+            placeholder="مثال: 123456789012345"
+          />
+          <button className="btn btn--primary" onClick={save} disabled={saving}>
+            {saving ? 'جارٍ الحفظ...' : 'حفظ بيانات التتبع'}
+          </button>
         </div>
       </div>
     </div>

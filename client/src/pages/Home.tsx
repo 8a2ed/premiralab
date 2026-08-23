@@ -236,6 +236,18 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         deadline:    f.deadline || undefined,
       });
       setSubmitted({ orderNo: res.orderNo });
+      
+      // Fire Analytics Conversion Events
+      try {
+        const val = f.budget ? Number(f.budget) : 0;
+        if (typeof (window as any).gtag === 'function') {
+          (window as any).gtag('event', 'generate_lead', { value: val, currency: 'EGP' });
+        }
+        if (typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'Lead', { value: val, currency: 'EGP' });
+        }
+      } catch (e) { /* ignore tracking errors */ }
+      
     } catch (err) {
       setError((err as Error).message);
     } finally { setLoading(false); }
