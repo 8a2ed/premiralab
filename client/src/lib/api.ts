@@ -169,6 +169,8 @@ export const api = {
       request<SiteSettings>(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify(data) }),
     testTelegram: () =>
       request<{ ok: boolean; message: string }>('/api/admin/settings/test-telegram', { method: 'POST' }),
+    testEmail: () =>
+      request<{ message: string }>('/api/admin/settings/test-email', { method: 'POST' }),
 
     changePassword: (data: { currentPassword: string; newPassword: string }) =>
       request<{ ok: boolean }>('/api/admin/security/password', { method: 'PATCH', body: JSON.stringify(data) }),

@@ -20,6 +20,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
   const [loading,   setLoading]   = useState(true);
   const [saving,    setSaving]    = useState(false);
   const [testingTg, setTestingTg] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
 
   useEffect(() => {
     api.admin.settings().then(data => {
@@ -35,6 +36,19 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
       onToast('تم حفظ الإعدادات بنجاح', 'success');
     } catch (e) { onToast((e as Error).message, 'error'); }
     finally { setSaving(false); }
+  };
+
+  const testEmail = async () => {
+    setTestingEmail(true);
+    try {
+      await api.admin.saveSettings('site', s);
+      const res = await api.admin.testEmail();
+      onToast(res.message || 'تم الإرسال بنجاح!', 'success');
+    } catch (e) {
+      onToast((e as Error).message, 'error');
+    } finally {
+      setTestingEmail(false);
+    }
   };
 
   const testTelegramAlert = async () => {
@@ -226,9 +240,14 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
               <input type="password" className="input" value={s.smtp_pass ?? ''} onChange={e => setS(x => ({ ...x, smtp_pass: e.target.value }))} placeholder="كلمة مرور التطبيق (App Password)" />
             </div>
           </div>
-          <button className="btn btn--primary" onClick={save} disabled={saving}>
-            {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات البريد'}
-          </button>
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <button className="btn btn--primary" onClick={save} disabled={saving}>
+              {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات البريد'}
+            </button>
+            <button className="btn btn--outline" onClick={testEmail} disabled={testingEmail || saving}>
+              {testingEmail ? 'جارٍ الإرسال...' : 'إرسال رسالة اختبار'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -31,6 +31,29 @@ router.get('/', auth, admin, (_req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.post('/test-email', auth, admin, async (req: AuthRequest, res, next) => {
+  try {
+    const { sendEmail } = await import('../../services/email.js');
+    // Using user's logged in email or a fallback
+    const testTo = req.user?.username === 'admin' ? 'premiralab@gmail.com' : (req.user?.username || 'premiralab@gmail.com');
+    
+    await sendEmail({
+      to: testTo,
+      subject: 'رسالة اختبار من النظام ✉️',
+      html: `
+        <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>مرحباً!</h2>
+          <p>إذا كنت تقرأ هذه الرسالة، فهذا يعني أن <strong>إعدادات SMTP</strong> الخاصة بك تعمل بنجاح!</p>
+          <p>يمكنك الآن إرسال إشعارات الطلبات والمراجعات للعملاء تلقائياً.</p>
+        </div>
+      `
+    });
+    res.json({ message: 'تم إرسال رسالة الاختبار بنجاح. يرجى مراجعة بريدك الإلكتروني.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.put('/:key', auth, admin, (req: AuthRequest, res, next) => {
   try {
     const { key } = req.params;

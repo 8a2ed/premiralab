@@ -31,11 +31,13 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
   }
 
   try {
+    const cleanPass = pass.replace(/\s+/g, ''); // Remove accidental spaces from App Password
     const transporter = nodemailer.createTransport({
       host,
       port: Number(port),
       secure: Number(port) === 465, // true for 465, false for other ports
-      auth: { user, pass },
+      auth: { user, pass: cleanPass },
+      tls: { rejectUnauthorized: false }, // Prevent self-signed cert issues on some hosts
     });
 
     await transporter.sendMail({
