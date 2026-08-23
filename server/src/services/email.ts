@@ -34,17 +34,24 @@ export async function sendEmail(opts: EmailOptions): Promise<void> {
 
   try {
     const cleanPass = pass.replace(/\s+/g, ''); // Remove accidental spaces from App Password
-    const transporter = nodemailer.createTransport({
+    
+    const isGmail = host.includes('gmail.com');
+    const transportConfig: any = isGmail ? {
+      service: 'gmail',
+      auth: { user, pass: cleanPass },
+      connectionTimeout: 10000,
+    } : {
       host,
       port: Number(port),
-      secure: Number(port) === 465, // true for 465, false for other ports
+      secure: Number(port) === 465,
       auth: { user, pass: cleanPass },
-      tls: { rejectUnauthorized: false }, // Prevent self-signed cert issues on some hosts
-      connectionTimeout: 10000, // Fail fast if blocked
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 10000,
       greetingTimeout: 5000,
       socketTimeout: 10000,
-      family: 4, // FORCE IPv4 to fix Railway / Docker network timeouts
-    } as any);
+    };
+
+    const transporter = nodemailer.createTransport(transportConfig);
 
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
