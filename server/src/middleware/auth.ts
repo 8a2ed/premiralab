@@ -28,3 +28,19 @@ export function admin(req: AuthRequest, res: Response, next: NextFunction): void
     res.status(403).json({ error: 'Forbidden' });
   }
 }
+
+/** Requires a valid client session. Attaches req.client. */
+export function clientAuth(req: any, res: Response, next: NextFunction): void {
+  try {
+    const token = req.cookies?.client_session as string | undefined;
+    if (!token) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const payload = jwt.verify(token, getSecret()) as any;
+    req.client = { id: payload.id, email: payload.email };
+    next();
+  } catch {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+}

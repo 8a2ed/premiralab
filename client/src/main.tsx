@@ -10,11 +10,12 @@ import type { PublicData } from './types.js';
 import './styles/index.css';
 
 // Lazy load secondary routes so initial homepage load is ultra-fast
-const Tracker = React.lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
-const Login   = React.lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
-const Admin   = React.lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
+const Tracker      = React.lazy(() => import('./pages/Tracker.js').then(m => ({ default: m.Tracker })));
+const Login        = React.lazy(() => import('./pages/Login.js').then(m => ({ default: m.Login })));
+const Admin        = React.lazy(() => import('./pages/Admin.js').then(m => ({ default: m.Admin })));
+const ClientPortal = React.lazy(() => import('./pages/ClientPortal.js').then(m => ({ default: m.ClientPortal })));
 
-type AppView = 'home' | 'admin' | 'tracker';
+type AppView = 'home' | 'admin' | 'tracker' | 'client';
 
 interface ToastState { text: string; type: 'success' | 'error' | 'info'; }
 
@@ -37,12 +38,15 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const track  = params.get('track');
     const isAdmin = params.has('admin') || path === '/admin' || path === '/login';
+    const isClient = path === '/client' || path.startsWith('/client/');
 
     if (track) {
       setTrackNo(track);
       setView('tracker');
     } else if (isAdmin) {
       enterAdmin();
+    } else if (isClient) {
+      setView('client');
     }
   }, []);
 
@@ -148,6 +152,13 @@ function App() {
   return (
     <div className="app">
       <ErrorBoundary>
+        {/* Client Portal view */}
+        {view === 'client' && (
+          <Suspense fallback={<div className="container" style={{ padding: 40 }}><Skeleton height={120} count={3} /></div>}>
+            <ClientPortal onToast={showToast} onNavigateHome={goHome} />
+          </Suspense>
+        )}
+
         {/* Tracker view */}
         {view === 'tracker' && trackNo && (
           <Suspense fallback={<div className="container" style={{ padding: 40 }}><Skeleton height={120} count={3} /></div>}>

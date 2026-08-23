@@ -267,3 +267,22 @@ export interface TrackerData {
     created_at:  string;
   }>;
 }
+
+export interface ClientData {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+export interface ClientOrder {
+  id: number;
+  order_no: string;
+  status: string;
+  created_at: string;
+  budget: number | null;
+  package_title: string | null;
+  service_title: string | null;
+  project_id: number | null;
+  progress: number | null;
+}

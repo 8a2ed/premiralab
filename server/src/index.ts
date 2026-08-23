@@ -97,6 +97,9 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
+import clientAuthRouter   from './routes/client/auth.js';
+import clientDashRouter   from './routes/client/dashboard.js';
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
@@ -105,6 +108,10 @@ app.use('/api/auth',    authRouter);
 app.use('/api/public',  publicRouter);
 app.use('/api/orders',  ordersRouter);
 app.use('/api/track',   trackerRouter);
+
+// ─── Client routes ────────────────────────────────────────────────────────────
+app.use('/api/client/auth',      clientAuthRouter);
+app.use('/api/client/dashboard', clientDashRouter);
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 app.use('/api/admin/analytics',    analyticsRouter);

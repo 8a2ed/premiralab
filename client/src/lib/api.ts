@@ -98,7 +98,21 @@ export const api = {
     return res.json() as Promise<{ ok: boolean; receiptUrl: string; status: string }>;
   },
 
-  // ─── Admin ──────────────────────────────────────────────────────────────────
+  // ─── Client Portal ────────────────────────────────────────────────────────────
+
+  client: {
+    me:       () => request<{ client: { id: number; name: string; email: string; phone: string } }>('/api/client/auth/me'),
+    login:    (data: any) => request<{ id: number; name: string; email: string }>('/api/client/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+    register: (data: any) => request<{ id: number; name: string; email: string }>('/api/client/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    logout:   () => request('/api/client/auth/logout', { method: 'POST' }),
+    forgotPassword: (email: string) => request<{ ok: boolean }>('/api/client/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+    resetPassword:  (data: any) => request<{ ok: boolean }>('/api/client/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
+    
+    orders:   () => request<{ orders: any[] }>('/api/client/dashboard/orders'),
+    project:  (id: number) => request<any>(`/api/client/dashboard/projects/${id}`),
+  },
+
+  // ─── Admin ────────────────────────────────────────────────────────────────────
 
   admin: {
     analytics: () => request<Analytics>('/api/admin/analytics'),

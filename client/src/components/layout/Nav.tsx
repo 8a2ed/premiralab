@@ -31,6 +31,7 @@ export function Nav({ site, onOrder }: NavProps) {
           <button onClick={() => scrollTo('packages')} aria-label="انتقل إلى الباقات">الباقات</button>
           <button onClick={() => scrollTo('portfolio')} aria-label="انتقل إلى أعمالنا">أعمالنا</button>
           <button onClick={() => scrollTo('testimonials')} aria-label="انتقل إلى آراء العملاء">العملاء</button>
+          <button onClick={() => window.location.href = '/client'} aria-label="بوابة العملاء">بوابة العملاء</button>
         </nav>
 
         {/* Actions */}
@@ -56,6 +57,7 @@ export function Nav({ site, onOrder }: NavProps) {
           <button onClick={() => scrollTo('packages')}>الباقات</button>
           <button onClick={() => scrollTo('portfolio')}>أعمالنا</button>
           <button onClick={() => scrollTo('testimonials')}>آراء العملاء</button>
+          <button onClick={() => window.location.href = '/client'}>بوابة العملاء</button>
           <button className="btn btn--primary" onClick={() => { onOrder(); setOpen(false); }}>ابدأ مشروعك</button>
         </nav>
       )}
