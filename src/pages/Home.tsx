@@ -78,7 +78,7 @@ export function Home({ data, onToast }: HomeProps) {
             <div className="grid grid-3" style={{ marginTop: 28 }}>
               {data.packages?.map(p => (
                 <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
-                  {p.popular && <span className="tag">الأكثر طلباً ⭐</span>}
+                  {p.popular && <span className="tag">الأكثر طلبًا ⭐</span>}
                   <h3>{p.title}</h3>
                   <div className="price">{money(p.price, data.site?.currency)}</div>
                   <p className="muted">{p.description}</p>
@@ -249,7 +249,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       <Modal title="تم استلام طلبك 🎉" onClose={onClose}>
         <div className="order-success">
           <CheckCircle2 size={48} className="icon--success" />
-          <h3>شكراً لك!</h3>
+          <h3>شكرًا لك!</h3>
           <p>رقم طلبك: <strong className="order-no-highlight">{submitted.orderNo}</strong></p>
           <p className="muted">احفظ هذا الرقم لمتابعة حالة مشروعك.</p>
           <div className="tracker-link-box" style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
@@ -340,7 +340,7 @@ interface CaseStudyModalProps {
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
   const waUrl = whatsapp
-    ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
+    ? waLink(whatsapp, `مرحبًا ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
     : null;
 
   return (
@@ -370,7 +370,7 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
                   onOrder(undefined, item.title);
                 }}
               >
-                اطلب مشروعاً مماثلاً
+                اطلب مشروعًا مماثلًا
               </button>
             </div>
           </div>
@@ -394,9 +394,9 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
   if (!whatsapp) return null;
 
   const quickLinks = [
-    { title: 'طلب عرض سعر سريع', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
-    { title: 'استفسار عن الباقات المتاحة', msg: `مرحباً ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
-    { title: 'متابعة طلب قائم', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
+    { title: 'طلب عرض سعر سريع', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
+    { title: 'استفسار عن الباقات المتاحة', msg: `مرحبًا ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
+    { title: 'متابعة طلب قائم', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
   ];
 
   return (
@@ -420,7 +420,7 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
           </div>
 
           <p style={{ fontSize: 13, margin: '12px 0 10px', color: 'var(--text-muted)' }}>
-            مرحباً بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
+            مرحبًا بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

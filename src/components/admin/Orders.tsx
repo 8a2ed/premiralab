@@ -74,7 +74,7 @@ export function Orders({ onToast }: OrdersProps) {
   const getClientWhatsAppUrl = (order: Order) => {
     const cleanPhone = (order.client_phone || '').replace(/\D/g, '');
     const intlPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
-    const msg = `مرحباً ${order.client_name}، بخصوص طلبك (${order.order_no}) لدى استوديو PREMIRALAB: حالة طلبك الآن هي: ${ORDER_STATUS_LABELS[order.status] || order.status}.`;
+    const msg = `مرحبًا ${order.client_name}، بخصوص طلبك (${order.order_no}) لدى استوديو PREMIRALAB: حالة طلبك الآن هي: ${ORDER_STATUS_LABELS[order.status] || order.status}.`;
     return waLink(intlPhone, msg);
   };
 

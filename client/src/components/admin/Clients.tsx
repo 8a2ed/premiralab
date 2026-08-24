@@ -37,7 +37,7 @@ export function Clients({ onToast }: ClientsProps) {
   const getClientWa = (phone: string, name: string) => {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     const intlPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
-    const msg = `مرحباً ${name}، نتواصل معك من استوديو PREMIRALAB.`;
+    const msg = `مرحبًا ${name}، نتواصل معك من استوديو PREMIRALAB.`;
     return waLink(intlPhone, msg);
   };
 

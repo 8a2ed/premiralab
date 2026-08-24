@@ -37,7 +37,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
 
   const testTelegramAlert = async () => {
     if (!s.telegram_bot_token || !s.telegram_chat_id) {
-      onToast('يرجى إدخال Bot Token و Chat ID أولاً ثم حفظ الإعدادات', 'error');
+      onToast('يرجى إدخال Bot Token و Chat ID أولًا ثم حفظ الإعدادات', 'error');
       return;
     }
     setTestingTg(true);
@@ -132,7 +132,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
           <h3 className="card-title" style={{ margin: 0 }}>إشعارات التيليغرام الفورية (Telegram Alerts)</h3>
         </div>
         <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
-          احصل على إشعار فوري على هاتفك بالثانية بمجرد أن يرسل أي عميل طلب مشروع جديد أو إيصال سداد أو طلب تعديل، متضمناً بيانات العميل ورابط المحادثة المباشر على واتساب.
+          احصل على إشعار فوري على هاتفك بالثانية بمجرد أن يرسل أي عميل طلب مشروع جديد أو إيصال سداد أو طلب تعديل، متضمنًا بيانات العميل ورابط المحادثة المباشر على واتساب.
         </p>
 
         <div className="form-stack">

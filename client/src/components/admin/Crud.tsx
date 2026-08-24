@@ -32,7 +32,7 @@ const FIELD_TIPS: Record<string, { desc: string; template?: string }> = {
     template: 'Monitor'
   },
   sort_order: {
-    desc: 'الرقم الأقل يظهر أولاً (مثال: 1 يظهر قبل 2). الأرقام المتساوية تترتب حسب الأحدث.',
+    desc: 'الرقم الأقل يظهر أولًا (مثال: 1 يظهر قبل 2). الأرقام المتساوية تترتب حسب الأحدث.',
     template: '1'
   },
   image_url: {

@@ -45,9 +45,9 @@ const newOrderModal = `function OrderModal({ packages, services, defaultPackage,
       <Modal title="تم استلام طلبك بنجاح ✨" onClose={onClose}>
         <div className="order-success" style={{ textAlign: 'center', padding: '20px 0' }}>
           <CheckCircle2 size={56} className="icon--success" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكراً لثقتك بنا!</h3>
+          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكرًا لثقتك بنا!</h3>
           <p style={{ fontSize: 16 }}>رقم طلبك: <strong style={{ color: 'var(--primary)', fontSize: 18, background: 'var(--primary-dim)', padding: '4px 10px', borderRadius: 8 }}>{submitted.orderNo}</strong></p>
-          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريباً. يمكنك متابعة حالة الطلب في أي وقت.</p>
+          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريبًا. يمكنك متابعة حالة الطلب في أي وقت.</p>
           
           <div style={{ background: 'var(--bg-2)', padding: 20, borderRadius: 16, border: '1px solid var(--border)', marginTop: 24 }}>
             <p className="muted" style={{ margin: '0 0 12px', fontSize: 13 }}>رابط المتابعة الخاص بك (احتفظ به):</p>

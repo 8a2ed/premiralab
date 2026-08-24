@@ -61,7 +61,7 @@ export function Projects({ onToast }: ProjectsProps) {
   };
 
   const createProject = async () => {
-    if (!orderId || !title.trim()) { onToast('اختر طلباً وأدخل اسم المشروع', 'error'); return; }
+    if (!orderId || !title.trim()) { onToast('اختر طلبًا وأدخل اسم المشروع', 'error'); return; }
     setCreating(true);
     try {
       await api.admin.createProject({ orderId: Number(orderId), title });

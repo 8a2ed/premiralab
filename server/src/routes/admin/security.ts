@@ -16,7 +16,7 @@ router.patch('/password', auth, admin, async (req: AuthRequest, res, next) => {
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: 'كلمة المرور الجديدة يجب أن تكون 12 حرفاً على الأقل' });
+      res.status(400).json({ error: 'كلمة المرور الجديدة يجب أن تكون 12 حرفًا على الأقل' });
       return;
     }
 

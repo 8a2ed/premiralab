@@ -91,7 +91,7 @@ export function PromoCodes({ onToast }: PromoCodesProps) {
           <tbody>
             {codes.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>لا توجد كوبونات حالياً</td>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>لا توجد كوبونات حاليًا</td>
               </tr>
             ) : (
               codes.map(c => (
@@ -168,7 +168,7 @@ export function PromoCodes({ onToast }: PromoCodesProps) {
               </div>
 
               <div style={{ padding: 12, background: 'var(--bg-2)', borderRadius: 8, fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-                💡 <b>تلميح:</b> إذا تركت الحد الأقصى أو تاريخ الانتهاء فارغاً، سيبقى الكوبون فعالاً دائماً حتى تقوم بتعطيله يدوياً.
+                💡 <b>تلميح:</b> إذا تركت الحد الأقصى أو تاريخ الانتهاء فارغًا، سيبقى الكوبون فعالًا دائمًا حتى تقوم بتعطيله يدويًا.
               </div>
 
               <div style={{ display: 'flex', gap: 12, paddingTop: 16, borderTop: '1px solid var(--border)' }}>

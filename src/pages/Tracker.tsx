@@ -304,7 +304,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             ) : (
               <div className="card">
                 <h3 className="card-title">المشروع</h3>
-                <div className="empty">سيتم إنشاء مساحة المشروع قريباً بعد التواصل معك.</div>
+                <div className="empty">سيتم إنشاء مساحة المشروع قريبًا بعد التواصل معك.</div>
               </div>
             )}
 

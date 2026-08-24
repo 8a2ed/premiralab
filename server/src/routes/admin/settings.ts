@@ -43,9 +43,9 @@ router.post('/test-email', auth, admin, async (req: AuthRequest, res, next) => {
       throwOnError: true,
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>مرحباً!</h2>
+          <h2>مرحبًا!</h2>
           <p>إذا كنت تقرأ هذه الرسالة، فهذا يعني أن <strong>إعدادات SMTP</strong> الخاصة بك تعمل بنجاح!</p>
-          <p>يمكنك الآن إرسال إشعارات الطلبات والمراجعات للعملاء تلقائياً.</p>
+          <p>يمكنك الآن إرسال إشعارات الطلبات والمراجعات للعملاء تلقائيًا.</p>
         </div>
       `
     });

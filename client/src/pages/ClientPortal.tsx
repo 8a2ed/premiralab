@@ -120,7 +120,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     setLoading(true);
     try {
       await api.client.forgotPassword(email);
-      onToast('إذا كان البريد مسجلاً، فستصلك رسالة الاسترجاع قريباً', 'info');
+      onToast('إذا كان البريد مسجلًا، فستصلك رسالة الاسترجاع قريبًا', 'info');
       setView('login');
     } catch (err) {
       onToast('حدث خطأ', 'error');
@@ -185,7 +185,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       <div className="container" style={{ marginTop: 100, minHeight: '70vh' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
           <div>
-            <h2 style={{ margin: '0 0 5px' }}>مرحباً بك، {client.name}</h2>
+            <h2 style={{ margin: '0 0 5px' }}>مرحبًا بك، {client.name}</h2>
             <p className="muted" style={{ margin: 0 }}>بوابة العميل الخاصة بك</p>
           </div>
           <button className="btn btn--outline" onClick={handleLogout}>
@@ -285,7 +285,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-card)' }}>
       {/* Left side: Branding (Hidden on mobile) */}
       <div className="auth-brand-side" style={{ flex: 1, background: 'linear-gradient(135deg, var(--bg-1), var(--accent-dim))', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 60, borderLeft: '1px solid var(--border)' }}>
-        <h1 style={{ fontSize: 42, marginBottom: 15, lineHeight: 1.2 }}>مرحباً بك في<br/>بوابة العملاء</h1>
+        <h1 style={{ fontSize: 42, marginBottom: 15, lineHeight: 1.2 }}>مرحبًا بك في<br/>بوابة العملاء</h1>
         <p style={{ fontSize: 18, color: 'var(--text-muted)', maxWidth: 400, lineHeight: 1.6, marginBottom: 40 }}>
           تابع طلباتك ومشاريعك بكل سهولة، وحمل ملفاتك النهائية بأمان تام في أي وقت.
         </p>
@@ -303,18 +303,18 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
         <div style={{ width: '100%', maxWidth: 400 }}>
           
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            {view === 'login' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>تسجيل الدخول</h2><p className="muted">أهلاً بعودتك! سجل دخولك لمتابعة أعمالك.</p></>}
-            {view === 'register' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>إنشاء حساب</h2><p className="muted">أهلاً بك! يرجى ملء بياناتك للبدء.</p></>}
-            {view === 'forgot' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>استرجاع الحساب</h2><p className="muted">أدخل بريدك وسنرسل لك رابطاً للتغيير.</p></>}
+            {view === 'login' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>تسجيل الدخول</h2><p className="muted">أهلًا بعودتك! سجل دخولك لمتابعة أعمالك.</p></>}
+            {view === 'register' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>إنشاء حساب</h2><p className="muted">أهلًا بك! يرجى ملء بياناتك للبدء.</p></>}
+            {view === 'forgot' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>استرجاع الحساب</h2><p className="muted">أدخل بريدك وسنرسل لك رابطًا للتغيير.</p></>}
             {view === 'reset' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>كلمة المرور الجديدة</h2><p className="muted">يرجى اختيار كلمة مرور قوية.</p></>}
             {redirect === 'order' && view === 'register' && (
               <div style={{ background: 'var(--accent-dim)', color: 'var(--accent)', padding: 12, borderRadius: 8, marginTop: 15, fontSize: 14 }}>
-                يرجى إنشاء حسابك أولاً لتتمكن من تقديم الطلب ومتابعته لاحقاً.
+                يرجى إنشاء حسابك أولًا لتتمكن من تقديم الطلب ومتابعته لاحقًا.
               </div>
             )}
             {redirect === 'order' && view === 'login' && (
               <div style={{ background: 'var(--accent-dim)', color: 'var(--accent)', padding: 12, borderRadius: 8, marginTop: 15, fontSize: 14 }}>
-                يرجى تسجيل الدخول أولاً لتتمكن من تقديم الطلب ومتابعته لاحقاً.
+                يرجى تسجيل الدخول أولًا لتتمكن من تقديم الطلب ومتابعته لاحقًا.
               </div>
             )}
           </div>
@@ -371,7 +371,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                   <input type="email" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={email} onChange={e => setEmail(e.target.value)} placeholder="example@domain.com" />
                 </div>
                 <div className="form-hint" style={{ fontSize: 12, marginTop: 6, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <ShieldCheck size={14} /> سيتم ربط طلباتك السابقة بحسابك تلقائياً إذا استخدمت نفس الإيميل.
+                  <ShieldCheck size={14} /> سيتم ربط طلباتك السابقة بحسابك تلقائيًا إذا استخدمت نفس الإيميل.
                 </div>
               </div>
               <div className="form-field">

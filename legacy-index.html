@@ -109,11 +109,11 @@
     const DEFAULT_SETTINGS = {
       // General Identity
       siteName: "استوديو الابتكار الرقمي",
-      logoSubtitle: "خبرة +20 عاماً في خدمات التصميم",
+      logoSubtitle: "خبرة +20 عامًا في خدمات التصميم",
       logoImage: "", // URL or Base64 string for custom studio logo
-      heroBadgeText: "خبرة أكثر من 20 عاماً في الاستشارات والتصميم البصري",
-      heroTitle: "نصمم تجارب بصريّة احترافية تصنع فرقاً حقيقياً لمشروعك",
-      heroSubtitle: "خبرة أكثر من 20 عاماً في تطوير الهويات البصرية، واجهات المستخدم (UI/UX)، واستراتيجيات التصميم للشركات الناشئة والكبرى.",
+      heroBadgeText: "خبرة أكثر من 20 عامًا في الاستشارات والتصميم البصري",
+      heroTitle: "نصمم تجارب بصريّة احترافية تصنع فرقًا حقيقيًا لمشروعك",
+      heroSubtitle: "خبرة أكثر من 20 عامًا في تطوير الهويات البصرية، واجهات المستخدم (UI/UX)، واستراتيجيات التصميم للشركات الناشئة والكبرى.",
       
       // Hero Call To Actions
       heroCtaPrimaryText: "استعرض باقات التصميم",
@@ -130,7 +130,7 @@
       // Section Titles & Descriptions
       packagesSectionTag: "حلول متكاملة",
       packagesSectionTitle: "باقات التصميم المتاحة",
-      packagesSectionDesc: "اختر الباقة المناسبة لمشروعك، مع حزم مميزات مصممة خصيصاً لضمان أفضل نتائج بصريّة.",
+      packagesSectionDesc: "اختر الباقة المناسبة لمشروعك، مع حزم مميزات مصممة خصيصًا لضمان أفضل نتائج بصريّة.",
       
       servicesSectionTag: "خدمات منفصلة",
       servicesSectionTitle: "خدمات تصميم سريعة وحسب الطلب",
@@ -162,7 +162,7 @@
         tagline: "مثالية للشركات الناشئة والمشاريع الجديدة",
         price: 12500,
         turnaround: "5 - 7 أيام عمل",
-        badge: "الأكثر طلباً",
+        badge: "الأكثر طلبًا",
         previewImage: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80",
         features: [
           "شعار أساسي + فرعي + أيقونة الماركة",
@@ -245,8 +245,8 @@
 
     const DEFAULT_TESTIMONIALS = [
       { id: "t-1", name: "م. طارق العتيبي", role: "الرئيس التنفيذي - شركة نماء", rating: 5, text: "العمل مع الاستوديو كان تجربة استثنائية. الالتزام بالوقت مع جودة تنفيذ إبداعية تتجاوز التوقعات.", avatar: "https://i.pravatar.cc/150?img=11" },
-      { id: "t-2", name: "سارة محمود", role: "مديرة التسويق - براند ريفان", rating: 5, text: "التصاميم جذبت عملاءنا بشكل مباشر وزادت نسبة التفاعل. الاهتمام بالتفاصيل متقن جداً.", avatar: "https://i.pravatar.cc/150?img=5" },
-      { id: "t-3", name: "د. خالد السعيد", role: "مؤسس منصة تعلم", rating: 5, text: "خبرة الـ 20 عاماً واضحة تماماً في فهم المتطلبات وسرعة التحليل والبدء الفوري. شكراً جزيلاً!", avatar: "https://i.pravatar.cc/150?img=12" }
+      { id: "t-2", name: "سارة محمود", role: "مديرة التسويق - براند ريفان", rating: 5, text: "التصاميم جذبت عملاءنا بشكل مباشر وزادت نسبة التفاعل. الاهتمام بالتفاصيل متقن جدًا.", avatar: "https://i.pravatar.cc/150?img=5" },
+      { id: "t-3", name: "د. خالد السعيد", role: "مؤسس منصة تعلم", rating: 5, text: "خبرة الـ 20 عامًا واضحة تمامًا في فهم المتطلبات وسرعة التحليل والبدء الفوري. شكرًا جزيلًا!", avatar: "https://i.pravatar.cc/150?img=12" }
     ];
 
     const DEFAULT_ORDERS = [
@@ -376,7 +376,7 @@
           setAuthStep(1);
           setAuthError('');
           setFailedAttempts(0);
-          triggerToast("تم المصادقة بنجاح! مرحباً بك في لوحة التحكم الفائقة");
+          triggerToast("تم المصادقة بنجاح! مرحبًا بك في لوحة التحكم الفائقة");
         } else {
           handleAuthFailure("رمز PIN غير صحيح!");
         }
@@ -564,7 +564,7 @@
                 {isLockedOut ? (
                   <div className="bg-red-500/10 border border-red-500/40 rounded-2xl p-6 text-center space-y-3 shake-animation">
                     <i className="fa-solid fa-lock text-red-400 text-3xl"></i>
-                    <h4 className="text-sm font-extrabold text-red-400">تم حظر النظام مؤقتاً!</h4>
+                    <h4 className="text-sm font-extrabold text-red-400">تم حظر النظام مؤقتًا!</h4>
                     <p className="text-xs text-gray-300">تجاوزت عدد المحاولات المسموح بها. سيتم إلغاء الحظر بعد:</p>
                     <div className="text-2xl font-black text-white bg-black/50 py-2 rounded-xl border border-red-500/30">
                       {Math.floor(lockoutTimer / 60)}:{(lockoutTimer % 60).toString().padStart(2, '0')}
@@ -1113,7 +1113,7 @@
               {orders.length === 0 ? (
                 <div className="bg-dark-card border border-dark-border rounded-2xl p-12 text-center text-gray-400">
                   <i className="fa-solid fa-inbox text-4xl mb-3 text-gray-600 block"></i>
-                  <p>لا توجد طلبات مسجلة حالياً.</p>
+                  <p>لا توجد طلبات مسجلة حاليًا.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
@@ -1437,7 +1437,7 @@
                   <i className="fa-solid fa-lock"></i>
                 </div>
                 <h3 className="text-lg font-black text-white">تعديل معايير الأمان وكلمات المرور السرية</h3>
-                <p className="text-xs text-gray-400 mt-1">احرص على حفظ بياناتك الجديدة جيداً لمنع فقدان الوصول للوحة التحكم</p>
+                <p className="text-xs text-gray-400 mt-1">احرص على حفظ بياناتك الجديدة جيدًا لمنع فقدان الوصول للوحة التحكم</p>
               </div>
 
               <div className="space-y-4">
@@ -1667,7 +1667,7 @@
               {/* Confirmation Notice */}
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start space-x-2 space-x-reverse text-[11px] text-amber-300">
                 <i className="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5 text-xs"></i>
-                <span>يرجى التأكد تماماً أن الرقم شغال وعليه حساب فعلي على (واتساب أو تيليجرام) لنسهل التواصل معك وإرسال التفاصيل.</span>
+                <span>يرجى التأكد تمامًا أن الرقم شغال وعليه حساب فعلي على (واتساب أو تيليجرام) لنسهل التواصل معك وإرسال التفاصيل.</span>
               </div>
 
               {/* Email & Company */}

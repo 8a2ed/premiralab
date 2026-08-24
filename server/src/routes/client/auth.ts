@@ -22,7 +22,7 @@ router.post('/register', (req, res) => {
 
     if (existing) {
       if (existing.password_hash) {
-        return res.status(400).json({ error: 'هذا البريد الإلكتروني مسجل مسبقاً.' });
+        return res.status(400).json({ error: 'هذا البريد الإلكتروني مسجل مسبقًا.' });
       }
       // Merge account
       const hash = bcrypt.hashSync(password, 10);
@@ -109,7 +109,7 @@ router.post('/forgot-password', async (req, res) => {
       subject: 'إعادة تعيين كلمة المرور',
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>مرحباً ${client.name}</h2>
+          <h2>مرحبًا ${client.name}</h2>
           <p>لقد طلبت إعادة تعيين كلمة المرور الخاصة بحسابك.</p>
           <p>اضغط على الزر أدناه لإنشاء كلمة مرور جديدة:</p>
           <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #cd45cd; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">إعادة تعيين كلمة المرور</a>

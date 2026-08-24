@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </div>
           <h2 style={{ fontSize: '24px', marginBottom: '12px', fontWeight: 800 }}>حدث خطأ غير متوقع</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '32px', maxWidth: '450px', lineHeight: 1.6 }}>
-            واجه النظام مشكلة أثناء معالجة هذا الجزء من الصفحة. يمكنك محاولة تحديث الصفحة أو العودة لاحقاً.
+            واجه النظام مشكلة أثناء معالجة هذا الجزء من الصفحة. يمكنك محاولة تحديث الصفحة أو العودة لاحقًا.
             <br/><br/>
             <span style={{ fontSize: '12px', opacity: 0.7, fontFamily: 'monospace' }}>
               {this.state.error.message}

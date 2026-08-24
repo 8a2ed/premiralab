@@ -37,7 +37,7 @@ router.post('/', auth, admin, (req, res, next) => {
     // Check if exists
     const existing = db.prepare('SELECT id FROM promo_codes WHERE code = ?').get(d.code);
     if (existing) {
-      res.status(400).json({ error: 'كود الخصم موجود مسبقاً' });
+      res.status(400).json({ error: 'كود الخصم موجود مسبقًا' });
       return;
     }
 
@@ -77,7 +77,7 @@ router.patch('/:id', auth, admin, (req, res, next) => {
     if (parsed.data.code && parsed.data.code !== current.code) {
       const existing = db.prepare('SELECT id FROM promo_codes WHERE code = ? AND id != ?').get(d.code, id);
       if (existing) {
-        res.status(400).json({ error: 'كود الخصم موجود مسبقاً' });
+        res.status(400).json({ error: 'كود الخصم موجود مسبقًا' });
         return;
       }
     }

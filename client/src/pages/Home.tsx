@@ -79,7 +79,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
       setInitialProjectType(initialProj);
       setOrderOpen(true);
     } catch {
-      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لتقديم طلب', 'info');
+      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولًا لتقديم طلب', 'info');
       window.location.href = '/client?redirect=order';
     }
   };
@@ -137,7 +137,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
               </h1>
               
               <p className="hero-subtitle">
-                {data.site?.hero_subtitle ?? 'من الهوية البصرية وتصميم الواجهات إلى المنصات المتقدمة، نحن هنا لنبني لعلامتك التجارية حضوراً قوياً ينمو ويتفوق.'}
+                {data.site?.hero_subtitle ?? 'من الهوية البصرية وتصميم الواجهات إلى المنصات المتقدمة، نحن هنا لنبني لعلامتك التجارية حضورًا قويًا ينمو ويتفوق.'}
               </p>
               
               <div className="actions hero-actions">
@@ -253,7 +253,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                 <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
                   {p.popular && (
                     <div className="package-popular-tag">
-                      <Sparkles size={12} /> الأكثر طلباً
+                      <Sparkles size={12} /> الأكثر طلبًا
                     </div>
                   )}
                   <h3 className="package-title">{p.title}</h3>
@@ -493,9 +493,9 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       <Modal title="تم استلام طلبك بنجاح ✨" onClose={onClose}>
         <div className="order-success" style={{ textAlign: 'center', padding: '20px 0' }}>
           <CheckCircle2 size={56} className="icon--success" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكراً لثقتك بنا!</h3>
+          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكرًا لثقتك بنا!</h3>
           <p style={{ fontSize: 16 }}>رقم طلبك: <strong style={{ color: 'var(--primary)', fontSize: 18, background: 'var(--primary-dim)', padding: '4px 10px', borderRadius: 8 }}>{submitted.orderNo}</strong></p>
-          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريباً. يمكنك متابعة حالة الطلب في أي وقت.</p>
+          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريبًا. يمكنك متابعة حالة الطلب في أي وقت.</p>
           
           <div style={{ background: 'var(--bg-2)', padding: 20, borderRadius: 16, border: '1px solid var(--border)', marginTop: 24 }}>
             <p className="muted" style={{ margin: '0 0 12px', fontSize: 13 }}>رابط المتابعة الخاص بك (احتفظ به):</p>
@@ -753,7 +753,7 @@ interface CaseStudyModalProps {
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
   const waUrl = whatsapp
-    ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
+    ? waLink(whatsapp, `مرحبًا ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
     : null;
 
   return (
@@ -783,7 +783,7 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
                   onOrder(undefined, item.title);
                 }}
               >
-                اطلب مشروعاً مماثلاً
+                اطلب مشروعًا مماثلًا
               </button>
             </div>
           </div>
@@ -807,9 +807,9 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
   if (!whatsapp) return null;
 
   const quickLinks = [
-    { title: 'طلب عرض سعر سريع', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
-    { title: 'استفسار عن الباقات المتاحة', msg: `مرحباً ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
-    { title: 'متابعة طلب قائم', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
+    { title: 'طلب عرض سعر سريع', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
+    { title: 'استفسار عن الباقات المتاحة', msg: `مرحبًا ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
+    { title: 'متابعة طلب قائم', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
   ];
 
   return (
@@ -833,7 +833,7 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
           </div>
 
           <p style={{ fontSize: 13, margin: '12px 0 10px', color: 'var(--text-muted)' }}>
-            مرحباً بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
+            مرحبًا بك! كيف يمكننا مساعدتك اليوم؟ اختر من الخيارات السريعة:
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

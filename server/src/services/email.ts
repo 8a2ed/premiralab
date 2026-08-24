@@ -89,8 +89,8 @@ export function orderConfirmationEmail(opts: {
     subject: `تأكيد استلام طلبك ${opts.orderNo} 🎉`,
     html: `
       <div dir="rtl" style="${baseStyle}">
-        <h2 style="color: #cd45cd; margin-top: 0;">مرحباً ${opts.clientName}،</h2>
-        <p style="font-size: 16px; line-height: 1.6;">لقد استلمنا طلبك بنجاح ونحن متحمسون جداً للعمل معك! 🎉</p>
+        <h2 style="color: #cd45cd; margin-top: 0;">مرحبًا ${opts.clientName}،</h2>
+        <p style="font-size: 16px; line-height: 1.6;">لقد استلمنا طلبك بنجاح ونحن متحمسون جدًا للعمل معك! 🎉</p>
         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; font-size: 15px;"><strong>رقم الطلب:</strong> ${opts.orderNo}</p>
         </div>
@@ -99,7 +99,7 @@ export function orderConfirmationEmail(opts: {
           <a href="${opts.trackerUrl}" style="${btnStyle}">لوحة تتبع المشروع</a>
         </center>
         <p style="color: #888; font-size: 13px; margin-top: 40px; text-align: center; border-top: 1px solid #eaeaea; padding-top: 20px;">
-          شكراً لاختيارك خدماتنا.
+          شكرًا لاختيارك خدماتنا.
         </p>
       </div>
     `,
@@ -118,12 +118,12 @@ export function projectCompleteEmail(opts: {
     html: `
       <div dir="rtl" style="${baseStyle}">
         <h2 style="color: #cd45cd; margin-top: 0;">تهانينا ${opts.clientName}! 🚀</h2>
-        <p style="font-size: 16px; line-height: 1.6;">يسعدنا إخبارك بأن العمل على مشروعك (طلب رقم <b>${opts.orderNo}</b>) قد اكتمل تماماً.</p>
+        <p style="font-size: 16px; line-height: 1.6;">يسعدنا إخبارك بأن العمل على مشروعك (طلب رقم <b>${opts.orderNo}</b>) قد اكتمل تمامًا.</p>
         <p style="font-size: 16px; line-height: 1.6;">يمكنك الآن الدخول إلى لوحة التتبع لتحميل الملفات النهائية والمخرجات الخاصة بك:</p>
         <center>
           <a href="${opts.trackerUrl}" style="${btnStyle}">تحميل الملفات النهائية</a>
         </center>
-        <p style="font-size: 16px; line-height: 1.6; margin-top: 30px;">نتمنى أن تكون تجربتك معنا مميزة، ونتطلع للعمل معك مجدداً في المستقبل.</p>
+        <p style="font-size: 16px; line-height: 1.6; margin-top: 30px;">نتمنى أن تكون تجربتك معنا مميزة، ونتطلع للعمل معك مجددًا في المستقبل.</p>
         <p style="color: #888; font-size: 13px; margin-top: 40px; text-align: center; border-top: 1px solid #eaeaea; padding-top: 20px;">
           مع تحيات فريق العمل.
         </p>
@@ -144,7 +144,7 @@ export function revisionReadyEmail(opts: {
     subject: `مراجعة جديدة متاحة لمشروعك (${opts.orderNo}) 📝`,
     html: `
       <div dir="rtl" style="${baseStyle}">
-        <h2 style="color: #cd45cd; margin-top: 0;">مرحباً ${opts.clientName}،</h2>
+        <h2 style="color: #cd45cd; margin-top: 0;">مرحبًا ${opts.clientName}،</h2>
         <p style="font-size: 16px; line-height: 1.6;">لقد قمنا برفع مراجعة جديدة لمشروعك بعنوان: <strong>${opts.revisionTitle}</strong>.</p>
         <p style="font-size: 16px; line-height: 1.6;">يُرجى الدخول إلى الرابط أدناه لمعاينة المراجعة وترك ملاحظاتك أو الموافقة عليها:</p>
         <center>

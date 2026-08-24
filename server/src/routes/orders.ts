@@ -12,7 +12,7 @@ const router = Router();
 const orderLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 15, // Max 15 orders per IP per 15 minutes
-  message: { error: 'تم تجاوز الحد الأقصى لإنشاء الطلبات، يرجى المحاولة لاحقاً.' },
+  message: { error: 'تم تجاوز الحد الأقصى لإنشاء الطلبات، يرجى المحاولة لاحقًا.' },
   standardHeaders: 'draft-8',
   legacyHeaders: false,
 });

@@ -7,7 +7,7 @@ interface FooterProps {
 
 export function Footer({ site }: FooterProps) {
   const whatsappHref = site.whatsapp
-    ? waLink(site.whatsapp, `مرحباً ${site.brand || 'PREMIRALAB'}، أريد الاستفسار عن خدماتكم.`)
+    ? waLink(site.whatsapp, `مرحبًا ${site.brand || 'PREMIRALAB'}، أريد الاستفسار عن خدماتكم.`)
     : null;
 
   return (

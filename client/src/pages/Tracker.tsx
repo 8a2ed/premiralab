@@ -267,7 +267,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               {/* Receipt Upload */}
               {receiptSuccess && (
                 <div className="animation-fade-in" style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13, border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-                  ✅ تم رفع إيصال الدفع بنجاح وسيتم مراجعته قريباً!
+                  ✅ تم رفع إيصال الدفع بنجاح وسيتم مراجعته قريبًا!
                 </div>
               )}
 
@@ -323,7 +323,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             ) : (
               <div className="card">
                 <h3 className="card-title">المشروع</h3>
-                <div className="empty">سيتم إنشاء مساحة المشروع قريباً بعد التواصل معك.</div>
+                <div className="empty">سيتم إنشاء مساحة المشروع قريبًا بعد التواصل معك.</div>
               </div>
             )}
 

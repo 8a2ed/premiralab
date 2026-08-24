@@ -16,7 +16,7 @@ export function Security({ onToast }: SecurityProps) {
       return;
     }
     if (form.newPassword.length < 12) {
-      onToast('كلمة المرور يجب أن تكون 12 حرفاً على الأقل', 'error');
+      onToast('كلمة المرور يجب أن تكون 12 حرفًا على الأقل', 'error');
       return;
     }
     setLoading(true);
@@ -37,7 +37,7 @@ export function Security({ onToast }: SecurityProps) {
         <LockKeyhole size={24} />
         <div>
           <h3 className="card-title">تغيير كلمة المرور</h3>
-          <p className="muted">يجب أن تكون كلمة المرور الجديدة 12 حرفاً على الأقل.</p>
+          <p className="muted">يجب أن تكون كلمة المرور الجديدة 12 حرفًا على الأقل.</p>
         </div>
       </div>
       <div className="form-stack">

@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   smtp_host: '', smtp_port: '', smtp_user: '', smtp_pass: '', smtp_from_name: '', smtp_from_email: '',
   logo_url: '/logo.png', favicon_url: '/logo.png', primary_color: '#c084fc', accent_color: '#a855f7',
   hero_title: 'نحول أفكارك إلى واقع رقمي مذهل.',
-  hero_subtitle: 'من الهوية البصرية إلى المنصات المتقدمة، نحن هنا لنبني لك حضوراً استثنائياً ينمو ويتفوق.',
+  hero_subtitle: 'من الهوية البصرية إلى المنصات المتقدمة، نحن هنا لنبني لك حضورًا استثنائيًا ينمو ويتفوق.',
   hero_primary_btn: 'تصفح باقاتنا', hero_secondary_btn: 'معرض الأعمال',
   footer_text: 'جميع الحقوق محفوظة',
 };
@@ -58,7 +58,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
 
   const testTelegramAlert = async () => {
     if (!s.telegram_bot_token || !s.telegram_chat_id) {
-      onToast('يرجى إدخال Bot Token و Chat ID أولاً ثم حفظ الإعدادات', 'error');
+      onToast('يرجى إدخال Bot Token و Chat ID أولًا ثم حفظ الإعدادات', 'error');
       return;
     }
     setTestingTg(true);
@@ -189,7 +189,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
           <h3 className="card-title" style={{ margin: 0 }}>إشعارات التيليغرام الفورية (Telegram Alerts)</h3>
         </div>
         <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
-          احصل على إشعار فوري على هاتفك بالثانية بمجرد أن يرسل أي عميل طلب مشروع جديد أو إيصال سداد أو طلب تعديل، متضمناً بيانات العميل ورابط المحادثة المباشر على واتساب.
+          احصل على إشعار فوري على هاتفك بالثانية بمجرد أن يرسل أي عميل طلب مشروع جديد أو إيصال سداد أو طلب تعديل، متضمنًا بيانات العميل ورابط المحادثة المباشر على واتساب.
         </p>
 
         <div className="form-stack">
@@ -233,7 +233,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
           <h3 className="card-title" style={{ margin: 0 }}>تحليلات وتتبع الزوار (Analytics & Tracking)</h3>
         </div>
         <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
-          قم بإضافة معرفات التتبع الخاصة بك لمراقبة الزيارات وقياس أداء الموقع والحملات الإعلانية. سيتم دمجها تلقائياً بالصفحات العامة.
+          قم بإضافة معرفات التتبع الخاصة بك لمراقبة الزيارات وقياس أداء الموقع والحملات الإعلانية. سيتم دمجها تلقائيًا بالصفحات العامة.
         </p>
 
         <div className="form-stack">
