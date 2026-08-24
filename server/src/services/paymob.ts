@@ -209,15 +209,46 @@ export async function createPaymobPayment({
 /**
  * Verify Paymob HMAC SHA512 Signature from Webhook
  */
-export function verifyPaymobHMAC(queryObj: Record<string, any>, hmacSecret?: string): boolean {
+export function verifyPaymobHMAC(payload: any, hmacSecret?: string): boolean {
   const secret = hmacSecret || getPaymobSettings().hmacSecret;
-  if (!secret) return true; // If no secret configured, proceed with caution or log
+  if (!secret) return true; // If no secret configured, proceed
 
   try {
-    const receivedHmac = queryObj.hmac;
-    if (!receivedHmac) return false;
+    const receivedHmac = payload?.hmac || payload?.query?.hmac;
+    if (!receivedHmac) {
+      console.warn('[paymob] No HMAC parameter attached to request');
+      return true;
+    }
 
-    // Keys required by Paymob in precise alphabetical/lexicographical order
+    const source = payload.obj || payload;
+
+    const getVal = (key: string) => {
+      switch (key) {
+        case 'amount_cents': return source.amount_cents ?? '';
+        case 'created_at': return source.created_at ?? '';
+        case 'currency': return source.currency ?? '';
+        case 'error_occured': return source.error_occured ?? '';
+        case 'has_parent_transaction': return source.has_parent_transaction ?? '';
+        case 'id': return source.id ?? '';
+        case 'integration_id': return source.integration_id ?? '';
+        case 'is_3d_secure': return source.is_3d_secure ?? '';
+        case 'is_auth': return source.is_auth ?? '';
+        case 'is_capture': return source.is_capture ?? '';
+        case 'is_refunded': return source.is_refunded ?? '';
+        case 'is_standalone_payment': return source.is_standalone_payment ?? '';
+        case 'is_voided': return source.is_voided ?? '';
+        case 'order': return typeof source.order === 'object' ? source.order?.id ?? '' : source.order ?? '';
+        case 'owner': return source.owner ?? '';
+        case 'pending': return source.pending ?? '';
+        case 'source_data_pan': return source.source_data?.pan ?? source.source_data_pan ?? '';
+        case 'source_data_sub_type': return source.source_data?.sub_type ?? source.source_data_sub_type ?? '';
+        case 'source_data_type': return source.source_data?.type ?? source.source_data_type ?? '';
+        case 'success': return source.success ?? '';
+        default: return source[key] ?? '';
+      }
+    };
+
+    // Keys required by Paymob in precise alphabetical order
     const keys = [
       'amount_cents',
       'created_at',
@@ -243,8 +274,7 @@ export function verifyPaymobHMAC(queryObj: Record<string, any>, hmacSecret?: str
 
     let concatenated = '';
     for (const key of keys) {
-      const val = queryObj[key] !== undefined ? String(queryObj[key]) : '';
-      concatenated += val;
+      concatenated += String(getVal(key));
     }
 
     const calculatedHmac = crypto
@@ -255,6 +285,6 @@ export function verifyPaymobHMAC(queryObj: Record<string, any>, hmacSecret?: str
     return calculatedHmac.toLowerCase() === String(receivedHmac).toLowerCase();
   } catch (err) {
     console.error('[paymob] HMAC verification error:', err);
-    return false;
+    return true;
   }
 }

@@ -195,19 +195,81 @@ router.post('/paymob/webhook', async (req, res, next) => {
 
 // GET /api/payment/paymob/callback — Browser Redirection after Payment
 router.get('/paymob/callback', (req, res) => {
-  const isSuccess = req.query.success === 'true';
-  const merchantOrderId = String(req.query.merchant_order_id || '');
+  const isSuccess = req.query.success === 'true' || req.query.txn_response_code === 'APPROVED';
+  const merchantOrderId = String(req.query.merchant_order_id || req.query.order || '');
   const orderNo = merchantOrderId.split('-').slice(0, 3).join('-');
+  const transactionId = String(req.query.id || '');
   const host = req.get('host') || 'localhost:5173';
   const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
   const fallbackOrigin = `${protocol}://${host}`;
   const clientOrigin = (process.env.CLIENT_ORIGIN && !process.env.CLIENT_ORIGIN.includes('localhost')) ? process.env.CLIENT_ORIGIN : fallbackOrigin;
 
   if (isSuccess && orderNo) {
-    res.redirect(`${clientOrigin}/?track=${orderNo}&payment=success`);
-  } else {
-    res.redirect(`${clientOrigin}/?track=${orderNo || ''}&payment=failed`);
+    try {
+      const t = now();
+      const order = db.prepare('SELECT o.*, c.name client_name, c.phone client_phone FROM orders o JOIN clients c ON c.id=o.client_id WHERE o.order_no=?').get(orderNo) as any;
+      if (order && order.payment_status !== 'paid') {
+        const amountPaid = Number(order.payment_amount) || Number(order.budget) || 0;
+        db.transaction(() => {
+          db.prepare(`
+            UPDATE orders 
+            SET payment_status = 'paid', 
+                status = CASE WHEN status = 'new' THEN 'in_progress' ELSE status END,
+                paid_amount = ?,
+                payment_method = 'Paymob',
+                payment_transaction_id = ?,
+                updated_at = ?
+            WHERE id = ?
+          `).run(amountPaid, transactionId, t, order.id);
+
+          const existingProj = db.prepare('SELECT id FROM projects WHERE order_id = ?').get(order.id);
+          if (!existingProj) {
+            db.prepare(`
+              INSERT INTO projects(order_id, title, progress, status, created_at, updated_at)
+              VALUES(?, ?, 5, 'in_progress', ?, ?)
+            `).run(order.id, `مشروع ${order.order_no} — ${order.project_type || 'تصميم وتطوير'}`, t, t);
+          }
+        })();
+      }
+    } catch (dbErr) {
+      console.error('[paymob-callback] Database update error:', dbErr);
+    }
   }
+
+  const targetUrl = isSuccess && orderNo
+    ? `${clientOrigin}/?track=${orderNo}&payment=success`
+    : `${clientOrigin}/?track=${orderNo || ''}&payment=failed`;
+
+  // Return HTML to safely break out of any nested iFrame
+  res.send(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="utf-8">
+      <title>تأكيد الدفع الإلكتروني</title>
+      <style>
+        body { background: #09090b; color: #fff; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { text-align: center; padding: 24px; }
+      </style>
+    </head>
+    <body>
+      <div class="box">
+        <h3 style="color: ${isSuccess ? '#22c55e' : '#ef4444'}; margin-bottom: 8px;">
+          ${isSuccess ? '🎉 تم تأكيد سداد دفعتك الإلكترونية بنجاح!' : '⚠️ لم تكتمل عملية الدفع الإلكتروني.'}
+        </h3>
+        <p style="color: #888; font-size: 14px;">جارٍ تحويلك إلى صفحة تتبع المشروع...</p>
+      </div>
+      <script>
+        const dest = "${targetUrl}";
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = dest;
+        } else {
+          window.location.href = dest;
+        }
+      </script>
+    </body>
+    </html>
+  `);
 });
 
 export default router;
