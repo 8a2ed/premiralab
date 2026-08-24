@@ -432,7 +432,20 @@ interface QueueReviewModalProps {
 }
 
 function QueueReviewModal({ order, onClose, onUpdated }: QueueReviewModalProps) {
-  const [amount,  setAmount]  = useState(String(order.payment_amount || order.budget || ''));
+  const origPrice = Number(order.package_price) > 0 ? Number(order.package_price) : (Number(order.budget) > 0 ? Number(order.budget) : 0);
+  let discAmount = 0;
+  if (order.promo_code && order.promo_discount) {
+    const discountStr = String(order.promo_discount).trim();
+    if (discountStr.includes('%')) {
+      const pct = parseFloat(discountStr.replace('%', '')) || 0;
+      discAmount = (origPrice * pct) / 100;
+    } else {
+      discAmount = parseFloat(discountStr.replace(/[^\d.]/g, '')) || 0;
+    }
+  }
+  const agreedBudget = origPrice > 0 ? Math.max(0, origPrice - discAmount) : (Number(order.budget) || 0);
+
+  const [amount,  setAmount]  = useState(String(order.payment_amount || agreedBudget || ''));
   const [notes,   setNotes]   = useState(order.review_notes || '');
   const [action,  setAction]  = useState<'approve' | 'waitlist' | 'reject'>('approve');
   const [loading, setLoading] = useState(false);
@@ -464,12 +477,13 @@ function QueueReviewModal({ order, onClose, onUpdated }: QueueReviewModalProps) 
         <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 8, fontSize: 13, lineHeight: 1.8 }}>
           <div><strong>العميل:</strong> {order.client_name} ({order.client_phone})</div>
           <div><strong>نوع الخدمة / الباقة:</strong> {order.package_title || order.service_title || order.project_type || 'طلب مخصص'}</div>
+          {origPrice > 0 && <div><strong>السعر الأساسي:</strong> {money(origPrice)}</div>}
           {order.promo_code && (
             <div style={{ color: '#22c55e', fontWeight: 600 }}>
-              🎁 <strong>كوبون الخصم المستخدم:</strong> {order.promo_code} ({order.promo_discount})
+              🎁 <strong>كوبون الخصم المستخدم:</strong> {order.promo_code} ({order.promo_discount}) {discAmount > 0 ? `(-${money(discAmount)})` : ''}
             </div>
           )}
-          {order.budget && <div><strong>إجمالي الميزانية الصافية المتفق عليها:</strong> <strong style={{ color: 'var(--accent)' }}>{money(order.budget)}</strong></div>}
+          {agreedBudget > 0 && <div><strong>إجمالي الميزانية الصافية المتفق عليها:</strong> <strong style={{ color: 'var(--accent)' }}>{money(agreedBudget)}</strong></div>}
           {order.paid_amount != null && order.paid_amount > 0 && (
             <div style={{ color: '#10b981' }}><strong>المدفوع مسبقاً:</strong> {money(order.paid_amount)}</div>
           )}

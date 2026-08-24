@@ -59,6 +59,33 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [promoSuccessMsg,  setPromoSuccessMsg]  = useState('');
   const [promoErrMsg,      setPromoErrMsg]      = useState('');
 
+  // Robust financial and coupon calculations
+  const origPrice = Number(data?.packagePrice) > 0 
+    ? Number(data?.packagePrice) 
+    : (Number(data?.budget) > 0 ? Number(data?.budget) : (Number(data?.paymentAmount) > 0 ? Number(data?.paymentAmount) : 0));
+
+  let discAmount = 0;
+  if (data?.promoCode && data?.promoDiscount) {
+    const discountStr = String(data.promoDiscount).trim();
+    if (discountStr.includes('%')) {
+      const pct = parseFloat(discountStr.replace('%', '')) || 0;
+      discAmount = (origPrice * pct) / 100;
+    } else {
+      discAmount = parseFloat(discountStr.replace(/[^\d.]/g, '')) || 0;
+    }
+  } else if (Number(data?.budget) > 0 && origPrice > Number(data?.budget)) {
+    discAmount = origPrice - Number(data?.budget);
+  }
+
+  let agreedTotal = origPrice > 0 ? Math.max(0, origPrice - discAmount) : (Number(data?.budget) || Number(data?.paymentAmount) || 0);
+  if (Number(data?.budget) > 0 && !discAmount) {
+    agreedTotal = Number(data?.budget);
+  }
+
+  const reqPayment = Number(data?.paymentAmount) > 0 ? Number(data?.paymentAmount) : agreedTotal;
+  const paid = Number(data?.paidAmount || 0);
+  const remaining = Math.max(0, agreedTotal - paid);
+
   // Manual payment receipt state
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [receiptSuccess,   setReceiptSuccess]   = useState(false);
@@ -278,10 +305,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                     <span className="muted">نوع الخدمة:</span>
                     <strong>{data.packageTitle ?? data.serviceTitle ?? data.projectType ?? 'طلب مخصص'}</strong>
                   </div>
-                  {data.budget != null && data.budget > 0 && (
+                  {agreedTotal > 0 && (
                     <div className="tracker-meta__item">
                       <span className="muted">الميزانية المتفق عليها:</span>
-                      <strong>{money(data.budget)}</strong>
+                      <strong>{money(agreedTotal)}</strong>
                     </div>
                   )}
                   {data.deadline && (
@@ -319,7 +346,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
                     <span className="muted" style={{ fontSize: 12, display: 'block' }}>السعر الأساسي للخدمة</span>
                     <strong style={{ fontSize: 16, marginTop: 4, display: 'block' }}>
-                      {money(data.packagePrice || data.budget || data.paymentAmount || 0)}
+                      {money(origPrice)}
                     </strong>
                   </div>
 
@@ -327,10 +354,12 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div style={{ background: data.promoCode ? 'rgba(34, 197, 94, 0.08)' : 'var(--bg-3)', padding: 14, borderRadius: 10, border: `1px solid ${data.promoCode ? 'rgba(34, 197, 94, 0.3)' : 'var(--border)'}` }}>
                     <span className="muted" style={{ fontSize: 12, display: 'block' }}>كوبون الخصم</span>
                     {data.promoCode ? (
-                      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <Tag size={14} color="#22c55e" />
                         <strong style={{ fontSize: 14, color: '#22c55e' }}>{data.promoCode}</strong>
-                        <span style={{ fontSize: 11, color: '#22c55e' }}>({data.promoDiscount})</span>
+                        <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>
+                          (-{discAmount > 0 ? money(discAmount) : (data.promoDiscount || '')})
+                        </span>
                       </div>
                     ) : (
                       <span className="muted" style={{ fontSize: 13, marginTop: 4, display: 'block' }}>لا يوجد كوبون مطبق</span>
@@ -341,7 +370,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
                     <span className="muted" style={{ fontSize: 12, display: 'block' }}>الإجمالي الصافي المتفق عليه</span>
                     <strong style={{ fontSize: 16, color: 'var(--accent)', marginTop: 4, display: 'block' }}>
-                      {money(data.budget || data.paymentAmount || 0)}
+                      {money(agreedTotal)}
                     </strong>
                   </div>
 
@@ -349,11 +378,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
                     <span className="muted" style={{ fontSize: 12, display: 'block' }}>المدفوع / المتبقي</span>
                     <div style={{ marginTop: 4, fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong style={{ color: (data.paidAmount || 0) > 0 ? '#22c55e' : 'inherit' }}>
-                        {money(data.paidAmount || 0)}
+                      <strong style={{ color: paid > 0 ? '#22c55e' : 'inherit' }}>
+                        {money(paid)}
                       </strong>
                       <span className="muted" style={{ fontSize: 11 }}>
-                        (متبقي: {money(Math.max(0, (data.budget || data.paymentAmount || 0) - (data.paidAmount || 0)))})
+                        (متبقي: {money(remaining)})
                       </span>
                     </div>
                   </div>
@@ -449,7 +478,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                     <div style={{ textAlign: 'left' }}>
                       <span className="muted" style={{ fontSize: 12, display: 'block' }}>المبلغ المطلوب سداده</span>
                       <strong style={{ fontSize: 20, color: 'var(--accent)' }}>
-                        {money(data.paymentAmount || data.budget || 0)}
+                        {money(reqPayment)}
                       </strong>
                     </div>
                   </div>
@@ -612,7 +641,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
                 <span className="muted">بند الخدمة: <strong>{data.packageTitle || data.projectType || 'خدمة تصميم وتطوير متكاملة'}</strong></span>
-                <span style={{ fontWeight: 600 }}>{money(data.packagePrice || data.budget || data.paymentAmount || 0)}</span>
+                <span style={{ fontWeight: 600 }}>{money(origPrice)}</span>
               </div>
 
               {data.promoCode && (
@@ -620,7 +649,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Tag size={14} /> كود الخصم المطبق ({data.promoCode}):
                   </span>
-                  <strong>-{data.promoDiscount}</strong>
+                  <strong>-{discAmount > 0 ? `${money(discAmount)} (${data.promoDiscount})` : data.promoDiscount}</strong>
                 </div>
               )}
 
@@ -632,7 +661,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   </span>
                 </div>
                 <strong style={{ fontSize: 22, color: 'var(--accent)' }}>
-                  {money(data.paymentAmount || data.budget || 0)}
+                  {money(reqPayment)}
                 </strong>
               </div>
             </div>

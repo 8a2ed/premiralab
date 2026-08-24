@@ -65,14 +65,35 @@ router.post('/', orderLimiter, async (req, res, next) => {
         client = { id: Number(r.lastInsertRowid), email: d.email || '' };
       }
 
+      // Determine base price and calculated budget with promo
+      let basePrice = 0;
+      if (d.packageId) {
+        const pkg = db.prepare('SELECT price FROM packages WHERE id=?').get(d.packageId) as { price: number } | undefined;
+        if (pkg && Number(pkg.price) > 0) basePrice = Number(pkg.price);
+      } else if (d.budget && Number(d.budget) > 0) {
+        basePrice = Number(d.budget);
+      }
+
+      let calculatedBudget = basePrice;
+      if (validPromo && basePrice > 0) {
+        if (validPromo.discount_type === 'percentage') {
+          const disc = (basePrice * validPromo.discount_value) / 100;
+          calculatedBudget = Math.max(0, basePrice - disc);
+        } else {
+          calculatedBudget = Math.max(0, basePrice - validPromo.discount_value);
+        }
+      }
+
       const orderNo = `ORD-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
       const r = db.prepare(
-        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,deadline,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,payment_amount,deadline,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       ).run(
         orderNo, client.id,
         d.packageId ?? null, d.serviceId ?? null,
         d.projectType, d.notes, 'new',
-        d.budget ?? null, d.deadline ?? null,
+        calculatedBudget > 0 ? calculatedBudget : (d.budget ?? null),
+        calculatedBudget > 0 ? calculatedBudget : (d.budget ?? null),
+        d.deadline ?? null,
         validPromo ? validPromo.code : null, discountInfo,
         t, t,
       );

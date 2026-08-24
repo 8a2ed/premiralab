@@ -51,11 +51,34 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
     currency: 'EGP',
   };
 
-  // Pricing calculations
-  const originalPrice = packagePrice > 0 ? packagePrice : (budget > 0 ? budget : paymentAmount);
-  const finalAgreedTotal = budget > 0 ? budget : (originalPrice > 0 ? originalPrice : paymentAmount);
-  const discountAmount = originalPrice > finalAgreedTotal ? (originalPrice - finalAgreedTotal) : 0;
-  const remainingAmount = Math.max(0, finalAgreedTotal - paidAmount);
+  // 1. Base / Original Price
+  const originalPrice = Number(packagePrice) > 0 
+    ? Number(packagePrice) 
+    : (Number(budget) > 0 ? Number(budget) : (Number(paymentAmount) > 0 ? Number(paymentAmount) : 0));
+
+  // 2. Discount Amount Calculation (From promo code and promo discount string)
+  let discountAmount = 0;
+  if (promoCode && promoDiscount) {
+    const discountStr = String(promoDiscount).trim();
+    if (discountStr.includes('%')) {
+      const pct = parseFloat(discountStr.replace('%', '')) || 0;
+      discountAmount = (originalPrice * pct) / 100;
+    } else {
+      discountAmount = parseFloat(discountStr.replace(/[^\d.]/g, '')) || 0;
+    }
+  } else if (budget > 0 && originalPrice > budget) {
+    discountAmount = originalPrice - budget;
+  }
+
+  // 3. Final Net Agreed Total
+  let finalAgreedTotal = originalPrice > 0 ? Math.max(0, originalPrice - discountAmount) : (Number(budget) || Number(paymentAmount) || 0);
+  if (budget > 0 && !discountAmount) {
+    finalAgreedTotal = budget;
+  }
+
+  // 4. Required Payment Amount & Remaining
+  const currentRequiredPayment = Number(paymentAmount) > 0 ? Number(paymentAmount) : finalAgreedTotal;
+  const remainingAmount = Math.max(0, finalAgreedTotal - Number(paidAmount));
 
   // Status mapping
   const isPaid = paymentStatus === 'paid' || paidAmount >= finalAgreedTotal;
@@ -74,7 +97,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 9999 }}>
+    <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(16px)' }}>
       <div 
         className="modal modal--invoice" 
         onClick={e => e.stopPropagation()}
@@ -85,10 +108,10 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           display: 'flex',
           flexDirection: 'column',
           padding: 0,
-          background: 'var(--bg-1)',
+          background: '#0d0d12',
           borderRadius: 16,
           overflow: 'hidden',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12)',
         }}
       >
         {/* Action Header (Hidden during print) */}
@@ -97,7 +120,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '16px 24px',
-          background: 'var(--bg-2)',
+          background: '#13131a',
           borderBottom: '1px solid var(--border)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -136,7 +159,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             overflowY: 'auto',
             flex: 1,
             color: 'var(--text)',
-            background: 'var(--bg-1)',
+            background: '#0d0d12',
             fontFamily: 'system-ui, -apple-system, sans-serif',
           }}
         >
@@ -282,7 +305,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                       </td>
                       <td style={{ padding: '14px 16px', textAlign: 'center', color: '#22c55e' }}>—</td>
                       <td style={{ padding: '14px 16px', textAlign: 'left', color: '#22c55e', fontWeight: 700 }}>
-                        -{discountAmount > 0 ? money(discountAmount) : (promoDiscount || 'خصم خاص')}
+                        -{discountAmount > 0 ? `${money(discountAmount)} (${promoDiscount})` : (promoDiscount || 'خصم خاص')}
                       </td>
                     </tr>
                   )}
@@ -293,7 +316,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
 
           {/* Financial Totals Calculation Box */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 30 }}>
-            <div style={{ width: '100%', maxWidth: '380px', background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
+            <div style={{ width: '100%', maxWidth: '380px', background: '#13131a', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
                 <span className="muted">المجموع الفرعي (السعر الأصلي):</span>
                 <span>{money(originalPrice)}</span>
@@ -301,8 +324,8 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
 
               {discountAmount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: '#22c55e' }}>
-                  <span>قيمة الخصم المطبق:</span>
-                  <span>-{money(discountAmount)}</span>
+                  <span>قيمة الخصم المطبق {promoDiscount ? `(${promoDiscount})` : ''}:</span>
+                  <strong>-{money(discountAmount)}</strong>
                 </div>
               )}
 
@@ -313,7 +336,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
                 <span className="muted">المطلوب سداده للدفعة الحالية:</span>
-                <strong>{money(paymentAmount)}</strong>
+                <strong>{money(currentRequiredPayment)}</strong>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: isPaid ? '#22c55e' : 'var(--text)' }}>
