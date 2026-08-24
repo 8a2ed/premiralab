@@ -53,18 +53,21 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [receiptSuccess,   setReceiptSuccess]   = useState(false);
   const [copiedField,      setCopiedField]      = useState<string | null>(null);
   const [paymentNotice,    setPaymentNotice]    = useState<'success' | 'failed' | null>(null);
+  const [paymentReason,    setPaymentReason]    = useState<string | null>(null);
   const receiptFileRef = useRef<HTMLInputElement>(null);
 
   // Check URL query parameters for payment return status and clean URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const pStatus = urlParams.get('payment');
+    const pReason = urlParams.get('reason');
     if (pStatus === 'success') {
       setPaymentNotice('success');
       // Clean query parameter from URL bar
       window.history.replaceState({}, document.title, window.location.pathname + `?track=${encodeURIComponent(orderNo)}`);
     } else if (pStatus === 'failed') {
       setPaymentNotice('failed');
+      if (pReason) setPaymentReason(pReason);
       // Clean query parameter from URL bar
       window.history.replaceState({}, document.title, window.location.pathname + `?track=${encodeURIComponent(orderNo)}`);
     }
@@ -212,7 +215,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                     <ShieldAlert size={24} style={{ color: '#ef4444' }} />
                     <div>
                       <strong style={{ display: 'block', fontSize: 14, color: '#ef4444' }}>لم تكتمل عملية الدفع الإلكتروني السابقة</strong>
-                      <span className="muted" style={{ fontSize: 12 }}>يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع بديلة (مثل فيزا/ميزة، كود فوري، أو انستاباي).</span>
+                      <span className="muted" style={{ fontSize: 12 }}>
+                        {paymentReason ? `استجابة البوابة: ${paymentReason} — ` : ''}
+                        يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع بديلة (مثل فيزا/ميزة، كود فوري، أو انستاباي).
+                      </span>
                     </div>
                   </div>
                   <button className="btn btn--sm btn--primary" onClick={() => { setPaymentNotice(null); setPayModalOpen(true); }}>
@@ -601,20 +607,44 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                       {selectedMethod === 'fawry' && 'الحصول على كود سداد فوري لإتمام الدفع نقدًا من أي فرع أو كشك فوري.'}
                     </p>
 
+                    {selectedMethod === 'card' && (
+                      <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
+                        <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 لتجربة الدفع في وضع الاختبار (Test Mode):</strong>
+                        <div>• رقم الكارت: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>4111 1111 1111 1111</code></div>
+                        <div style={{ marginTop: 2 }}>• تاريخ الانتهاء: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>12/28</code> | CVV: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123</code></div>
+                        <div style={{ marginTop: 2 }}>• كود تأكيد OTP (إن طلب): <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
+                      </div>
+                    )}
+
                     {selectedMethod === 'wallet' && (
-                      <div className="form-field" style={{ marginBottom: 14 }}>
-                        <label className="form-label">رقم محفظة فودافون كاش / المحفظة الذكية</label>
-                        <input
-                          className="input"
-                          type="tel"
-                          dir="ltr"
-                          placeholder="مثال: 01012345678"
-                          value={walletPhone}
-                          onChange={e => setWalletPhone(e.target.value)}
-                        />
-                        <span className="muted" style={{ fontSize: 11, marginTop: 3 }}>
-                          سيتم تحويلك لصفحة تأكيد المحفظة وخصم المبلغ مباشرة
-                        </span>
+                      <div>
+                        <div className="form-field" style={{ marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                            <label className="form-label" style={{ margin: 0 }}>رقم محفظة فودافون كاش / المحفظة الذكية</label>
+                            <button
+                              type="button"
+                              className="btn btn--sm"
+                              style={{ padding: '2px 8px', fontSize: 11 }}
+                              onClick={() => setWalletPhone('01010101010')}
+                            >
+                              استخدام رقم تجريبي 01010101010
+                            </button>
+                          </div>
+                          <input
+                            className="input"
+                            type="tel"
+                            dir="ltr"
+                            placeholder="مثال: 01012345678 أو 01010101010"
+                            value={walletPhone}
+                            onChange={e => setWalletPhone(e.target.value)}
+                          />
+                        </div>
+
+                        <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
+                          <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 بيانات شاشة تأكيد المحفظة التالية (Paymob):</strong>
+                          <div>• في خانة YOUR MPIN: اكتب <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123456</code></div>
+                          <div style={{ marginTop: 2 }}>• في خانة One Time Password: اكتب <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
+                        </div>
                       </div>
                     )}
 

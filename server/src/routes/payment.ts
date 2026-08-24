@@ -195,10 +195,12 @@ router.post('/paymob/webhook', async (req, res, next) => {
 
 // GET /api/payment/paymob/callback — Browser Redirection after Payment
 router.get('/paymob/callback', (req, res) => {
+  console.log('[paymob-callback] Received Query:', req.query);
   const isSuccess = req.query.success === 'true' || req.query.txn_response_code === 'APPROVED';
   const merchantOrderId = String(req.query.merchant_order_id || req.query.order || '');
   const orderNo = merchantOrderId.split('-').slice(0, 3).join('-');
   const transactionId = String(req.query.id || '');
+  const failReason = String(req.query['data.message'] || req.query.data_message || req.query.txn_response_code || req.query.message || '');
   const host = req.get('host') || 'localhost:5173';
   const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
   const fallbackOrigin = `${protocol}://${host}`;
@@ -236,9 +238,10 @@ router.get('/paymob/callback', (req, res) => {
     }
   }
 
+  const reasonParam = failReason ? `&reason=${encodeURIComponent(failReason)}` : '';
   const targetUrl = isSuccess && orderNo
     ? `${clientOrigin}/?track=${orderNo}&payment=success`
-    : `${clientOrigin}/?track=${orderNo || ''}&payment=failed`;
+    : `${clientOrigin}/?track=${orderNo || ''}&payment=failed${reasonParam}`;
 
   // Return HTML to safely break out of any nested iFrame
   res.send(`
