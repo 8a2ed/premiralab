@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import * as LucideIcons from 'lucide-react';
 import { Plus, Pencil, Trash2, Lightbulb, Copy, Check, Eye, GripVertical } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { ConfirmDialog } from '../ui/ConfirmDialog.js';
@@ -12,7 +13,7 @@ const RESOURCE_FIELDS: Record<ResourceName, string[]> = {
   services:     ['title', 'description', 'icon'],
   portfolio:    ['title', 'category', 'description', 'image_url', 'sort_order'],
   testimonials: ['name', 'role', 'content', 'rating', 'avatar_url', 'sort_order'],
-    faqs:         ['question', 'answer', 'sort_order'],
+  faqs:         ['question', 'answer', 'sort_order'],
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -28,7 +29,7 @@ const FIELD_TIPS: Record<string, { desc: string; template?: string }> = {
     template: '[\n  "تصميم هوية كاملة",\n  "دعم فني لمدة شهر",\n  "تعديلات غير محدودة"\n]' 
   },
   icon: {
-    desc: 'اسم الأيقونة باللغة الإنجليزية من مكتبة Lucide.',
+    desc: 'اختر أيقونة من القائمة السريعة أدناه أو اكتب اسم الأيقونة بالإنجليزية.',
     template: 'Monitor'
   },
   sort_order: {
@@ -40,6 +41,238 @@ const FIELD_TIPS: Record<string, { desc: string; template?: string }> = {
     template: 'https://example.com/image.png'
   }
 };
+
+const ICON_CATEGORIES: Array<{
+  name: string;
+  icons: Array<{ name: string; label: string }>;
+}> = [
+  {
+    name: '🎨 التصميم والهوية',
+    icons: [
+      { name: 'Palette', label: 'ألوان وهوية' },
+      { name: 'PenTool', label: 'رسم ولوجو' },
+      { name: 'Brush', label: 'تلوين ورسم' },
+      { name: 'Layers', label: 'طبقات وتصميم' },
+      { name: 'Sparkles', label: 'لمسات إبداعية' },
+      { name: 'Wand2', label: 'تعديلات ذكية' },
+      { name: 'Shapes', label: 'أشكال هندسية' },
+      { name: 'Crop', label: 'قص وتأطير' },
+      { name: 'Feather', label: 'ريشة رسم' },
+      { name: 'Image', label: 'صور وبوسترات' },
+    ],
+  },
+  {
+    name: '💻 البرمجة والويب',
+    icons: [
+      { name: 'Monitor', label: 'مواقع ويب' },
+      { name: 'Smartphone', label: 'تطبيقات جوال' },
+      { name: 'Laptop', label: 'أنظمة وبرامج' },
+      { name: 'Globe', label: 'نطاقات ومواقع' },
+      { name: 'Code2', label: 'أكواد وحلول' },
+      { name: 'AppWindow', label: 'واجهات سحابية' },
+      { name: 'Database', label: 'قواعد بيانات' },
+      { name: 'Cpu', label: 'أداء وسرعة' },
+      { name: 'Server', label: 'سيرفرات واستضافة' },
+      { name: 'Terminal', label: 'سطر أوامر' },
+    ],
+  },
+  {
+    name: '📢 التسويق والسوشيال',
+    icons: [
+      { name: 'Megaphone', label: 'حملات إعلانية' },
+      { name: 'Rocket', label: 'إطلاق ونمو' },
+      { name: 'TrendingUp', label: 'أرباح وSEO' },
+      { name: 'Target', label: 'استهداف دقيق' },
+      { name: 'Share2', label: 'سوشيال ميديا' },
+      { name: 'BarChart3', label: 'تقارير وإحصاء' },
+      { name: 'Flame', label: 'تفاعل وترويج' },
+      { name: 'Eye', label: 'مشاهدات ووصول' },
+      { name: 'Users', label: 'إدارة مجتمعات' },
+      { name: 'Send', label: 'نشر وإرسال' },
+    ],
+  },
+  {
+    name: '🎬 الميديا والفيديو',
+    icons: [
+      { name: 'Film', label: 'موشن جرافيك' },
+      { name: 'Clapperboard', label: 'مونتاج فيديو' },
+      { name: 'Video', label: 'ريلز وتصوير' },
+      { name: 'Camera', label: 'تصوير فوتوغرافي' },
+      { name: 'Mic', label: 'تعليق صوتي' },
+      { name: 'Headphones', label: 'هندسة صوتية' },
+      { name: 'PlayCircle', label: 'إعلانات فيديو' },
+    ],
+  },
+  {
+    name: '🛍️ المتاجر والمدفوعات',
+    icons: [
+      { name: 'ShoppingBag', label: 'متجر ومنتجات' },
+      { name: 'ShoppingCart', label: 'سلة شراء' },
+      { name: 'CreditCard', label: 'دفع إلكتروني' },
+      { name: 'Store', label: 'متجر متكامل' },
+      { name: 'Package', label: 'باقات وحزم' },
+      { name: 'Tag', label: 'عروض وتخفيض' },
+      { name: 'Wallet', label: 'محافظ وكاش' },
+      { name: 'Receipt', label: 'فواتير وسداد' },
+      { name: 'BadgeDollarSign', label: 'أسعار مميزة' },
+    ],
+  },
+  {
+    name: '🛡️ الجودة والأمان',
+    icons: [
+      { name: 'ShieldCheck', label: 'حماية وضمان' },
+      { name: 'Award', label: 'جودة معتمدة' },
+      { name: 'Zap', label: 'تنفيذ فوري' },
+      { name: 'Clock', label: 'مواعيد دقيقة' },
+      { name: 'CheckCircle2', label: 'خدمة موثوقة' },
+      { name: 'HeartHandshake', label: 'دعم واستشارات' },
+    ],
+  },
+];
+
+function IconPickerField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [activeCategory, setActiveCategory] = useState(0);
+
+  // Selected Icon Dynamic Renderer
+  const SelectedIcon = (LucideIcons as any)[value] || LucideIcons.Palette;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Top Search & Live Preview Box */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          background: 'rgba(124, 58, 237, 0.15)',
+          border: '1.5px solid var(--accent)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--accent)',
+          flexShrink: 0,
+          boxShadow: '0 0 14px rgba(124, 58, 237, 0.3)',
+        }}>
+          <SelectedIcon size={24} />
+        </div>
+
+        <input
+          className="input"
+          type="text"
+          placeholder="اكتب اسم أي أيقونة (مثال: Palette, Monitor, Rocket...)"
+          dir="ltr"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          style={{ flex: 1, fontFamily: 'monospace', fontSize: 13 }}
+        />
+      </div>
+
+      {/* Quick Select Section */}
+      <div style={{
+        background: 'var(--bg-3)',
+        border: '1px solid var(--border)',
+        borderRadius: 12,
+        padding: 12,
+        marginTop: 4,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>
+            ⚡ قائمة الاختيار السريع للأيقونات:
+          </span>
+          <span className="muted" style={{ fontSize: 11 }}>
+            اضغط على أي أيقونة لاختيارها فورًا
+          </span>
+        </div>
+
+        {/* Category Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: 6,
+          overflowX: 'auto',
+          paddingBottom: 6,
+          marginBottom: 10,
+          scrollbarWidth: 'thin',
+        }}>
+          {ICON_CATEGORIES.map((cat, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setActiveCategory(idx)}
+              style={{
+                padding: '4px 10px',
+                borderRadius: 8,
+                fontSize: 11,
+                fontWeight: activeCategory === idx ? 700 : 500,
+                background: activeCategory === idx ? 'var(--accent)' : 'var(--bg-2)',
+                color: activeCategory === idx ? '#fff' : 'var(--text-muted)',
+                border: '1px solid',
+                borderColor: activeCategory === idx ? 'var(--accent)' : 'var(--border)',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Icon Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))',
+          gap: 8,
+          maxHeight: '180px',
+          overflowY: 'auto',
+          padding: '2px',
+        }}>
+          {ICON_CATEGORIES[activeCategory].icons.map(item => {
+            const IconComp = (LucideIcons as any)[item.name] || LucideIcons.Palette;
+            const isSelected = value.toLowerCase() === item.name.toLowerCase();
+
+            return (
+              <button
+                key={item.name}
+                type="button"
+                onClick={() => onChange(item.name)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4,
+                  padding: '8px 6px',
+                  borderRadius: 8,
+                  background: isSelected ? 'rgba(124, 58, 237, 0.2)' : 'var(--bg-2)',
+                  border: isSelected ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                  color: isSelected ? 'var(--accent)' : 'var(--text)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isSelected ? '0 0 10px rgba(124, 58, 237, 0.3)' : 'none',
+                }}
+                title={item.name}
+              >
+                <IconComp size={20} color={isSelected ? 'var(--accent)' : 'currentColor'} />
+                <span style={{ fontSize: 11, fontWeight: isSelected ? 700 : 500, textAlign: 'center', lineHeight: 1.2 }}>
+                  {item.label}
+                </span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                  {item.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const HIDDEN_FIELDS = new Set(['id', 'created_at', 'updated_at']);
 
@@ -283,7 +516,12 @@ export function Crud({ resource, title, onToast }: CrudProps) {
                   </div>
                 )}
 
-                {f === 'description' || f === 'content' || f === 'features' ? (
+                {f === 'icon' ? (
+                  <IconPickerField
+                    value={form[f] ?? ''}
+                    onChange={val => setForm(prev => ({ ...prev, [f]: val }))}
+                  />
+                ) : f === 'description' || f === 'content' || f === 'features' ? (
                   <textarea
                     id={`field-${f}`}
                     className="textarea"
