@@ -516,10 +516,21 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <button
                       className="btn btn--primary btn--glow"
-                      style={{ flex: 1, padding: 14, fontSize: 15, justifyContent: 'center', minWidth: 220 }}
+                      style={{
+                        flex: 1,
+                        padding: '14px 20px',
+                        fontSize: 15,
+                        fontWeight: 700,
+                        justifyContent: 'center',
+                        gap: 10,
+                        width: '100%',
+                        borderRadius: 12,
+                        lineHeight: 1.3,
+                        boxShadow: '0 8px 24px rgba(124, 58, 237, 0.4)',
+                      }}
                       onClick={() => setPayModalOpen(true)}
                     >
-                      <CreditCard size={18} /> إتمام السداد الآن (فودافون كاش / فيزا / فوري / انستاباي)
+                      <CreditCard size={18} /> سداد الدفعة وتأكيد الحجز ⚡
                     </button>
                   </div>
                 </div>
@@ -659,195 +670,312 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           Interactive Payment Checkout Modal
       ───────────────────────────────────────────────────────────── */}
       {payModalOpen && data && (
-        <Modal title={`إتمام سداد الفاتورة للطلب #${data.orderNo}`} onClose={() => setPayModalOpen(false)}>
-          <div className="form-stack">
-            {/* Live Pricing Breakdown Box */}
-            <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
-                <span className="muted">بند الخدمة: <strong>{data.packageTitle || data.projectType || 'خدمة تصميم وتطوير متكاملة'}</strong></span>
-                <span style={{ fontWeight: 600 }}>{money(origPrice)}</span>
+        <Modal title={`سداد الفاتورة للطلب #${data.orderNo}`} onClose={() => setPayModalOpen(false)}>
+          <div className="form-stack" style={{ gap: 14 }}>
+            {/* Live Pricing Breakdown Card */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(168, 85, 247, 0.04))',
+              border: '1px solid rgba(124, 58, 237, 0.25)',
+              borderRadius: 14,
+              padding: '14px 16px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  {data.packageTitle || data.projectType || 'خدمة تصميم وتطوير'}
+                </span>
+                {data.promoCode && (
+                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, gap: 4 }}>
+                    <Tag size={12} /> كود {data.promoCode} ({data.promoDiscount})
+                  </span>
+                )}
               </div>
-
-              {data.promoCode && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#22c55e' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Tag size={14} /> كود الخصم المطبق ({data.promoCode}):
-                  </span>
-                  <strong>-{discAmount > 0 ? `${money(discAmount)} (${data.promoDiscount})` : data.promoDiscount}</strong>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
-                <div>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'block' }}>المبلغ المطلوب سداده الآن:</span>
-                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', marginTop: 2 }}>
-                    معتمد ومتاح للدفع 🚀
-                  </span>
-                </div>
-                <strong style={{ fontSize: 22, color: 'var(--accent)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 6, borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>المبلغ المطلوب سداده:</span>
+                <strong style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent)', letterSpacing: -0.5 }}>
                   {money(reqPayment)}
                 </strong>
               </div>
             </div>
 
-            {/* Promo Code Form inside Checkout Modal */}
-            <div style={{ background: 'var(--bg-2)', padding: 12, borderRadius: 8, border: '1px solid var(--border)' }}>
-              <form onSubmit={handleApplyCheckoutPromo} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {/* Promo Code Form */}
+            <div style={{ background: 'var(--bg-2)', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)' }}>
+              <form onSubmit={handleApplyCheckoutPromo} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <input
                   className="input"
                   type="text"
-                  placeholder="هل لديك كوبون خصم؟ أدخله هنا..."
+                  placeholder="هل لديك كوبون خصم؟"
                   value={checkoutPromo}
                   onChange={e => setCheckoutPromo(e.target.value.toUpperCase())}
-                  style={{ textTransform: 'uppercase', letterSpacing: 1, flex: 1 }}
+                  style={{ textTransform: 'uppercase', letterSpacing: 1, height: 38, fontSize: 12, borderRadius: 8, flex: 1 }}
                 />
                 <button 
                   type="submit" 
                   className="btn btn--sm btn--outline"
                   disabled={applyingPromo || !checkoutPromo.trim()}
-                  style={{ whiteSpace: 'nowrap', padding: '10px 16px' }}
+                  style={{ height: 38, padding: '0 14px', borderRadius: 8, fontSize: 12, whiteSpace: 'nowrap' }}
                 >
-                  {applyingPromo ? 'جارٍ الفحص...' : 'تطبيق الكوبون 🎁'}
+                  {applyingPromo ? 'فحص...' : 'تطبيق 🎁'}
                 </button>
               </form>
 
               {promoSuccessMsg && (
-                <div style={{ color: '#22c55e', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Check size={14} /> {promoSuccessMsg}
+                <div style={{ color: '#22c55e', fontSize: 11, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Check size={13} /> {promoSuccessMsg}
                 </div>
               )}
 
               {promoErrMsg && (
-                <div style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <ShieldAlert size={14} /> {promoErrMsg}
+                <div style={{ color: '#ef4444', fontSize: 11, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <ShieldAlert size={13} /> {promoErrMsg}
                 </div>
               )}
             </div>
 
-            {/* Payment Method Selector */}
-            <div className="form-field">
-              <label className="form-label">اختر طريقة السداد المفضلة:</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
-                {/* Vodafone Cash Direct */}
+            {/* Payment Method 2x2 Modern Grid */}
+            <div className="form-field" style={{ margin: 0 }}>
+              <label className="form-label" style={{ marginBottom: 8, fontSize: 12 }}>اختر طريقة السداد:</label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
+              }}>
+                {/* Vodafone Cash */}
                 <button
                   type="button"
-                  className={`btn ${selectedMethod === 'wallet' ? 'btn--primary' : 'btn--outline'}`}
                   onClick={() => { setSelectedMethod('wallet'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    padding: '10px 8px',
+                    borderRadius: 10,
+                    border: selectedMethod === 'wallet' ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedMethod === 'wallet' ? 'rgba(124, 58, 237, 0.15)' : 'var(--bg-2)',
+                    color: selectedMethod === 'wallet' ? '#fff' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: selectedMethod === 'wallet' ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: selectedMethod === 'wallet' ? '0 0 12px rgba(124, 58, 237, 0.25)' : 'none',
+                  }}
                 >
-                  <Smartphone size={20} />
-                  <span style={{ fontSize: 12 }}>فودافون كاش 📱</span>
+                  <Smartphone size={16} color={selectedMethod === 'wallet' ? 'var(--accent)' : 'currentColor'} />
+                  <span>فودافون كاش</span>
                 </button>
 
                 {/* InstaPay */}
                 <button
                   type="button"
-                  className={`btn ${selectedMethod === 'manual' ? 'btn--primary' : 'btn--outline'}`}
                   onClick={() => { setSelectedMethod('manual'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    padding: '10px 8px',
+                    borderRadius: 10,
+                    border: selectedMethod === 'manual' ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedMethod === 'manual' ? 'rgba(124, 58, 237, 0.15)' : 'var(--bg-2)',
+                    color: selectedMethod === 'manual' ? '#fff' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: selectedMethod === 'manual' ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: selectedMethod === 'manual' ? '0 0 12px rgba(124, 58, 237, 0.25)' : 'none',
+                  }}
                 >
-                  <Send size={20} />
-                  <span style={{ fontSize: 12 }}>انستاباي (InstaPay) ⚡</span>
+                  <Send size={16} color={selectedMethod === 'manual' ? 'var(--accent)' : 'currentColor'} />
+                  <span>انستاباي</span>
                 </button>
 
                 {/* Cards */}
                 <button
                   type="button"
-                  className={`btn ${selectedMethod === 'card' ? 'btn--primary' : 'btn--outline'}`}
                   onClick={() => { setSelectedMethod('card'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    padding: '10px 8px',
+                    borderRadius: 10,
+                    border: selectedMethod === 'card' ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedMethod === 'card' ? 'rgba(124, 58, 237, 0.15)' : 'var(--bg-2)',
+                    color: selectedMethod === 'card' ? '#fff' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: selectedMethod === 'card' ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: selectedMethod === 'card' ? '0 0 12px rgba(124, 58, 237, 0.25)' : 'none',
+                  }}
                 >
-                  <CreditCard size={20} />
-                  <span style={{ fontSize: 12 }}>فيزا / ماستركارد / ميزة 💳</span>
+                  <CreditCard size={16} color={selectedMethod === 'card' ? 'var(--accent)' : 'currentColor'} />
+                  <span>بطاقة بنكية</span>
                 </button>
 
                 {/* Fawry */}
                 <button
                   type="button"
-                  className={`btn ${selectedMethod === 'fawry' ? 'btn--primary' : 'btn--outline'}`}
                   onClick={() => { setSelectedMethod('fawry'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    padding: '10px 8px',
+                    borderRadius: 10,
+                    border: selectedMethod === 'fawry' ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedMethod === 'fawry' ? 'rgba(124, 58, 237, 0.15)' : 'var(--bg-2)',
+                    color: selectedMethod === 'fawry' ? '#fff' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: selectedMethod === 'fawry' ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: selectedMethod === 'fawry' ? '0 0 12px rgba(124, 58, 237, 0.25)' : 'none',
+                  }}
                 >
-                  <QrCode size={20} />
-                  <span style={{ fontSize: 12 }}>كود فوري (Fawry Pay) 🏪</span>
+                  <QrCode size={16} color={selectedMethod === 'fawry' ? 'var(--accent)' : 'currentColor'} />
+                  <span>كود فوري</span>
                 </button>
               </div>
             </div>
 
             {/* Vodafone Cash Panel */}
             {selectedMethod === 'wallet' && (
-              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Smartphone size={16} color="var(--accent)" /> تحويل فودافون كاش المباشر (سريع وبدون عمولة):
-                  </div>
-                  <p className="muted" style={{ fontSize: 12, margin: 0 }}>
-                    حول مبلغ <strong>{money(reqPayment)}</strong> إلى رقم فودافون كاش الخاص بنا أدناه:
-                  </p>
+              <div style={{
+                background: 'var(--bg-2)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: 14,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    تحويل مباشر بدون عمولة لمبلغ: <strong>{money(reqPayment)}</strong>
+                  </span>
+                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 10 }}>
+                    فوري ✔
+                  </span>
                 </div>
 
-                {/* Vodafone Cash Number Box */}
                 {(() => {
                   const vodaNum = data.paymentInfo?.vodafoneCash || '01069572748';
                   const ussdCode = `*9*7*${vodaNum}*${reqPayment}#`;
                   return (
                     <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 10 }}>
+                      {/* Big Account Copy Row */}
+                      <div
+                        onClick={() => copyText(vodaNum, 'voda')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: 'var(--bg-3)',
+                          border: '1px solid rgba(124, 58, 237, 0.3)',
+                          borderRadius: 10,
+                          padding: '10px 12px',
+                          cursor: 'pointer',
+                        }}
+                      >
                         <div>
-                          <div className="muted" style={{ fontSize: 11 }}>رقم محفظة فودافون كاش الرسمية:</div>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1, marginTop: 2 }}>{vodaNum}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>رقم محفظة فودافون كاش:</div>
+                          <span style={{ fontFamily: 'monospace', fontSize: 17, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1 }} dir="ltr">
+                            {vodaNum}
+                          </span>
                         </div>
-                        <button className="btn btn--sm btn--primary" onClick={() => copyText(vodaNum, 'voda')} style={{ gap: 6 }}>
-                          {copiedField === 'voda' ? <><Check size={14} /> تم النسخ</> : <><Copy size={14} /> نسخ الرقم</>}
-                        </button>
-                      </div>
-
-                      {/* USSD Dial Helper */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(124, 58, 237, 0.08)', padding: '10px 14px', borderRadius: 8, border: '1px dashed rgba(124, 58, 237, 0.3)', marginBottom: 14 }}>
-                        <div style={{ fontSize: 12 }}>
-                          <span className="muted">كود التحويل السريع للهاتف: </span>
-                          <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', direction: 'ltr', display: 'inline-block' }}>{ussdCode}</code>
-                        </div>
-                        <button className="btn btn--sm btn--outline" onClick={() => copyText(ussdCode, 'ussd')} style={{ fontSize: 11, padding: '4px 8px' }}>
-                          {copiedField === 'ussd' ? 'تم النسخ ✔' : 'نسخ الكود'}
-                        </button>
-                      </div>
-
-                      {/* Upload Receipt */}
-                      <div style={{ marginTop: 12 }}>
                         <button
-                          className="btn btn--primary"
-                          style={{ width: '100%', padding: 14, justifyContent: 'center', gap: 8, fontSize: 14 }}
-                          onClick={() => receiptFileRef.current?.click()}
-                          disabled={uploadingReceipt}
+                          type="button"
+                          className="btn btn--sm"
+                          style={{
+                            background: copiedField === 'voda' ? '#22c55e' : 'var(--accent)',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: 11,
+                            borderRadius: 6,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
                         >
-                          <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل (سكرين شوت) 📸'}
+                          {copiedField === 'voda' ? <><Check size={13} /> تم النسخ</> : <><Copy size={13} /> نسخ</>}
                         </button>
                       </div>
+
+                      {/* USSD Quick Dial Helper */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginTop: 8,
+                        background: 'rgba(124, 58, 237, 0.06)',
+                        border: '1px dashed rgba(124, 58, 237, 0.25)',
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                      }}>
+                        <div style={{ fontSize: 11 }}>
+                          <span style={{ color: 'var(--text-muted)' }}>كود التحويل السريع: </span>
+                          <code style={{ color: 'var(--accent)', fontWeight: 700 }} dir="ltr">{ussdCode}</code>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copyText(ussdCode, 'ussd')}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--accent)',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            padding: '2px 6px',
+                          }}
+                        >
+                          {copiedField === 'ussd' ? '✔ منسوخ' : 'نسخ الكود'}
+                        </button>
+                      </div>
+
+                      {/* Upload Receipt CTA Button */}
+                      <button
+                        className="btn btn--primary btn--glow"
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          fontSize: 14,
+                          fontWeight: 700,
+                          borderRadius: 10,
+                          justifyContent: 'center',
+                          gap: 8,
+                          marginTop: 12,
+                        }}
+                        onClick={() => receiptFileRef.current?.click()}
+                        disabled={uploadingReceipt}
+                      >
+                        <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل 📸'}
+                      </button>
 
                       {/* Paymob Gateway Fallback */}
-                      <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px dashed var(--border)' }}>
-                        <details style={{ fontSize: 12 }}>
-                          <summary style={{ cursor: 'pointer', color: 'var(--accent)', fontWeight: 600 }}>
-                            أو ادفع أونلاين عبر بوابة Paymob الإلكترونية (خصم مباشر من المحفظة) ⚡
+                      <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px dashed var(--border)' }}>
+                        <details style={{ fontSize: 11 }}>
+                          <summary style={{ cursor: 'pointer', color: 'var(--text-muted)', fontWeight: 500 }}>
+                            أو ادفع عبر بوابة المحافظ الإلكترونية أونلاين ⚡
                           </summary>
-                          <div style={{ marginTop: 10, padding: 10, background: 'var(--bg-3)', borderRadius: 8 }}>
+                          <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
                             <input
                               className="input"
                               type="tel"
                               dir="ltr"
-                              placeholder="أدخل رقم محفظتك للدفع عبر البوابة"
+                              placeholder="أدخل رقم محفظتك"
                               value={walletPhone}
                               onChange={e => setWalletPhone(e.target.value)}
-                              style={{ marginBottom: 8 }}
+                              style={{ height: 34, fontSize: 12, flex: 1, borderRadius: 6 }}
                             />
                             <button
                               className="btn btn--outline btn--sm"
-                              style={{ width: '100%', justifyContent: 'center' }}
+                              style={{ height: 34, fontSize: 11, padding: '0 10px', whiteSpace: 'nowrap', borderRadius: 6 }}
                               onClick={() => handleInitiatePaymob('wallet')}
                               disabled={initiatingPay}
                             >
-                              {initiatingPay ? 'جارٍ الاتصال بالبوابة...' : 'متابعة الدفع عبر بوابة Paymob'}
+                              {initiatingPay ? 'اتصال...' : 'متابعة'}
                             </button>
                           </div>
                         </details>
@@ -860,101 +988,168 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
 
             {/* InstaPay Panel */}
             {selectedMethod === 'manual' && (
-              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Send size={16} color="var(--accent)" /> تحويل انستاباي InstaPay (فوري 0% رسوم):
-                  </div>
-                  <p className="muted" style={{ fontSize: 12, margin: 0 }}>
-                    حول مبلغ <strong>{money(reqPayment)}</strong> إلى معرف انستاباي الخاص بنا أدناه:
-                  </p>
+              <div style={{
+                background: 'var(--bg-2)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: 14,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    تحويل انستاباي فوري لمبلغ: <strong>{money(reqPayment)}</strong>
+                  </span>
+                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 10 }}>
+                    0% رسوم ✔
+                  </span>
                 </div>
 
-                {data.paymentInfo?.instapayUsername && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 14 }}>
-                    <div>
-                      <div className="muted" style={{ fontSize: 11 }}>عنوان انستاباي (InstaPay IPA):</div>
-                      <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)', marginTop: 2 }}>{data.paymentInfo.instapayUsername}</div>
-                    </div>
-                    <button className="btn btn--sm btn--primary" onClick={() => copyText(data.paymentInfo?.instapayUsername || '', 'insta')} style={{ gap: 6 }}>
-                      {copiedField === 'insta' ? <><Check size={14} /> تم النسخ</> : <><Copy size={14} /> نسخ المعرف</>}
-                    </button>
+                {/* Big InstaPay Copy Row */}
+                <div
+                  onClick={() => copyText(data.paymentInfo?.instapayUsername || 'a8a22ed@instapay', 'insta')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'var(--bg-3)',
+                    border: '1px solid rgba(124, 58, 237, 0.3)',
+                    borderRadius: 10,
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>عنوان انستاباي (IPA):</div>
+                    <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: 'var(--accent)', letterSpacing: 0.5 }} dir="ltr">
+                      {data.paymentInfo?.instapayUsername || 'a8a22ed@instapay'}
+                    </span>
                   </div>
-                )}
+                  <button
+                    type="button"
+                    className="btn btn--sm"
+                    style={{
+                      background: copiedField === 'insta' ? '#22c55e' : 'var(--accent)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '6px 12px',
+                      fontSize: 11,
+                      borderRadius: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    {copiedField === 'insta' ? <><Check size={13} /> تم النسخ</> : <><Copy size={13} /> نسخ</>}
+                  </button>
+                </div>
 
-                {/* Upload Receipt */}
+                {/* Upload Receipt CTA Button */}
                 <button
-                  className="btn btn--primary"
-                  style={{ width: '100%', padding: 14, justifyContent: 'center', gap: 8, fontSize: 14 }}
+                  className="btn btn--primary btn--glow"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    borderRadius: 10,
+                    justifyContent: 'center',
+                    gap: 8,
+                    marginTop: 12,
+                  }}
                   onClick={() => receiptFileRef.current?.click()}
                   disabled={uploadingReceipt}
                 >
-                  <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل (سكرين شوت) 📸'}
+                  <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل 📸'}
                 </button>
               </div>
             )}
 
             {/* Cards (Visa/Mastercard) Panel */}
             {selectedMethod === 'card' && (
-              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
-                <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-                  سيتم فتح نافذة الدفع الآمنة المعتمدة لسداد مبلغ <strong>{money(reqPayment)}</strong> ببطاقتك البنكية.
-                </p>
-
-                <div style={{ background: 'rgba(34, 197, 94, 0.06)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12, color: 'var(--text-muted)' }}>
-                  <strong style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <ShieldCheck size={16} /> دفع إلكتروني مشفر وآمن 100%
+              <div style={{
+                background: 'var(--bg-2)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: 14,
+              }}>
+                <div style={{ background: 'rgba(34, 197, 94, 0.06)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: '10px 12px', borderRadius: 8, marginBottom: 12, fontSize: 11, color: 'var(--text-muted)' }}>
+                  <strong style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: 12 }}>
+                    <ShieldCheck size={15} /> دفع إلكتروني مشفر وآمن 100%
                   </strong>
-                  <span>يتم تشفير ومعالجة بيانات بطاقتك البنكية بأعلى معايير الأمان الدولية (PCI-DSS) عبر بوابة Paymob المعتمدة رسمياً من البنك المركزي المصري.</span>
+                  <span>معالجة بيانات البطاقة البنكية بأعلى معايير الأمان الدولية (PCI-DSS) عبر بوابة Paymob المعتمدة.</span>
                 </div>
 
                 <button
-                  className="btn btn--primary"
-                  style={{ width: '100%', padding: 14, fontSize: 14, justifyContent: 'center' }}
+                  className="btn btn--primary btn--glow"
+                  style={{ width: '100%', padding: '13px', fontSize: 14, fontWeight: 700, borderRadius: 10, justifyContent: 'center', gap: 8 }}
                   onClick={() => handleInitiatePaymob('card')}
                   disabled={initiatingPay}
                 >
-                  {initiatingPay ? 'جارٍ الاتصال ببوابة الدفع...' : 'متابعة الدفع بالبطاقة البنكية 💳'}
+                  <CreditCard size={17} /> {initiatingPay ? 'جارٍ الاتصال ببوابة الدفع...' : `سداد ${money(reqPayment)} بالبطاقة 💳`}
                 </button>
               </div>
             )}
 
             {/* Fawry Panel */}
             {selectedMethod === 'fawry' && (
-              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
+              <div style={{
+                background: 'var(--bg-2)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: 14,
+              }}>
                 {fawryRefCode ? (
-                  <div style={{ textAlign: 'center', padding: 10 }}>
-                    <h4 style={{ color: '#f59e0b', margin: '0 0 8px' }}>كود الدفع المرجعي لفوري:</h4>
-                    <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 2, background: 'var(--bg-3)', padding: 12, borderRadius: 8, color: 'var(--accent)' }}>
-                      {fawryRefCode}
-                    </div>
-                    <div style={{ marginTop: 12 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>كود الدفع المرجعي لفوري (صالح لـ 48 ساعة):</div>
+                    <div
+                      onClick={() => copyFawryCode(fawryRefCode)}
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 900,
+                        letterSpacing: 2,
+                        background: 'var(--bg-3)',
+                        border: '1.5px dashed var(--accent)',
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        color: 'var(--accent)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 10,
+                      }}
+                    >
+                      <span>{fawryRefCode}</span>
                       <button
                         type="button"
-                        className={`btn btn--sm ${fawryCopied ? 'btn--primary' : 'btn--outline'}`}
-                        onClick={() => copyFawryCode(fawryRefCode)}
-                        style={{ margin: '0 auto', gap: 6 }}
+                        className="btn btn--sm"
+                        style={{
+                          background: fawryCopied ? '#22c55e' : 'var(--accent)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '4px 10px',
+                          fontSize: 11,
+                          borderRadius: 6,
+                        }}
                       >
-                        {fawryCopied ? <><Check size={14} /> تم نسخ الكود</> : <><Copy size={14} /> نسخ الكود المرجعي</>}
+                        {fawryCopied ? 'تم النسخ ✔' : 'نسخ'}
                       </button>
                     </div>
-                    <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                      تفضل بزيارة أي منفذ فوري أو استخدم تطبيق ماي فوري للدفع بهذا الكود خلال 48 ساعة.
+                    <p className="muted" style={{ fontSize: 11, marginTop: 8, marginBottom: 0 }}>
+                      توجه لأي منفذ فوري أو استخدم تطبيق ماي فوري للدفع بهذا الكود.
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
+                    <p className="muted" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
                       الحصول على كود سداد فوري لإتمام دفع مبلغ <strong>{money(reqPayment)}</strong> نقدًا من أي فرع أو كشك فوري.
                     </p>
-
                     <button
-                      className="btn btn--primary"
-                      style={{ width: '100%', padding: 14, fontSize: 14, justifyContent: 'center' }}
+                      className="btn btn--primary btn--glow"
+                      style={{ width: '100%', padding: '13px', fontSize: 14, fontWeight: 700, borderRadius: 10, justifyContent: 'center', gap: 8 }}
                       onClick={() => handleInitiatePaymob('fawry')}
                       disabled={initiatingPay}
                     >
-                      {initiatingPay ? 'جارٍ توليد الكود...' : 'إصدار كود فوري للسداد 🏪'}
+                      <QrCode size={17} /> {initiatingPay ? 'جارٍ إصدار الكود...' : 'إصدار كود الدفع من فوري 🏪'}
                     </button>
                   </div>
                 )}
