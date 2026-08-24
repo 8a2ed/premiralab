@@ -26,10 +26,44 @@ export interface SiteSettings {
   favicon_url?:         string;
   primary_color?:       string;
   accent_color?:        string;
+  hero_badge?:          string;
   hero_title?:          string;
   hero_subtitle?:       string;
   hero_primary_btn?:    string;
   hero_secondary_btn?:  string;
+  hero_trust_1?:        string;
+  hero_trust_2?:        string;
+  // --- Live Metrics / Stats ---
+  stat_1_num?:          string;
+  stat_1_label?:        string;
+  stat_2_num?:          string;
+  stat_2_label?:        string;
+  stat_3_num?:          string;
+  stat_3_label?:        string;
+  stat_4_num?:          string;
+  stat_4_label?:        string;
+  // --- Section Headings & Subtitles ---
+  testimonials_eyebrow?: string;
+  testimonials_title?:   string;
+  testimonials_subtitle?: string;
+  services_eyebrow?:    string;
+  services_title?:      string;
+  services_subtitle?:   string;
+  packages_eyebrow?:    string;
+  packages_title?:      string;
+  packages_subtitle?:   string;
+  portfolio_eyebrow?:   string;
+  portfolio_title?:     string;
+  portfolio_subtitle?:  string;
+  faqs_eyebrow?:        string;
+  faqs_title?:          string;
+  faqs_subtitle?:       string;
+  // --- Bottom CTA Banner ---
+  cta_badge?:           string;
+  cta_title?:           string;
+  cta_desc?:            string;
+  cta_btn_primary?:     string;
+  cta_btn_wa?:          string;
   about_text?:          string;
   footer_text?:         string;
 }

@@ -31,8 +31,8 @@ router.get('/', (_req, res, next) => {
     const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order ASC, id DESC').all();
     const faqs         = db.prepare('SELECT * FROM faqs         ORDER BY sort_order ASC, id DESC').all();
 
-    // Cache for 60 s, allow serving stale for 5 min while revalidating
-    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    // Real-time instant updates with no stale caching
+    res.set('Cache-Control', 'no-cache, must-revalidate');
     res.json({ site, packages, services, portfolio, testimonials, faqs });
   } catch (err) {
     next(err);

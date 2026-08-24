@@ -177,7 +177,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
             <div className="animation-fade-in hero-text-col">
               <div className="hero-badge">
                 <Sparkles size={15} className="hero-badge-icon" />
-                <span>استوديو رقمي متكامل للتصميم والتطوير</span>
+                <span>{data.site?.hero_badge || 'استوديو رقمي متكامل للتصميم والتطوير'}</span>
               </div>
               
               <h1 className="hero-heading">
@@ -203,11 +203,11 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
               <div className="hero-trust-row">
                 <div className="hero-trust-item">
                   <Shield size={16} style={{ color: 'var(--success)' }} />
-                  <span>ضمان أعلى جودة</span>
+                  <span>{data.site?.hero_trust_1 || 'ضمان أعلى جودة'}</span>
                 </div>
                 <div className="hero-trust-item">
                   <Zap size={16} style={{ color: 'var(--warning)' }} />
-                  <span>تسليم سريع ومتقن</span>
+                  <span>{data.site?.hero_trust_2 || 'تسليم سريع ومتقن'}</span>
                 </div>
               </div>
             </div>
@@ -238,8 +238,8 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                   <TrendingUp size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">+150</div>
-                  <div className="stat-tile__label">مشروع ناجح ومكتمل</div>
+                  <div className="stat-tile__number">{data.site?.stat_1_num || '+150'}</div>
+                  <div className="stat-tile__label">{data.site?.stat_1_label || 'مشروع ناجح ومكتمل'}</div>
                 </div>
               </div>
 
@@ -250,8 +250,8 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                   <Award size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">100%</div>
-                  <div className="stat-tile__label">نسبة رضا وثقة العملاء</div>
+                  <div className="stat-tile__number">{data.site?.stat_2_num || '100%'}</div>
+                  <div className="stat-tile__label">{data.site?.stat_2_label || 'نسبة رضا وثقة العملاء'}</div>
                 </div>
               </div>
 
@@ -262,8 +262,8 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                   <Clock size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">48 س</div>
-                  <div className="stat-tile__label">متوسط بدء التنفيذ</div>
+                  <div className="stat-tile__number">{data.site?.stat_3_num || '48 س'}</div>
+                  <div className="stat-tile__label">{data.site?.stat_3_label || 'متوسط بدء التنفيذ'}</div>
                 </div>
               </div>
 
@@ -274,8 +274,8 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                   <Headphones size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">24/7</div>
-                  <div className="stat-tile__label">متابعة ودعم مستمر</div>
+                  <div className="stat-tile__number">{data.site?.stat_4_num || '24/7'}</div>
+                  <div className="stat-tile__label">{data.site?.stat_4_label || 'متابعة ودعم مستمر'}</div>
                 </div>
               </div>
             </div>
@@ -287,9 +287,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
           <section className="section" id="testimonials" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
               <div className="section-header">
-                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>آراء العملاء</div>
-                <h2>ثقة عملائنا هي سر نجاحنا</h2>
-                <p className="muted">تجارب حقيقية لشركاء النجاح الذين وضعوا ثقتهم في استوديوهاتنا</p>
+                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.testimonials_eyebrow || 'آراء العملاء'}</div>
+                <h2>{data.site?.testimonials_title || 'ثقة عملائنا هي سر نجاحنا'}</h2>
+                <p className="muted">{data.site?.testimonials_subtitle || 'تجارب حقيقية لشركاء النجاح الذين وضعوا ثقتهم في استوديوهاتنا'}</p>
               </div>
 
               <Carousel autoPlay={true} intervalMs={3800}>
@@ -323,9 +323,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         <section className="section" id="services" aria-labelledby="services-title">
           <div className="container">
             <div className="section-header">
-              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>خدماتنا المتخصصة</div>
-              <h2 id="services-title">حلول رقمية متكاملة لنمو أعمالك</h2>
-              <p className="muted">نقدم مجموعة متكاملة من الخدمات الإبداعية والتقنية وفق أعلى معايير الجودة العالمية</p>
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.services_eyebrow || 'خدماتنا المتخصصة'}</div>
+              <h2 id="services-title">{data.site?.services_title || 'حلول رقمية متكاملة لنمو أعمالك'}</h2>
+              <p className="muted">{data.site?.services_subtitle || 'نقدم مجموعة متكاملة من الخدمات الإبداعية والتقنية وفق أعلى معايير الجودة العالمية'}</p>
             </div>
 
             <div className="grid grid-3">
@@ -346,9 +346,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         <section className="section" id="packages" aria-labelledby="packages-title" style={{ background: 'var(--bg-2)' }}>
           <div className="container">
             <div className="section-header">
-              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>باقات الأسعار</div>
-              <h2 id="packages-title">باقات متكاملة تناسب طموحاتك</h2>
-              <p className="muted">اختر الباقة الأنسب لحجم مشروعك وابدأ رحلة التفوق الرقمي بكل ثقة ووضوح</p>
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.packages_eyebrow || 'باقات الأسعار'}</div>
+              <h2 id="packages-title">{data.site?.packages_title || 'باقات متكاملة تناسب طموحاتك'}</h2>
+              <p className="muted">{data.site?.packages_subtitle || 'اختر الباقة الأنسب لحجم مشروعك وابدأ رحلة التفوق الرقمي بكل ثقة ووضوح'}</p>
             </div>
 
             <div className="grid grid-3">
@@ -391,9 +391,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         <section className="section" id="portfolio" aria-labelledby="portfolio-title">
           <div className="container">
             <div className="section-header">
-              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>معرض الأعمال</div>
-              <h2 id="portfolio-title">أعمال نفتخر بإنجازها</h2>
-              <p className="muted">نماذج وتجارب بصرية صممناها لشركائنا بأعلى درجات الإتقان والابتكار</p>
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.portfolio_eyebrow || 'معرض الأعمال'}</div>
+              <h2 id="portfolio-title">{data.site?.portfolio_title || 'أعمال نفتخر بإنجازها'}</h2>
+              <p className="muted">{data.site?.portfolio_subtitle || 'نماذج وتجارب بصرية صممناها لشركائنا بأعلى درجات الإتقان والابتكار'}</p>
             </div>
 
             {/* Category Filter Pills */}
@@ -455,9 +455,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
           <section className="section" id="faqs" aria-labelledby="faqs-title" style={{ background: 'var(--bg-2)' }}>
             <div className="container" style={{ maxWidth: 840 }}>
               <div className="section-header">
-                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>الأسئلة الشائعة</div>
-                <h2 id="faqs-title">إجابات عن أكثر ما يشغل بالك</h2>
-                <p className="muted">كل ما تود معرفته عن مراحل العمل، الدفع، والتسليم</p>
+                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.faqs_eyebrow || 'الأسئلة الشائعة'}</div>
+                <h2 id="faqs-title">{data.site?.faqs_title || 'إجابات عن أكثر ما يشغل بالك'}</h2>
+                <p className="muted">{data.site?.faqs_subtitle || 'كل ما تود معرفته عن مراحل العمل، الدفع، والتسليم'}</p>
               </div>
               <div className="card faq-container" style={{ padding: '16px 28px' }}>
                 {data.faqs.map(faq => (
@@ -475,15 +475,15 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
               <div className="cta-banner-glow" />
               <div className="cta-banner-content">
                 <div className="cta-banner-badge">
-                  <Sparkles size={14} /> لنبدأ معًا اليوم
+                  <Sparkles size={14} /> {data.site?.cta_badge || 'لنبدأ معًا اليوم'}
                 </div>
-                <h2 className="cta-banner-title">جاهز لنقل علامتك التجارية إلى المستوى التالي؟</h2>
+                <h2 className="cta-banner-title">{data.site?.cta_title || 'جاهز لنقل علامتك التجارية إلى المستوى التالي؟'}</h2>
                 <p className="cta-banner-desc">
-                  دعنا نبتكر لك هوية وتجربة رقمية فريدة تُميّزك عن منافسيك وتحقق أهدافك بأعلى احترافية.
+                  {data.site?.cta_desc || 'دعنا نبتكر لك هوية وتجربة رقمية فريدة تُميّزك عن منافسيك وتحقق أهدافك بأعلى احترافية.'}
                 </p>
                 <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
                   <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
-                    ابدأ مشروعك الآن <ArrowLeft size={18} />
+                    {data.site?.cta_btn_primary || 'ابدأ مشروعك الآن'} <ArrowLeft size={18} />
                   </button>
                   {data.site?.whatsapp && (
                     <a 
@@ -493,7 +493,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                       className="btn btn--lg btn--outline"
                       style={{ borderColor: '#25D366', color: '#25D366' }}
                     >
-                      💬 استشارة عبر واتساب
+                      💬 {data.site?.cta_btn_wa || 'استشارة عبر واتساب'}
                     </a>
                   )}
                 </div>
