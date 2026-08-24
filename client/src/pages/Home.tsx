@@ -165,19 +165,16 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
             {/* Hero Visual Card */}
             <div className="hero-art-wrapper">
               <div className="hero-art-glow" />
-              <div className="hero-art card">
-                <div className="hero-art-logo-wrap">
-                  <img 
-                    src={data.site?.logo_url ?? '/logo.png'} 
-                    alt={data.site?.brand ?? 'PREMIRALAB'} 
-                    className="hero-art-logo"
-                  />
-                </div>
-                <div className="hero-art-badge">
-                  <span className="hero-art-badge-dot" />
-                  <span>{data.site?.brand ?? 'PREMIRALAB'} Studio</span>
-                </div>
-              </div>
+              <div 
+                className="hero-art" 
+                aria-hidden="true" 
+                style={{ 
+                  backgroundImage: `radial-gradient(circle at 45% 40%, var(--accent-dim) 0%, #120e17 40%, #060608 80%), url(${data.site?.logo_url ?? '/logo.png'})`,
+                  backgroundSize: 'cover, 78%',
+                  backgroundRepeat: 'no-repeat, no-repeat',
+                  backgroundPosition: 'center, center'
+                }} 
+              />
             </div>
           </div>
         </section>
