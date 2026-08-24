@@ -21,6 +21,18 @@ export interface SiteSettings {
   smtp_pass?:           string;
   smtp_from_name?:      string;
   smtp_from_email?:     string;
+  // --- Paymob Gateway Settings ---
+  paymob_enabled?:             boolean;
+  paymob_api_key?:             string;
+  paymob_public_key?:          string;
+  paymob_secret_key?:          string;
+  paymob_integration_id_card?: string;
+  paymob_integration_id_wallet?: string;
+  paymob_integration_id_fawry?: string;
+  paymob_iframe_id?:           string;
+  paymob_hmac_secret?:         string;
+  paymob_currency?:            string;
+  paymob_test_mode?:           boolean;
   // --- Appearance & Hero Settings ---
   logo_url?:            string;
   favicon_url?:         string;
@@ -133,29 +145,34 @@ export interface Client {
 }
 
 export interface Order {
-  id:              number;
-  order_no:        string;
-  client_id:       number;
-  package_id:      number | null;
-  service_id:      number | null;
-  project_type:    string;
-  notes:           string;
-  status:          OrderStatus;
-  budget:          number | null;
-  paid_amount?:    number;
-  payment_receipt?: string;
-  payment_method?: string;
-  deadline:        string | null;
-  promo_code?:     string;
-  promo_discount?: string;
-  created_at:      string;
-  updated_at:      string;
+  id:                     number;
+  order_no:               string;
+  client_id:              number;
+  package_id:             number | null;
+  service_id:             number | null;
+  project_type:           string;
+  notes:                  string;
+  status:                 OrderStatus;
+  payment_status?:        'pending_approval' | 'approved_for_payment' | 'paid' | 'waitlist' | 'rejected';
+  payment_amount?:        number;
+  payment_approved_at?:   string;
+  review_notes?:          string;
+  budget:                 number | null;
+  paid_amount?:           number;
+  payment_receipt?:       string;
+  payment_method?:        string;
+  payment_transaction_id?: string;
+  deadline:               string | null;
+  promo_code?:            string;
+  promo_discount?:        string;
+  created_at:             string;
+  updated_at:             string;
   // joined fields
-  client_name:     string;
-  client_phone:    string;
-  client_email:    string;
-  package_title:   string | null;
-  service_title:   string | null;
+  client_name:            string;
+  client_phone:           string;
+  client_email:           string;
+  package_title:          string | null;
+  service_title:          string | null;
 }
 
 export type OrderStatus =
@@ -263,6 +280,10 @@ export interface PromoCode {
 export interface TrackerData {
   orderNo:         string;
   status:          OrderStatus;
+  paymentStatus?:  'pending_approval' | 'approved_for_payment' | 'paid' | 'waitlist' | 'rejected';
+  paymentAmount?:  number;
+  paymentApprovedAt?: string;
+  reviewNotes?:    string;
   projectType:     string;
   packageTitle:    string | null;
   serviceTitle:    string | null;
@@ -273,6 +294,7 @@ export interface TrackerData {
   deadline:        string | null;
   createdAt:       string;
   paymentInfo?: {
+    paymobEnabled?:       boolean;
     instapayUsername?:    string;
     vodafoneCash?:        string;
     bankDetails?:         string;

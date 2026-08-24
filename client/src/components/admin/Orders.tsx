@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Download, FileText, LayoutGrid, List, MessageSquare, Phone, DollarSign, Paperclip, Trash2 } from 'lucide-react';
+import { Search, Download, FileText, LayoutGrid, List, MessageSquare, Phone, DollarSign, Paperclip, Trash2, CheckCircle2, Clock, AlertCircle, ShieldAlert } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { money, formatDate, debounce, downloadUrl, waLink } from '../../lib/utils.js';
 import { ORDER_STATUS_LABELS, type Order, type OrderStatus, type Paginated } from '../../types.js';
@@ -12,7 +12,7 @@ const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
 ];
 
 const KANBAN_COLUMNS: Array<{ id: string; title: string; color: string; statuses: string[] }> = [
-  { id: 'new',         title: 'طلبات جديدة',            color: '#888',     statuses: ['new'] },
+  { id: 'new',         title: 'طلبات جديدة ومراجعة',    color: '#888',     statuses: ['new'] },
   { id: 'approved',    title: 'معتمد / بانتظار الدفع',  color: '#7c7cf0',  statuses: ['contacted', 'approved', 'payment_pending', 'paid'] },
   { id: 'in_progress', title: 'قيد التنفيذ والعمل',     color: '#cd45cd',  statuses: ['in_progress'] },
   { id: 'review',      title: 'المراجعة والتعديلات',    color: '#f59e0b',  statuses: ['review', 'revisions'] },
@@ -31,6 +31,7 @@ export function Orders({ onToast }: OrdersProps) {
   const [page,         setPage]         = useState(1);
   const [viewMode,     setViewMode]     = useState<'table' | 'kanban'>('table');
   const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
+  const [reviewOrder,  setReviewOrder]  = useState<Order | null>(null);
 
   const load = useCallback(async (s = search, st = status, p = page, mode = viewMode) => {
     setLoading(true);
@@ -148,237 +149,169 @@ export function Orders({ onToast }: OrdersProps) {
                     <th>رقم الطلب</th>
                     <th>العميل</th>
                     <th>الباقة / الخدمة</th>
+                    <th>مراجعة المواعيد والدفع</th>
                     <th>الحالة</th>
                     <th>الميزانية والسداد</th>
                     <th>إجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.rows.map(o => (
-                    <tr key={o.id}>
-                      <td><code className="order-no">{o.order_no}</code></td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{o.client_name}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                          <span className="muted" style={{ fontSize: 12 }}>{o.client_phone}</span>
-                          <a
-                            href={getClientWhatsAppUrl(o)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn--icon btn--sm"
-                            style={{ color: '#25D366', padding: 2 }}
-                            title="مراسلة العميل عبر واتساب"
-                          >
-                            <MessageSquare size={13} />
-                          </a>
-                          <a
-                            href={`tel:${o.client_phone}`}
-                            className="btn btn--icon btn--sm"
-                            style={{ color: 'var(--text-muted)', padding: 2 }}
-                            title="اتصال هاتفي"
-                          >
-                            <Phone size={13} />
-                          </a>
-                        </div>
-                      </td>
-                      <td>{o.package_title ?? o.service_title ?? o.project_type ?? '—'}</td>
-                      <td>
-                        <select
-                          className="select select--compact"
-                          value={o.status}
-                          onChange={e => updateStatus(o.id, e.target.value)}
-                          aria-label={`حالة الطلب ${o.order_no}`}
-                        >
-                          {Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => (
-                            <option key={k} value={k}>{v}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontWeight: 600 }}>{o.budget ? money(o.budget) : '—'}</span>
-                          <button
-                            className="btn btn--icon btn--sm"
-                            title="تعديل الميزانية والدفعة المسددة"
-                            onClick={() => setPaymentOrder(o)}
-                          >
-                            <DollarSign size={13} style={{ color: (o.paid_amount || 0) >= (o.budget || 0) && (o.budget || 0) > 0 ? '#10b981' : 'var(--accent)' }} />
-                          </button>
-                          {o.payment_receipt && (
+                  {data?.rows.map(o => {
+                    const payStatus = o.payment_status || 'pending_approval';
+                    return (
+                      <tr key={o.id}>
+                        <td><code className="order-no">{o.order_no}</code></td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{o.client_name}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <span className="muted" style={{ fontSize: 12 }}>{o.client_phone}</span>
                             <a
-                              href={`/uploads/${o.payment_receipt}`}
+                              href={getClientWhatsAppUrl(o)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="btn btn--icon btn--sm"
-                              style={{ color: '#22c55e' }}
-                              title="معاينة إيصال التحويل المرفوع"
+                              style={{ color: '#25D366', padding: 2 }}
+                              title="مراسلة العميل عبر واتساب"
                             >
-                              <Paperclip size={13} />
+                              <MessageSquare size={13} />
                             </a>
+                            <a
+                              href={`tel:${o.client_phone}`}
+                              className="btn btn--icon btn--sm"
+                              style={{ color: 'var(--text-muted)', padding: 2 }}
+                              title="اتصال هاتفي"
+                            >
+                              <Phone size={13} />
+                            </a>
+                          </div>
+                        </td>
+                        <td>{o.package_title ?? o.service_title ?? o.project_type ?? '—'}</td>
+                        
+                        {/* Queue & Payment Status Cell */}
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <PaymentStatusBadge status={payStatus} />
+                            <button
+                              className="btn btn--sm btn--outline"
+                              style={{ fontSize: 11, padding: '4px 8px', alignSelf: 'flex-start' }}
+                              onClick={() => setReviewOrder(o)}
+                            >
+                              ⚙️ إدارة الطابور والدفع
+                            </button>
+                          </div>
+                        </td>
+
+                        <td>
+                          <select
+                            className="select select--compact"
+                            value={o.status}
+                            onChange={e => updateStatus(o.id, e.target.value)}
+                            aria-label={`حالة الطلب ${o.order_no}`}
+                          >
+                            {Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => (
+                              <option key={k} value={k}>{v}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontWeight: 600 }}>{o.budget ? money(o.budget) : '—'}</span>
+                            <button
+                              className="btn btn--icon btn--sm"
+                              title="تعديل الميزانية والدفعة المسددة"
+                              onClick={() => setPaymentOrder(o)}
+                            >
+                              <DollarSign size={13} style={{ color: (o.paid_amount || 0) >= (o.budget || 0) && (o.budget || 0) > 0 ? '#10b981' : 'var(--accent)' }} />
+                            </button>
+                            {o.payment_receipt && (
+                              <a
+                                href={`/uploads/${o.payment_receipt}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn--icon btn--sm"
+                                style={{ color: '#22c55e' }}
+                                title="معاينة إيصال التحويل المرفوع"
+                              >
+                                <Paperclip size={13} />
+                              </a>
+                            )}
+                          </div>
+                          {o.promo_code && (
+                            <div style={{ marginTop: 4, fontSize: 11, color: 'var(--primary)' }}>
+                              🎁 كود: {o.promo_code} ({o.promo_discount})
+                            </div>
                           )}
-                        </div>
-                        {o.promo_code && (
-                          <div style={{ marginTop: 4, fontSize: 11, color: 'var(--primary)' }}>
-                            🎁 كود: {o.promo_code} ({o.promo_discount})
-                          </div>
-                        )}
-                        {o.paid_amount != null && o.paid_amount > 0 && (
-                          <div style={{ fontSize: 11, color: '#10b981', marginTop: 2 }}>
-                            مسدد: {money(o.paid_amount)}
-                          </div>
-                        )}
-                      </td>
-                      <td className="actions-cell">
-                        <button
-                          className="btn btn--icon"
-                          title="فتح الفاتورة"
-                          onClick={() => openInvoice(o.id)}
-                          aria-label={`فاتورة الطلب ${o.order_no}`}
-                        >
-                          <FileText size={15} />
-                        </button>
-                        <button
-                          className="btn btn--icon"
-                          title="حذف الطلب"
-                          onClick={() => handleDelete(o.id)}
-                          style={{ color: 'var(--danger, #ef4444)' }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                          {o.paid_amount != null && o.paid_amount > 0 && (
+                            <div style={{ fontSize: 11, color: '#10b981', marginTop: 2 }}>
+                              مسدد: {money(o.paid_amount)} {o.payment_method ? `(${o.payment_method})` : ''}
+                            </div>
+                          )}
+                        </td>
+                        <td className="actions-cell">
+                          <button
+                            className="btn btn--icon"
+                            title="فتح الفاتورة"
+                            onClick={() => openInvoice(o.id)}
+                            aria-label={`فاتورة الطلب ${o.order_no}`}
+                          >
+                            <FileText size={15} />
+                          </button>
+                          <button
+                            className="btn btn--icon"
+                            title="حذف الطلب"
+                            onClick={() => handleDelete(o.id)}
+                            style={{ color: 'var(--danger, #ef4444)' }}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           ) : (
-            /* Kanban Board View */
+            /* Kanban View */
             <div className="kanban-board">
               {KANBAN_COLUMNS.map(col => {
-                const colOrders = (data?.rows ?? []).filter(o => col.statuses.includes(o.status));
+                const colOrders = data?.rows.filter(o => col.statuses.includes(o.status)) || [];
                 return (
-                  <div className="kanban-column" key={col.id}>
-                    <div className="kanban-column__head">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
-                        <span>{col.title}</span>
-                      </div>
-                      <span className="kanban-column__count">{colOrders.length}</span>
+                  <div key={col.id} className="kanban-col">
+                    <div className="kanban-col__header" style={{ borderTopColor: col.color }}>
+                      <span className="kanban-col__title">{col.title}</span>
+                      <span className="badge">{colOrders.length}</span>
                     </div>
-
-                    <div className="kanban-cards">
+                    <div className="kanban-col__cards">
                       {colOrders.map(o => (
-                        <div className="kanban-card" key={o.id}>
+                        <div key={o.id} className="kanban-card">
                           <div className="kanban-card__top">
-                            <code className="order-no" style={{ fontSize: 11 }}>{o.order_no}</code>
-                            <div style={{ display: 'flex', gap: 4 }}>
-                              <button
-                                className="btn btn--icon btn--sm"
-                                title="تعديل الميزانية والدفعة المسددة"
-                                onClick={() => setPaymentOrder(o)}
-                              >
-                                <DollarSign size={13} />
-                              </button>
-                              <button
-                                className="btn btn--icon btn--sm"
-                                title="فاتورة"
-                                onClick={() => openInvoice(o.id)}
-                              >
-                                <FileText size={13} />
-                              </button>
-                              <button
-                                className="btn btn--icon btn--sm"
-                                title="حذف"
-                                onClick={() => handleDelete(o.id)}
-                                style={{ color: 'var(--danger, #ef4444)' }}
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
+                            <code className="order-no">{o.order_no}</code>
+                            <PaymentStatusBadge status={o.payment_status || 'pending_approval'} />
                           </div>
-
-                          <div className="kanban-card__title">{o.client_name}</div>
-
-                          <div className="muted" style={{ fontSize: 12 }}>
-                            {o.package_title ?? o.service_title ?? o.project_type ?? 'طلب مخصص'}
+                          <div className="kanban-card__client">{o.client_name}</div>
+                          <div className="kanban-card__type muted" style={{ fontSize: 12 }}>
+                            {o.package_title ?? o.service_title ?? o.project_type ?? '—'}
                           </div>
-
-                          <div className="kanban-card__meta">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <span style={{ fontWeight: 600, color: 'var(--accent)' }}>
-                                {o.budget ? money(o.budget) : '—'}
-                              </span>
-                              {o.payment_receipt && (
-                                <a
-                                  href={`/uploads/${o.payment_receipt}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="btn btn--icon btn--sm"
-                                  style={{ color: '#22c55e', marginLeft: 4 }}
-                                  title="معاينة الإيصال"
-                                >
-                                  <Paperclip size={13} />
-                                </a>
-                              )}
-                            </div>
-                            {o.promo_code && (
-                              <div style={{ marginTop: 4, fontSize: 11, color: 'var(--primary)' }}>
-                                🎁 {o.promo_code}
-                              </div>
-                            )}
-                            <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>
-                              {formatDate(o.created_at)}
-                            </div>
-                          </div>
-
-                          {o.paid_amount != null && o.paid_amount > 0 && (
-                            <div style={{ fontSize: 11, color: '#10b981', display: 'flex', justifyContent: 'space-between' }}>
-                              <span>المسدد: {money(o.paid_amount)}</span>
-                              <span>المتبقي: {money(Math.max(0, (o.budget || 0) - o.paid_amount))}</span>
-                            </div>
-                          )}
-
-                          <div className="kanban-card__actions">
-                            <div style={{ display: 'flex', gap: 6 }}>
-                              <a
-                                href={getClientWhatsAppUrl(o)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn--icon btn--sm"
-                                style={{ color: '#25D366' }}
-                                title="واتساب"
-                              >
-                                <MessageSquare size={13} />
-                              </a>
-                              <a
-                                href={`tel:${o.client_phone}`}
-                                className="btn btn--icon btn--sm"
-                                style={{ color: 'var(--text-muted)' }}
-                                title="اتصال"
-                              >
-                                <Phone size={13} />
-                              </a>
-                            </div>
-
-                            <select
-                              className="select select--compact"
-                              style={{ fontSize: 11, padding: '3px 8px', width: 'auto' }}
-                              value={o.status}
-                              onChange={e => updateStatus(o.id, e.target.value)}
+                          
+                          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                            <button
+                              className="btn btn--sm btn--outline"
+                              style={{ fontSize: 11, padding: '3px 8px' }}
+                              onClick={() => setReviewOrder(o)}
                             >
-                              {Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => (
-                                <option key={k} value={k}>{v}</option>
-                              ))}
-                            </select>
+                              ⚙️ مراجعة الطابور
+                            </button>
+                            <button
+                              className="btn btn--sm"
+                              style={{ fontSize: 11, padding: '3px 8px' }}
+                              onClick={() => setPaymentOrder(o)}
+                            >
+                              💰 {o.paid_amount ? `${o.paid_amount} ج.م` : 'تعديل السداد'}
+                            </button>
                           </div>
                         </div>
                       ))}
-
-                      {colOrders.length === 0 && (
-                        <div className="empty" style={{ padding: 14, fontSize: 12 }}>
-                          لا توجد طلبات
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -406,6 +339,19 @@ export function Orders({ onToast }: OrdersProps) {
         </>
       )}
 
+      {/* Queue & Payment Review Modal */}
+      {reviewOrder && (
+        <QueueReviewModal
+          order={reviewOrder}
+          onClose={() => setReviewOrder(null)}
+          onUpdated={() => {
+            setReviewOrder(null);
+            load();
+            onToast('تم تحديث حالة الطابور والدفع للطلب بنجاح 🚀', 'success');
+          }}
+        />
+      )}
+
       {/* Payment Edit Modal */}
       {paymentOrder && (
         <PaymentEditModal
@@ -424,8 +370,165 @@ export function Orders({ onToast }: OrdersProps) {
   );
 }
 
-// ─── Payment Edit Modal ────────────────────────────────────────────────────────
+function PaymentStatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case 'approved_for_payment':
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+          <CheckCircle2 size={12} /> معتمد للدفع
+        </span>
+      );
+    case 'paid':
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+          <DollarSign size={12} /> تم الدفع بنجاح
+        </span>
+      );
+    case 'waitlist':
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+          <Clock size={12} /> قائمة انتظار
+        </span>
+      );
+    case 'rejected':
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+          <ShieldAlert size={12} /> معتذر عنه
+        </span>
+      );
+    case 'pending_approval':
+    default:
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+          <Clock size={12} /> قيد المراجعة
+        </span>
+      );
+  }
+}
 
+// ─── Queue & Payment Review Modal ──────────────────────────────────────────────
+interface QueueReviewModalProps {
+  order:   Order;
+  onClose: () => void;
+  onUpdated: () => void;
+}
+
+function QueueReviewModal({ order, onClose, onUpdated }: QueueReviewModalProps) {
+  const [amount,  setAmount]  = useState(String(order.payment_amount || order.budget || ''));
+  const [notes,   setNotes]   = useState(order.review_notes || '');
+  const [action,  setAction]  = useState<'approve' | 'waitlist' | 'reject'>('approve');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (action === 'approve') {
+        const val = Number(amount) || 0;
+        if (val <= 0) throw new Error('يرجى تحديد المبلغ المطلوب سداده من العميل');
+        await api.admin.approvePayment(order.id, { amount: val, notes });
+      } else if (action === 'waitlist') {
+        await api.admin.updateQueueStatus(order.id, { status: 'waitlist', notes });
+      } else if (action === 'reject') {
+        await api.admin.updateQueueStatus(order.id, { status: 'rejected', notes });
+      }
+      onUpdated();
+    } catch (err: any) {
+      alert(err.message || 'حدث خطأ أثناء معالجة الطلب');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal title={`مراجعة طابور الطلب #${order.order_no}`} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="form-stack">
+        <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 8, fontSize: 13, lineHeight: 1.8 }}>
+          <div><strong>العميل:</strong> {order.client_name} ({order.client_phone})</div>
+          <div><strong>نوع الخدمة / الباقة:</strong> {order.package_title || order.service_title || order.project_type || 'طلب مخصص'}</div>
+          {order.budget && <div><strong>الميزانية المقترحة من العميل:</strong> {money(order.budget)}</div>}
+          {order.notes && <div style={{ marginTop: 6, color: 'var(--text-muted)' }}><strong>ملاحظات العميل:</strong> <em>{order.notes}</em></div>}
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">قرار الإدارة بخصوص الطلب والطابور</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <button
+              type="button"
+              className={`btn ${action === 'approve' ? 'btn--primary' : 'btn--outline'}`}
+              onClick={() => setAction('approve')}
+              style={{ fontSize: 12, padding: '8px 4px' }}
+            >
+              🟢 الموافقة وفتح الدفع
+            </button>
+            <button
+              type="button"
+              className={`btn ${action === 'waitlist' ? 'btn--primary' : 'btn--outline'}`}
+              onClick={() => setAction('waitlist')}
+              style={{ fontSize: 12, padding: '8px 4px' }}
+            >
+              🟡 قائمة الانتظار
+            </button>
+            <button
+              type="button"
+              className={`btn ${action === 'reject' ? 'btn--primary' : 'btn--outline'}`}
+              onClick={() => setAction('reject')}
+              style={{ fontSize: 12, padding: '8px 4px' }}
+            >
+              🔴 اعتذار لعدم توافر موعد
+            </button>
+          </div>
+        </div>
+
+        {action === 'approve' && (
+          <div className="form-field">
+            <label className="form-label">المبلغ المطلوب سداده (جنيه مصري)</label>
+            <input
+              className="input"
+              type="number"
+              min="1"
+              required
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              placeholder="مثال: 5000"
+            />
+            <span className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+              سيتمكن العميل من دفع هذا المبلغ فورًا عبر فودافون كاش، فيزا/ميزة، أو انستاباي.
+            </span>
+          </div>
+        )}
+
+        <div className="form-field">
+          <label className="form-label">رسالة أو ملاحظات تظهر للعميل في صفحة التتبع والإيميل</label>
+          <textarea
+            className="textarea"
+            rows={3}
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder={
+              action === 'approve'
+                ? 'تمت مراجعة الطلب والموافقة على الموعد، يرجى إتمام الدفع لبدء العمل فورًا.'
+                : action === 'waitlist'
+                ? 'نعتذر عن الضغط الحالي، تم وضعك في قائمة الانتظار والموعد المتوقع للبدء هو...'
+                : 'نعتذر لعدم توافر مواعيد شاغرة في الوقت الحالي...'
+            }
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+          <button type="submit" className="btn btn--primary" disabled={loading} style={{ flex: 1 }}>
+            {loading ? 'جارٍ الحفظ...' : 'تأكيد القرار وإشعار العميل فورًا'}
+          </button>
+          <button type="button" className="btn" onClick={onClose} disabled={loading}>
+            إلغاء
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ─── Payment Edit Modal ────────────────────────────────────────────────────────
 interface PaymentEditModalProps {
   order:   Order;
   onClose: () => void;

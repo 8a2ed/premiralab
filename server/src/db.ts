@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from 'node:fs';
 
-// â”€â”€â”€ Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Paths ───────────────────────────────────────────────────────────────────
 export const DATA_DIR   = process.env.DATA_DIR   || path.resolve(process.cwd(), 'data');
 export const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve(DATA_DIR, 'uploads');
 
@@ -13,7 +13,7 @@ try {
   console.error('[db] Notice creating data/uploads dir:', err);
 }
 
-// â”€â”€â”€ Connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Connection ──────────────────────────────────────────────────────────────
 const dbPath = path.join(DATA_DIR, 'studio.db');
 console.log(`[db] Initializing database at: ${dbPath}`);
 const db = new Database(dbPath);
@@ -21,13 +21,8 @@ const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.pragma('busy_timeout = 5000');
-try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
-try { db.exec('ALTER TABLE orders ADD COLUMN payment_receipt TEXT;'); } catch (e) { /* ignore */ }
-try { db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT;'); } catch (e) { /* ignore */ }
-try { db.exec('ALTER TABLE orders ADD COLUMN promo_code TEXT;'); } catch (e) { /* ignore */ }
-try { db.exec('ALTER TABLE orders ADD COLUMN promo_discount TEXT;'); } catch (e) { /* ignore */ }
 
-// â”€â”€â”€ Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Schema ──────────────────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,12 +86,11 @@ db.exec(`
     created_at  TEXT    NOT NULL,
     updated_at  TEXT    NOT NULL
   );
-  
 
   CREATE TABLE IF NOT EXISTS promo_codes (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     code           TEXT    NOT NULL UNIQUE,
-    discount_type  TEXT    NOT NULL, /* 'percentage' | 'fixed' */
+    discount_type  TEXT    NOT NULL,
     discount_value REAL    NOT NULL,
     max_uses       INTEGER DEFAULT NULL,
     current_uses   INTEGER NOT NULL DEFAULT 0,
@@ -107,27 +101,40 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS clients (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    name       TEXT    NOT NULL,
-    phone      TEXT    NOT NULL,
-    email      TEXT    NOT NULL DEFAULT '',
-    created_at TEXT    NOT NULL,
-    updated_at TEXT    NOT NULL
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT    NOT NULL,
+    phone         TEXT    NOT NULL,
+    email         TEXT    NOT NULL DEFAULT '',
+    password_hash TEXT,
+    reset_token   TEXT,
+    reset_expires TEXT,
+    created_at    TEXT    NOT NULL,
+    updated_at    TEXT    NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS orders (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_no     TEXT    UNIQUE NOT NULL,
-    client_id    INTEGER NOT NULL,
-    package_id   INTEGER,
-    service_id   INTEGER,
-    project_type TEXT    NOT NULL DEFAULT '',
-    notes        TEXT    NOT NULL DEFAULT '',
-    status       TEXT    NOT NULL DEFAULT 'new',
-    budget       REAL,
-    deadline     TEXT,
-    created_at   TEXT    NOT NULL,
-    updated_at   TEXT    NOT NULL,
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_no               TEXT    UNIQUE NOT NULL,
+    client_id              INTEGER NOT NULL,
+    package_id             INTEGER,
+    service_id             INTEGER,
+    project_type           TEXT    NOT NULL DEFAULT '',
+    notes                  TEXT    NOT NULL DEFAULT '',
+    status                 TEXT    NOT NULL DEFAULT 'new',
+    payment_status         TEXT    NOT NULL DEFAULT 'pending_approval',
+    payment_method         TEXT,
+    payment_receipt        TEXT,
+    payment_amount         REAL    DEFAULT 0,
+    paid_amount            REAL    DEFAULT 0,
+    payment_transaction_id TEXT,
+    payment_approved_at    TEXT,
+    review_notes           TEXT,
+    budget                 REAL,
+    deadline               TEXT,
+    promo_code             TEXT,
+    promo_discount         TEXT,
+    created_at             TEXT    NOT NULL,
+    updated_at             TEXT    NOT NULL,
     FOREIGN KEY(client_id)  REFERENCES clients(id) ON DELETE RESTRICT,
     FOREIGN KEY(package_id) REFERENCES packages(id) ON DELETE SET NULL,
     FOREIGN KEY(service_id) REFERENCES services(id) ON DELETE SET NULL
@@ -187,7 +194,7 @@ db.exec(`
   );
 `);
 
-// â”€â”€â”€ Indexes (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Indexes (idempotent) ────────────────────────────────────────────────────
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_orders_client_id   ON orders(client_id);
   CREATE INDEX IF NOT EXISTS idx_orders_status       ON orders(status);
@@ -201,13 +208,25 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_notifications_read  ON notifications(read);
 `);
 
-try { db.exec('ALTER TABLE portfolio ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore if exists */ }
-try { db.exec('ALTER TABLE testimonials ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore if exists */ }
+// ─── Safe Idempotent Column Additions for Existing Databases ───────────────────
+try { db.exec('ALTER TABLE portfolio ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE testimonials ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE faqs ADD COLUMN created_at TEXT NOT NULL DEFAULT ""'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE faqs ADD COLUMN updated_at TEXT NOT NULL DEFAULT ""'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE clients ADD COLUMN password_hash TEXT'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE clients ADD COLUMN reset_token TEXT'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE clients ADD COLUMN reset_expires TEXT'); } catch (e) { /* ignore */ }
+
+try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_receipt TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN promo_code TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN promo_discount TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'pending_approval';"); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_approved_at TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN payment_transaction_id TEXT;'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE orders ADD COLUMN review_notes TEXT;'); } catch (e) { /* ignore */ }
 
 export { db };
 export const now = () => new Date().toISOString();

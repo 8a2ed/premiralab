@@ -70,8 +70,11 @@ app.use(helmet({
         "'self'", 
         "https://www.google-analytics.com",
         "https://analytics.google.com",
-        "https://stats.g.doubleclick.net"
+        "https://stats.g.doubleclick.net",
+        "https://accept.paymob.com",
+        "https://*.paymob.com"
       ],
+      frameSrc: ["'self'", "https://accept.paymob.com", "https://*.paymob.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
     }
@@ -99,6 +102,7 @@ app.use(rateLimit({
 
 import clientAuthRouter   from './routes/client/auth.js';
 import clientDashRouter   from './routes/client/dashboard.js';
+import paymentRouter      from './routes/payment.js';
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
@@ -108,6 +112,7 @@ app.use('/api/auth',    authRouter);
 app.use('/api/public',  publicRouter);
 app.use('/api/orders',  ordersRouter);
 app.use('/api/track',   trackerRouter);
+app.use('/api/payment', paymentRouter);
 
 // ─── Client routes ────────────────────────────────────────────────────────────
 app.use('/api/client/auth',      clientAuthRouter);

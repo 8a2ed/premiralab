@@ -321,47 +321,151 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
 
       {/* TAB 5: Payment Methods */}
       {activeTab === 'payments' && (
-        <div className="card animation-fade-in" style={{ border: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <CreditCard size={22} style={{ color: 'var(--accent)' }} />
-            <h3 className="card-title" style={{ margin: 0 }}>طرق الدفع والتحويل البنكي (Payments & Banking)</h3>
-          </div>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
-            ستظهر هذه البيانات لعملائك في صفحة تتبع الطلب وفي الفاتورة الرسمية ليتمكنوا من تحويل المستحقات ورفع إيصال السداد مباشرة.
-          </p>
-
-          <div className="form-stack">
-            <Field
-              label="عنوان انستاباي (InstaPay Handle / IPA)"
-              value={s.instapay_username ?? ''}
-              onChange={v => setS(x => ({ ...x, instapay_username: v }))}
-              placeholder="مثال: studio@instapay"
-            />
-            <Field
-              label="رقم فودافون كاش ومحافظ إلكترونية (Vodafone Cash / Wallets)"
-              value={s.vodafone_cash ?? ''}
-              onChange={v => setS(x => ({ ...x, vodafone_cash: v }))}
-              placeholder="مثال: 010xxxxxxxx"
-            />
-            <Field
-              label="بيانات الحساب البنكي والآيبان (Bank Account / IBAN)"
-              value={s.bank_details ?? ''}
-              onChange={v => setS(x => ({ ...x, bank_details: v }))}
-              placeholder="مثال: بنك CIB - الحساب: 1000xxxx - الآيبان: EGxxxxxxxx"
-            />
-            <div className="form-field">
-              <label className="form-label">إرشادات وتعليمات الدفع للعملاء</label>
-              <textarea
-                className="textarea"
-                rows={3}
-                value={s.payment_instructions ?? ''}
-                onChange={e => setS(x => ({ ...x, payment_instructions: e.target.value }))}
-                placeholder="مثال: يرجى تحويل 50% دفعة مقدمة لبدء العمل، ثم رفع صورة إيصال التحويل لتأكيد الطلب."
-              />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="animation-fade-in">
+          {/* Electronic Payment Gateway (Paymob) */}
+          <div className="card" style={{ border: '1px solid var(--accent)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <CreditCard size={22} style={{ color: 'var(--accent)' }} />
+                <h3 className="card-title" style={{ margin: 0 }}>بوابة الدفع الإلكتروني (Paymob — فودافون كاش، فيزا، ميزة، فوري)</h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(s.paymob_enabled)}
+                    onChange={e => setS(x => ({ ...x, paymob_enabled: e.target.checked }))}
+                  />
+                  <span>تفعيل الدفع الإلكتروني التلقائي</span>
+                </label>
+              </div>
             </div>
-            <button className="btn btn--primary" onClick={save} disabled={saving} style={{ alignSelf: 'flex-start', minWidth: 160 }}>
-              {saving ? 'جارٍ الحفظ...' : 'حفظ بيانات الدفع'}
-            </button>
+
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+              عند تفعيل Paymob، سيتمكن العملاء من سداد قيمة الطلبات المعتمدة فوراً باستخدام <strong>فودافون كاش، اتصالات/أورنج كاش، بطاقات فيزا وماستركارد وميزة، أو كود فوري</strong>. يتم تحديث حالة الطلب إلى (مدفوع) تلقائياً بالثانية.
+            </p>
+
+            <div className="form-stack">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'var(--bg-3)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <input
+                  type="checkbox"
+                  id="paymob_test_mode"
+                  checked={Boolean(s.paymob_test_mode)}
+                  onChange={e => setS(x => ({ ...x, paymob_test_mode: e.target.checked }))}
+                />
+                <label htmlFor="paymob_test_mode" style={{ fontSize: 13, cursor: 'pointer', color: 'var(--text)' }}>
+                  <strong>وضع الاختبار التجريبي (Test / Sandbox Mode)</strong> — استخدم بيانات بطاقات الاختبار
+                </label>
+              </div>
+
+              <div className="grid-2">
+                <Field
+                  label="مفتاح الـ API الأساسي (Paymob API Key)"
+                  value={s.paymob_api_key ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_api_key: v }))}
+                  placeholder="ZXlKaGJHY2lPaUpTVXpVeE..."
+                />
+                <Field
+                  label="المفتاح السري (Secret Key)"
+                  value={s.paymob_secret_key ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_secret_key: v }))}
+                  placeholder="sec_..."
+                />
+              </div>
+
+              <div className="grid-3">
+                <Field
+                  label="معرف ربط الكروت وفيزا وميزة (Card Integration ID)"
+                  value={s.paymob_integration_id_card ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_integration_id_card: v }))}
+                  placeholder="مثال: 123456"
+                />
+                <Field
+                  label="معرف ربط فودافون كاش والمحافظ (Wallet Integration ID)"
+                  value={s.paymob_integration_id_wallet ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_integration_id_wallet: v }))}
+                  placeholder="مثال: 123457"
+                />
+                <Field
+                  label="معرف ربط كود فوري (Fawry Integration ID)"
+                  value={s.paymob_integration_id_fawry ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_integration_id_fawry: v }))}
+                  placeholder="مثال: 123458"
+                />
+              </div>
+
+              <div className="grid-2">
+                <Field
+                  label="معرف نافذة الدفع (iFrame ID)"
+                  value={s.paymob_iframe_id ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_iframe_id: v }))}
+                  placeholder="مثال: 789012"
+                />
+                <Field
+                  label="توقيع الأمان (HMAC Secret) — للتحقق من صحة المعاملات"
+                  value={s.paymob_hmac_secret ?? ''}
+                  onChange={v => setS(x => ({ ...x, paymob_hmac_secret: v }))}
+                  placeholder="HEX String من لوحة تحكم Paymob"
+                />
+              </div>
+
+              <div style={{ background: 'var(--bg-3)', padding: '12px 16px', borderRadius: 'var(--radius-sm)', fontSize: 12, lineHeight: 1.8, color: 'var(--text-muted)' }}>
+                <strong>🔗 رابط الـ Webhook الخاص بك لإضافته في لوحة تحكم Paymob:</strong>
+                <br />
+                <code style={{ background: 'var(--bg-2)', padding: '3px 8px', borderRadius: 6, color: 'var(--accent)', direction: 'ltr', display: 'inline-block', marginTop: 4 }}>
+                  {typeof window !== 'undefined' ? `${window.location.origin}/api/payment/paymob/webhook` : '/api/payment/paymob/webhook'}
+                </code>
+              </div>
+
+              <button className="btn btn--primary" onClick={save} disabled={saving} style={{ alignSelf: 'flex-start', minWidth: 160 }}>
+                {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات Paymob'}
+              </button>
+            </div>
+          </div>
+
+          {/* Manual Offline Payment Methods */}
+          <div className="card" style={{ border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <CreditCard size={22} style={{ color: 'var(--accent)' }} />
+              <h3 className="card-title" style={{ margin: 0 }}>التحويلات المباشرة اليدوية (InstaPay & Vodafone Cash Manual)</h3>
+            </div>
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+              ستظهر هذه البيانات لعملائك كخيار بديل في حال رغبتهم في التحويل المباشر عبر تطبيق InstaPay أو محفظة كاش ورفع صورة إيصال التحويل للمراجعة.
+            </p>
+
+            <div className="form-stack">
+              <Field
+                label="عنوان انستاباي (InstaPay Handle / IPA)"
+                value={s.instapay_username ?? ''}
+                onChange={v => setS(x => ({ ...x, instapay_username: v }))}
+                placeholder="مثال: studio@instapay"
+              />
+              <Field
+                label="رقم فودافون كاش ومحافظ إلكترونية (Vodafone Cash / Wallets)"
+                value={s.vodafone_cash ?? ''}
+                onChange={v => setS(x => ({ ...x, vodafone_cash: v }))}
+                placeholder="مثال: 010xxxxxxxx"
+              />
+              <Field
+                label="بيانات الحساب البنكي والآيبان (Bank Account / IBAN)"
+                value={s.bank_details ?? ''}
+                onChange={v => setS(x => ({ ...x, bank_details: v }))}
+                placeholder="مثال: بنك CIB - الحساب: 1000xxxx - الآيبان: EGxxxxxxxx"
+              />
+              <div className="form-field">
+                <label className="form-label">إرشادات وتعليمات الدفع للعملاء</label>
+                <textarea
+                  className="textarea"
+                  rows={3}
+                  value={s.payment_instructions ?? ''}
+                  onChange={e => setS(x => ({ ...x, payment_instructions: e.target.value }))}
+                  placeholder="مثال: يرجى تحويل 50% دفعة مقدمة لبدء العمل، ثم رفع صورة إيصال التحويل لتأكيد الطلب."
+                />
+              </div>
+              <button className="btn btn--primary" onClick={save} disabled={saving} style={{ alignSelf: 'flex-start', minWidth: 160 }}>
+                {saving ? 'جارٍ الحفظ...' : 'حفظ بيانات التحويل اليدوي'}
+              </button>
+            </div>
           </div>
         </div>
       )}

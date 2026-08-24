@@ -114,6 +114,102 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
+// POST /api/admin/orders/:id/approve-payment — Approve order review and unlock payment for client
+router.post('/:id/approve-payment', auth, admin, async (req: AuthRequest, res, next) => {
+  try {
+    const schema = z.object({
+      amount: z.number().positive(),
+      notes:  z.string().optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'يرجى إدخال مبلغ صحيح مطلوب سداده' });
+      return;
+    }
+    const id = Number(req.params.id);
+    const { amount, notes } = parsed.data;
+    const t = now();
+
+    db.prepare(`
+      UPDATE orders 
+      SET payment_status = 'approved_for_payment',
+          payment_amount = ?,
+          payment_approved_at = ?,
+          review_notes = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).run(amount, t, notes || 'تمت مراجعة الطلب والموافقة على الموعد والتنفيذ. يمكنك إتمام الدفع الآن.', t, id);
+
+    const order = db.prepare(`
+      SELECT o.*, c.name client_name, c.phone client_phone, c.email client_email 
+      FROM orders o JOIN clients c ON c.id=o.client_id WHERE o.id=?
+    `).get(id) as any;
+
+    if (!order) {
+      res.status(404).json({ error: 'الطلب غير موجود' });
+      return;
+    }
+
+    // Send Email to Client
+    if (order.client_email) {
+      const { sendEmail } = await import('../../services/email.js');
+      const trackerUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/?track=${order.order_no}`;
+      sendEmail({
+        to: order.client_email,
+        subject: `تم اعتماد ومراجعة طلبك #${order.order_no} — متاح للدفع الآن 🎉`,
+        html: `
+          <div dir="rtl" style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px;">
+            <h2 style="color: #7c3aed; margin-top: 0;">أخبار سارة! تم اعتماد طلبك بنجاح ✨</h2>
+            <p>مرحبًا <strong>${order.client_name}</strong>،</p>
+            <p>قام فريق العمل بمراجعة متطلباتك وجدول المواعيد، وتم تأكيد حجز موعد مشروعك رقم <strong>${order.order_no}</strong>.</p>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 4px 0;"><strong>المبلغ المطلوب سداده:</strong> ${amount} ج.م</p>
+              ${notes ? `<p style="margin: 4px 0;"><strong>ملاحظات الفريق:</strong> ${notes}</p>` : ''}
+              <p style="margin: 4px 0;"><strong>طرق الدفع المتاحة:</strong> فودافون كاش، فيزا وماستركارد، كود فوري، انستاباي</p>
+            </div>
+            <p>يرجى إتمام عملية السداد لبدء التنفيذ الفوري للمشروع:</p>
+            <a href="${trackerUrl}" style="display: inline-block; background: #7c3aed; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; margin: 12px 0;">
+              إتمام الدفع ومتابعة المشروع
+            </a>
+          </div>
+        `
+      }).catch(console.error);
+    }
+
+    audit(req, 'approve_payment', 'orders', id, { amount, notes });
+    res.json({ ok: true, message: 'تم اعتماد الطلب وفتح الدفع للعميل بنجاح', order });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/orders/:id/queue-status — Update queue status (waitlist or reject)
+router.post('/:id/queue-status', auth, admin, async (req: AuthRequest, res, next) => {
+  try {
+    const schema = z.object({
+      status: z.enum(['pending_approval', 'waitlist', 'rejected']),
+      notes:  z.string().optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'بيانات غير صالحة' });
+      return;
+    }
+    const id = Number(req.params.id);
+    const { status, notes } = parsed.data;
+    const t = now();
+
+    db.prepare(`
+      UPDATE orders 
+      SET payment_status = ?,
+          review_notes = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).run(status, notes || '', t, id);
+
+    audit(req, 'update_queue_status', 'orders', id, { status, notes });
+    res.json({ ok: true, status, notes });
+  } catch (err) { next(err); }
+});
+
 function escapeHtml(str: unknown): string {
   if (str == null) return '';
   return String(str)

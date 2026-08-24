@@ -54,12 +54,16 @@ router.get('/:orderNo', (req, res, next) => {
     const revisions = project ? db.prepare('SELECT * FROM revisions WHERE project_id=? ORDER BY id DESC').all(project.id) : [];
 
     // Fetch Payment Settings
-    const settings = db.prepare("SELECT key, value FROM settings WHERE key IN ('instapay_username', 'vodafone_cash', 'bank_details', 'payment_instructions')").all() as {key: string, value: string}[];
-    const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+    const siteRow = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
+    const site: any = siteRow?.value ? JSON.parse(siteRow.value) : {};
 
     res.json({
       orderNo: order.order_no,
       status: order.status,
+      paymentStatus: order.payment_status || 'pending_approval',
+      paymentAmount: Number(order.payment_amount) || Number(order.budget) || 0,
+      paymentApprovedAt: order.payment_approved_at,
+      reviewNotes: order.review_notes,
       projectType: order.project_type,
       packageTitle: order.package_title,
       serviceTitle: order.service_title,
@@ -80,10 +84,12 @@ router.get('/:orderNo', (req, res, next) => {
       })),
       revisions,
       paymentInfo: {
-        instapayUsername: sMap.instapay_username,
-        vodafoneCash: sMap.vodafone_cash,
-        bankDetails: sMap.bank_details,
-        paymentInstructions: sMap.payment_instructions
+        paymobEnabled: Boolean(site.paymob_enabled),
+        instapayUsername: site.instapay_username,
+        vodafoneCash: site.vodafone_cash,
+        bankDetails: site.bank_details,
+        paymentInstructions: site.payment_instructions,
+        currency: site.currency || 'EGP',
       }
     });
   } catch (err) {

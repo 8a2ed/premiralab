@@ -98,6 +98,22 @@ export const api = {
     return res.json() as Promise<{ ok: boolean; receiptUrl: string; status: string }>;
   },
 
+  payment: {
+    initiate: (orderNo: string, method: 'card' | 'wallet' | 'fawry' = 'card') =>
+      request<{
+        ok: boolean;
+        amount: number;
+        currency: string;
+        paymentUrl?: string;
+        redirectionUrl?: string;
+        fawryCode?: string;
+        paymentKey?: string;
+      }>('/api/payment/paymob/initiate', {
+        method: 'POST',
+        body: JSON.stringify({ orderNo, method }),
+      }),
+  },
+
   // ─── Client Portal ────────────────────────────────────────────────────────────
 
   client: {
@@ -130,6 +146,18 @@ export const api = {
       request<Order>(`/api/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     deleteOrder: (id: number) =>
       request<void>(`/api/admin/orders/${id}`, { method: 'DELETE' }),
+
+    approvePayment: (id: number, data: { amount: number; notes?: string }) =>
+      request<{ ok: boolean; message: string; order: Order }>(`/api/admin/orders/${id}/approve-payment`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    updateQueueStatus: (id: number, data: { status: 'pending_approval' | 'waitlist' | 'rejected'; notes?: string }) =>
+      request<{ ok: boolean; status: string; notes?: string }>(`/api/admin/orders/${id}/queue-status`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
 
     invoiceUrl: (id: number) => `/api/admin/orders/${id}/invoice`,
 
