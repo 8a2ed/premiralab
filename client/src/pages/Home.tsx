@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
-import { ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, ExternalLink, X, Eye, AlertCircle, ChevronDown } from 'lucide-react';
+import { 
+  ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, 
+  ExternalLink, X, Eye, AlertCircle, ChevronDown, Sparkles, Shield, Zap
+} from 'lucide-react';
 import { Nav } from '../components/layout/Nav.js';
 import { Footer } from '../components/layout/Footer.js';
 import { Modal } from '../components/ui/Modal.js';
 import { ImageWithSkeleton } from '../components/ui/ImageWithSkeleton.js';
+import { Carousel } from '../components/ui/Carousel.js';
 import { money, waLink } from '../lib/utils.js';
 import { api } from '../lib/api.js';
 import type { PublicData, Package, PortfolioItem, FAQ } from '../types.js';
@@ -21,22 +25,40 @@ const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?
   return Icon ? <Icon size={size} className={className} /> : <LucideIcons.Palette size={size} className={className} />;
 };
 
-import { Carousel } from '../components/ui/Carousel.js';
-
-
 const FaqItem = ({ faq }: { faq: FAQ }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderBottom: '1px solid var(--border)', padding: '16px 0' }}>
+    <div style={{ borderBottom: '1px solid var(--border-2)', padding: '18px 0' }}>
       <button 
         onClick={() => setOpen(!open)}
-        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: 0, color: 'var(--text)', cursor: 'pointer', textAlign: 'right', fontSize: 16, fontWeight: 600 }}
+        style={{ 
+          width: '100%', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          background: 'none', 
+          border: 'none', 
+          padding: 0, 
+          color: 'var(--text)', 
+          cursor: 'pointer', 
+          textAlign: 'right', 
+          fontSize: 16, 
+          fontWeight: 700 
+        }}
+        aria-expanded={open}
       >
-        <span>{faq.question}</span>
-        <ChevronDown size={20} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+        <span style={{ color: open ? 'var(--accent)' : 'var(--text)', transition: 'color 0.2s' }}>{faq.question}</span>
+        <ChevronDown 
+          size={20} 
+          style={{ 
+            transform: open ? 'rotate(180deg)' : 'none', 
+            transition: 'transform 0.25s ease',
+            color: open ? 'var(--accent)' : 'var(--text-muted)'
+          }} 
+        />
       </button>
       {open && (
-        <div style={{ marginTop: 12, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 15 }}>
+        <div className="animation-fade-in" style={{ marginTop: 12, color: 'var(--text-muted)', lineHeight: 1.8, fontSize: 15 }}>
           {faq.answer.split('\n').map((line, i) => <p key={i} style={{ margin: '0 0 8px' }}>{line}</p>)}
         </div>
       )}
@@ -95,57 +117,99 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
           ${data.site?.accent_color ? `--accent-dim: ${data.site.accent_color}1a;` : ''}
         }
       `}</style>
+
       <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} />
 
       <main id="top">
-        {/* Hero */}
+        {/* Hero Section */}
         <section className="hero">
           <div className="container hero-grid">
-            <div className="animation-fade-in">
-              <div className="eyebrow" style={{ color: 'var(--accent)' }}>استوديو رقمي متكامل</div>
-              <h1 style={{ lineHeight: 1.3 }}>
+            <div className="animation-fade-in hero-text-col">
+              <div className="hero-badge">
+                <Sparkles size={15} className="hero-badge-icon" />
+                <span>استوديو رقمي متكامل للتصميم والتطوير</span>
+              </div>
+              
+              <h1 className="hero-heading">
                 {data.site?.hero_title ? data.site.hero_title.split(' ').map((word, i, arr) => 
                   i === arr.length - 1 ? <span key={i} className="highlight">{word}</span> : word + ' '
-                ) : <>نحول أفكارك إلى واقع رقمي <span className="highlight">مذهل</span></>}
+                ) : <>نحوّل أفكارك إلى واقع رقمي <span className="highlight">استثنائي</span></>}
               </h1>
-              <p style={{ fontSize: '1.1rem', opacity: 0.9 }}>
-                {data.site?.hero_subtitle ?? 'من الهوية البصرية إلى المنصات المتقدمة، نحن هنا لنبني لك حضوراً استثنائياً ينمو ويتفوق.'}
+              
+              <p className="hero-subtitle">
+                {data.site?.hero_subtitle ?? 'من الهوية البصرية وتصميم الواجهات إلى المنصات المتقدمة، نحن هنا لنبني لعلامتك التجارية حضوراً قوياً ينمو ويتفوق.'}
               </p>
-              <div className="actions" style={{ marginTop: 32 }}>
-                <button className="btn btn--primary btn--lg" onClick={() => openOrder()} style={{ padding: '14px 28px', fontSize: 16 }}>
+              
+              <div className="actions hero-actions">
+                <button className="btn btn--primary btn--lg hero-btn-main" onClick={() => openOrder()}>
                   {data.site?.hero_primary_btn ?? 'ابدأ مشروعك الآن'} <ArrowLeft size={18} aria-hidden />
                 </button>
-                <a href="#portfolio" className="btn btn--lg btn--outline" style={{ padding: '14px 28px', fontSize: 16 }}>
+                <a href="#portfolio" className="btn btn--lg btn--outline hero-btn-secondary">
                   {data.site?.hero_secondary_btn ?? 'تصفح أعمالنا'}
                 </a>
               </div>
+
+              {/* Trust badges */}
+              <div className="hero-trust-row">
+                <div className="hero-trust-item">
+                  <Shield size={16} style={{ color: 'var(--success)' }} />
+                  <span>ضمان أعلى جودة</span>
+                </div>
+                <div className="hero-trust-item">
+                  <Zap size={16} style={{ color: 'var(--warning)' }} />
+                  <span>تسليم سريع ومتقن</span>
+                </div>
+              </div>
             </div>
-            <div className="hero-art" aria-hidden="true" style={{ backgroundImage: `url(${data.site?.logo_url ?? '/logo.png'})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', opacity: 0.8 }} />
+
+            {/* Hero Visual Card */}
+            <div className="hero-art-wrapper">
+              <div className="hero-art-glow" />
+              <div className="hero-art card">
+                <div className="hero-art-logo-wrap">
+                  <img 
+                    src={data.site?.logo_url ?? '/logo.png'} 
+                    alt={data.site?.brand ?? 'PREMIRALAB'} 
+                    className="hero-art-logo"
+                  />
+                </div>
+                <div className="hero-art-badge">
+                  <span className="hero-art-badge-dot" />
+                  <span>{data.site?.brand ?? 'PREMIRALAB'} Studio</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Testimonials (Social Proof First) */}
+        {/* Testimonials (Social Proof) */}
         {data.testimonials && data.testimonials.length > 0 && (
-          <section className="section" style={{ background: 'var(--bg-2)' }}>
+          <section className="section" id="testimonials" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <h2 style={{ marginBottom: 8 }}>{"\u0622\u0631\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u0627\u0621"}</h2>
-                <p className="muted">ثقة عملائنا هي سر نجاحنا</p>
+              <div className="section-header">
+                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>آراء العملاء</div>
+                <h2>ثقة عملائنا هي سر نجاحنا</h2>
+                <p className="muted">تجارب حقيقية لشركاء النجاح الذين وضعوا ثقتهم في استوديوهاتنا</p>
               </div>
-              <Carousel autoPlay={true} intervalMs={3000}>
+
+              <Carousel autoPlay={true} intervalMs={3500}>
                 {data.testimonials.map(t => (
-                  <div className="card carousel-item-wrapper" key={t.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="card testimonial-card carousel-item-wrapper" key={t.id}>
                     <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} size={16} fill={i < t.rating ? 'var(--warning)' : 'none'} color={i < t.rating ? 'var(--warning)' : 'var(--border)'} />
+                        <Star key={i} size={16} fill={i < t.rating ? '#f59e0b' : 'none'} color={i < t.rating ? '#f59e0b' : 'var(--border)'} />
                       ))}
                     </div>
-                    <p style={{ flex: 1, margin: '16px 0', fontStyle: 'italic', opacity: 0.9 }}>"{t.content}"</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
-                      {t.avatar_url && <img src={t.avatar_url} alt={t.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} loading="lazy" />}
+                    <p className="testimonial-quote">"{t.content}"</p>
+                    <div className="testimonial-author">
+                      {t.avatar_url ? (
+                        <img src={t.avatar_url} alt={t.name} className="avatar" loading="lazy" />
+                      ) : (
+                        <div className="avatar avatar--placeholder">{t.name?.charAt(0) || 'U'}</div>
+                      )}
                       <div>
-                        <strong style={{ display: 'block', fontSize: 14 }}>{t.name}</strong>
-                        {t.role && <span className="muted" style={{ fontSize: 12 }}>{t.role}</span>}
+                        <strong className="testimonial-author-name">{t.name}</strong>
+                        {t.role && <span className="muted testimonial-author-role">{t.role}</span>}
                       </div>
                     </div>
                   </div>
@@ -158,18 +222,20 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         {/* Services */}
         <section className="section" id="services" aria-labelledby="services-title">
           <div className="container">
-            <div style={{ textAlign: 'center', marginBottom: 40 }}>
-              <h2 id="services-title">خدماتنا</h2>
-              <p className="muted">حلول رقمية متكاملة لجميع احتياجاتك</p>
+            <div className="section-header">
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>خدماتنا المتخصصة</div>
+              <h2 id="services-title">حلول رقمية متكاملة لنمو أعمالك</h2>
+              <p className="muted">نقدم مجموعة متكاملة من الخدمات الإبداعية والتقنية وفق أعلى معايير الجودة العالمية</p>
             </div>
+
             <div className="grid grid-3">
               {data.services?.map(s => (
-                <div className="card" key={s.id} style={{ transition: 'transform 0.2s', cursor: 'default' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', marginBottom: 16 }}>
+                <div className="card service-card" key={s.id}>
+                  <div className="service-icon-wrap">
                     <DynamicIcon name={s.icon} size={24} />
                   </div>
-                  <h3 style={{ marginBottom: 8 }}>{s.title}</h3>
-                  <p className="muted" style={{ lineHeight: 1.6 }}>{s.description}</p>
+                  <h3 style={{ fontSize: 19, marginBottom: 10 }}>{s.title}</h3>
+                  <p className="muted" style={{ lineHeight: 1.7, fontSize: 14 }}>{s.description}</p>
                 </div>
               ))}
             </div>
@@ -177,36 +243,42 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         </section>
 
         {/* Packages */}
-        <section className="section" id="packages" aria-labelledby="packages-title">
+        <section className="section" id="packages" aria-labelledby="packages-title" style={{ background: 'var(--bg-2)' }}>
           <div className="container">
-            <div style={{ textAlign: 'center', marginBottom: 48 }}>
-              <h2 id="packages-title">باقات متكاملة لنجاحك</h2>
-              <p className="muted">اختر الباقة الأنسب لمشروعك، وابدأ رحلة التفوق الرقمي</p>
+            <div className="section-header">
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>باقات الأسعار</div>
+              <h2 id="packages-title">باقات متكاملة تناسب طموحاتك</h2>
+              <p className="muted">اختر الباقة الأنسب لحجم مشروعك وابدأ رحلة التفوق الرقمي بكل ثقة ووضوح</p>
             </div>
+
             <div className="grid grid-3">
               {data.packages?.map(p => (
-                <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id} style={{ display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', padding: 32 }}>
+                <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
                   {p.popular && (
-                    <div style={{ position: 'absolute', top: 16, left: 16, background: 'var(--accent)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999 }}>
-                      الأكثر طلباً ⭐
+                    <div className="package-popular-tag">
+                      <Sparkles size={12} /> الأكثر طلباً
                     </div>
                   )}
-                  <h3 style={{ fontSize: 22, marginBottom: 8 }}>{p.title}</h3>
-                  <div className="price" style={{ fontSize: 32, fontWeight: 900, marginBottom: 16, color: 'var(--accent)' }}>
+                  <h3 className="package-title">{p.title}</h3>
+                  <div className="package-price">
                     {money(p.price, data.site?.currency)}
                   </div>
-                  <p className="muted" style={{ marginBottom: 24, minHeight: 48 }}>{p.description}</p>
+                  <p className="muted package-desc">{p.description}</p>
                   
-                  <ul className="feature-list" aria-label="مميزات الباقة" style={{ flex: 1, marginBottom: 32 }}>
+                  <ul className="feature-list" aria-label="مميزات الباقة">
                     {p.features.map(f => (
-                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
-                        <CheckCircle2 size={18} style={{ color: 'var(--success)', flexShrink: 0, marginTop: 2 }} aria-hidden /> 
-                        <span style={{ fontSize: 14 }}>{f}</span>
+                      <li key={f}>
+                        <CheckCircle2 size={18} className="feature-icon" aria-hidden /> 
+                        <span>{f}</span>
                       </li>
                     ))}
                   </ul>
                   
-                  <button className={`btn btn--lg ${p.popular ? 'btn--primary' : 'btn--outline'}`} onClick={() => openOrder(p)} style={{ width: '100%', fontSize: 16 }}>
+                  <button 
+                    className={`btn btn--lg ${p.popular ? 'btn--primary' : 'btn--outline'}`} 
+                    onClick={() => openOrder(p)} 
+                    style={{ width: '100%', fontSize: 15, marginTop: 'auto' }}
+                  >
                     اطلب الباقة الآن
                   </button>
                 </div>
@@ -216,11 +288,12 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         </section>
 
         {/* Portfolio */}
-        <section className="section" id="portfolio" aria-labelledby="portfolio-title" style={{ background: 'var(--bg-2)' }}>
+        <section className="section" id="portfolio" aria-labelledby="portfolio-title">
           <div className="container">
-            <div style={{ textAlign: 'center', marginBottom: 40 }}>
-              <h2 id="portfolio-title">أعمال مختارة</h2>
-              <p className="muted">نماذج وتجارب بصرية صممناها لعملائنا بكل فخر</p>
+            <div className="section-header">
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>معرض الأعمال</div>
+              <h2 id="portfolio-title">أعمال نفتخر بإنجازها</h2>
+              <p className="muted">نماذج وتجارب بصرية صممناها لشركائنا بأعلى درجات الإتقان والابتكار</p>
             </div>
 
             <div style={{ marginTop: 28 }}>
@@ -236,21 +309,27 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                       aria-label={`عرض تفاصيل ${p.title}`}
                     >
                       {p.image_url && (
-                        <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
-                          <ImageWithSkeleton skeletonHeight={240} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
-                          <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(4px)', zIndex: 2 }}>
-                            <Eye size={12} /> استعراض العمل
+                        <div className="portfolio-thumb-wrap">
+                          <ImageWithSkeleton skeletonHeight={220} className="portfolio-img" src={p.image_url} loading="lazy" decoding="async" alt={p.title} />
+                          <div className="portfolio-hover-overlay">
+                            <Eye size={14} /> استعراض العمل
                           </div>
                         </div>
                       )}
-                      <h3 style={{ marginTop: 14, marginBottom: 4 }}>{p.title}</h3>
-                      {p.category && <span className="tag tag--sm">{p.category}</span>}
-                      <p className="muted" style={{ marginTop: 8, fontSize: 13, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.description}</p>
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <h3 style={{ fontSize: 17, margin: 0 }}>{p.title}</h3>
+                          {p.category && <span className="tag tag--sm">{p.category}</span>}
+                        </div>
+                        <p className="muted" style={{ fontSize: 13, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
+                          {p.description}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </Carousel>
               ) : (
-                <div className="empty">أضف أعمالك من لوحة الإدارة.</div>
+                <div className="empty">أضف أعمالك من لوحة الإدارة لتظهر هنا في المعرض.</div>
               )}
             </div>
           </div>
@@ -258,13 +337,14 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
 
         {/* FAQs */}
         {data.faqs && data.faqs.length > 0 && (
-          <section className="section" id="faqs" aria-labelledby="faqs-title">
-            <div className="container" style={{ maxWidth: 800 }}>
-              <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <h2 id="faqs-title">{"\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0634\u0627\u0626\u0639\u0629"}</h2>
-                <p className="muted">{"\u0625\u062C\u0627\u0628\u0627\u062A \u0633\u0631\u064A\u0639\u0629 \u0644\u0623\u0643\u062B\u0631 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0634\u064A\u0648\u0639\u0627\u064B."}</p>
+          <section className="section" id="faqs" aria-labelledby="faqs-title" style={{ background: 'var(--bg-2)' }}>
+            <div className="container" style={{ maxWidth: 840 }}>
+              <div className="section-header">
+                <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>الأسئلة الشائعة</div>
+                <h2 id="faqs-title">إجابات عن أكثر ما يشغل بالك</h2>
+                <p className="muted">كل ما تود معرفته عن مراحل العمل، الدفع، والتسليم</p>
               </div>
-              <div style={{ background: 'var(--bg-2)', borderRadius: 16, padding: '24px 32px' }}>
+              <div className="card faq-container" style={{ padding: '16px 28px' }}>
                 {data.faqs.map(faq => (
                   <FaqItem key={faq.id} faq={faq} />
                 ))}
@@ -627,18 +707,18 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                   </button>
                 </div>
                 {promoResult?.success && <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>✔️ {promoResult.success}</div>}
-                {promoResult?.error && <div style={{ color: 'var(--error)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>❌ {promoResult.error}</div>}
+                {promoResult?.error && <div style={{ color: 'var(--danger)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>❌ {promoResult.error}</div>}
               </div>
               
-              <div style={{ marginTop: 24, padding: '16px', background: 'rgba(205, 69, 205, 0.05)', borderRadius: 12, border: '1px dashed var(--primary-dim)' }}>
+              <div style={{ marginTop: 24, padding: '16px', background: 'var(--accent-dim)', borderRadius: 12, border: '1px dashed var(--accent)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <CheckCircle2 size={18} style={{ color: 'var(--primary)' }} />
+                  <CheckCircle2 size={18} style={{ color: 'var(--accent)' }} />
                   <strong style={{ fontSize: 14 }}>طرق الدفع المتاحة</strong>
                 </div>
                 <p className="muted" style={{ fontSize: 13, margin: 0, lineHeight: 1.6 }}>
                   بعد تأكيد الطلب، سيتم إصدار فاتورة رقمية يمكنك دفعها بسهولة عبر:
                   <br />
-                  <span style={{ color: 'var(--text)', fontWeight: 500 }}>InstaPay، فودافون كاش، أو التحويل البنكي</span>.
+                  <span style={{ color: 'var(--text)', fontWeight: 600 }}>InstaPay، فودافون كاش، أو التحويل البنكي</span>.
                 </p>
               </div>
             </div>
@@ -651,13 +731,13 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         {step > 1 ? (
           <button type="button" className="btn" onClick={() => setStep(s => s - 1)} disabled={loading}>السابق</button>
         ) : (
-          <button type="button" className="btn" onClick={onClose} style={{ color: 'var(--muted)', background: 'transparent', borderColor: 'transparent' }}>إلغاء</button>
+          <button type="button" className="btn" onClick={onClose} style={{ color: 'var(--text-muted)', background: 'transparent', borderColor: 'transparent' }}>إلغاء</button>
         )}
         
         {step < 4 ? (
           <button type="button" className="btn btn--primary" onClick={nextStep} style={{ minWidth: 120 }}>التالي</button>
         ) : (
-          <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ minWidth: 140, boxShadow: '0 0 24px var(--primary-dim)' }}>
+          <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ minWidth: 140, boxShadow: '0 0 24px var(--accent-glow)' }}>
             {loading ? 'جاري الإرسال...' : 'تأكيد الطلب'}
           </button>
         )}
