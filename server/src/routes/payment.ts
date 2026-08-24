@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { db, now } from '../db.js';
 import { createPaymobPayment, verifyPaymobHMAC } from '../services/paymob.js';
-import { sendEmail, paymentReceiptEmail } from '../services/email.js';
+import { sendEmail } from '../services/email.js';
 import { sendTelegramAlert } from '../services/telegram.js';
 import type { OrderRow } from '../types.js';
 

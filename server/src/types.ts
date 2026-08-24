@@ -70,26 +70,37 @@ export interface Client {
 }
 
 export interface Order {
-  id: number;
-  order_no: string;
-  client_id: number;
-  package_id: number | null;
-  service_id: number | null;
-  project_type: string;
-  notes: string;
-  status: string;
-  budget: number | null;
-  deadline: string | null;
-  created_at: string;
-  updated_at: string;
+  id:                     number;
+  order_no:               string;
+  client_id:              number;
+  package_id:             number | null;
+  service_id:             number | null;
+  project_type:           string;
+  notes:                  string;
+  status:                 string;
+  payment_status?:        string;
+  payment_method?:        string;
+  payment_receipt?:       string;
+  payment_amount?:        number;
+  paid_amount?:           number;
+  payment_transaction_id?: string;
+  payment_approved_at?:   string;
+  review_notes?:          string;
+  budget:                 number | null;
+  deadline:               string | null;
+  promo_code?:            string;
+  promo_discount?:        string;
+  created_at:             string;
+  updated_at:             string;
 }
 
 export interface OrderRow extends Order {
-  client_name: string;
-  client_phone: string;
-  client_email: string;
+  client_name:   string;
+  client_phone:  string;
+  client_email:  string;
   package_title: string | null;
   service_title: string | null;
+  package_price?: number;
 }
 
 export interface Project {
