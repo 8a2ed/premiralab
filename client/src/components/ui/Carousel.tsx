@@ -12,12 +12,15 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3800 }: Carou
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
+  const [direction, setDirection] = useState<'next' | 'prev' | 'reset' | null>(null);
   const [visibleCount, setVisibleCount] = useState(3);
   const [containerWidth, setContainerWidth] = useState(1100);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
+  const startX = useRef<number | null>(null);
+  const startTime = useRef<number>(0);
+  const currentDrag = useRef<number>(0);
 
   const items = useMemo(() => Children.toArray(children), [children]);
   const total = items.length;
@@ -68,51 +71,112 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3800 }: Carou
       setCurrentIndex(prev => (prev - 1 + total) % total);
     }
 
+    setDragOffset(0);
+    currentDrag.current = 0;
     setIsAnimating(false);
     setDirection(null);
   };
 
   // Auto-play timer
   useEffect(() => {
-    if (!autoPlay || isHovered || isAnimating || total <= visibleCount) return;
+    if (!autoPlay || isHovered || isAnimating || isDragging || total <= visibleCount) return;
 
     const timer = setInterval(() => {
       handleNext();
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [autoPlay, isHovered, isAnimating, total, visibleCount, intervalMs, handleNext]);
+  }, [autoPlay, isHovered, isAnimating, isDragging, total, visibleCount, intervalMs, handleNext]);
 
-  // Touch Swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Touch & Pointer Drag Handlers (Unified & Responsive)
+  const onDragStart = (clientX: number) => {
+    if (isAnimating || total <= 1) return;
+    setIsDragging(true);
     setIsHovered(true);
-    touchStartX.current = e.targetTouches[0].clientX;
+    startX.current = clientX;
+    startTime.current = Date.now();
+    currentDrag.current = 0;
+    setDragOffset(0);
+  };
+
+  const onDragMove = (clientX: number) => {
+    if (!isDragging || startX.current === null) return;
+    const delta = clientX - startX.current;
+    currentDrag.current = delta;
+    setDragOffset(delta);
+  };
+
+  const onDragEnd = () => {
+    if (!isDragging || startX.current === null) return;
+    setIsDragging(false);
+    setIsHovered(false);
+
+    const delta = currentDrag.current;
+    const elapsed = Math.max(1, Date.now() - startTime.current);
+    const velocity = Math.abs(delta) / elapsed; // px per ms
+
+    startX.current = null;
+
+    // In RTL:
+    // Dragging Right (delta > 0) pulls the next cards from left into view
+    // Dragging Left (delta < 0) pulls previous cards from right into view
+    const isQuickSwipe = velocity > 0.35 && Math.abs(delta) > 20;
+    const isPastThreshold = Math.abs(delta) > 45;
+
+    if (delta > 0 && (isPastThreshold || isQuickSwipe)) {
+      setIsAnimating(true);
+      setDirection('next');
+    } else if (delta < 0 && (isPastThreshold || isQuickSwipe)) {
+      setIsAnimating(true);
+      setDirection('prev');
+    } else {
+      // Snap back to current
+      if (Math.abs(delta) > 0) {
+        setIsAnimating(true);
+        setDirection('reset');
+      } else {
+        setDragOffset(0);
+        currentDrag.current = 0;
+      }
+    }
+  };
+
+  // Touch Events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    onDragStart(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
+    onDragMove(e.touches[0].clientX);
   };
 
   const handleTouchEnd = () => {
-    setIsHovered(false);
-    if (!touchStartX.current || !touchEndX.current) return;
-    const distance = touchStartX.current - touchEndX.current;
-    
-    // In RTL: dragging left (positive distance) goes Next
-    if (distance > 45) {
-      handleNext();
-    } else if (distance < -45) {
-      handlePrev();
-    }
+    onDragEnd();
+  };
 
-    touchStartX.current = null;
-    touchEndX.current = null;
+  // Mouse / Pointer Events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    onDragStart(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    onDragMove(e.clientX);
+  };
+
+  const handleMouseUp = () => {
+    onDragEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      onDragEnd();
+    }
+    setIsHovered(false);
   };
 
   if (total === 0) return null;
 
   // Build the circular visible window with 1 buffer on left and right
-  // Order: [Left Buffer, Card 0, Card 1, ... Card N-1, Right Buffer]
   const bufferCount = 1;
   const renderItems = [];
   const renderIndices: number[] = [];
@@ -140,28 +204,39 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3800 }: Carou
   }
 
   // Calculate track transform offset
-  // In RTL, standard offset is -1 * (itemWidth + gap) (to show Card 0, not Left Buffer)
   const baseOffset = total > 1 ? (itemWidth + gap) : 0;
-  let currentOffset = baseOffset;
+  let currentOffset = baseOffset + dragOffset;
 
-  if (isAnimating && direction === 'next') {
-    // Moving next: slide by 1 card
-    currentOffset = baseOffset + (itemWidth + gap);
-  } else if (isAnimating && direction === 'prev') {
-    // Moving prev: slide backward by 1 card
-    currentOffset = baseOffset - (itemWidth + gap);
+  if (isAnimating) {
+    if (direction === 'next') {
+      currentOffset = baseOffset + (itemWidth + gap);
+    } else if (direction === 'prev') {
+      currentOffset = baseOffset - (itemWidth + gap);
+    } else if (direction === 'reset') {
+      currentOffset = baseOffset;
+    }
   }
 
   return (
     <div 
       className="carousel-container" 
       ref={containerRef}
-      style={{ position: 'relative', width: '100%', overflow: 'visible', margin: '0 auto' }}
+      style={{ 
+        position: 'relative', 
+        width: '100%', 
+        overflow: 'visible', 
+        margin: '0 auto',
+        userSelect: isDragging ? 'none' : 'auto',
+      }}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
     >
       {/* Right Arrow (Prev in RTL reading flow) */}
       {total > visibleCount && (
@@ -184,6 +259,8 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3800 }: Carou
           overflow: 'hidden', 
           borderRadius: 'var(--radius)',
           padding: '12px 0 16px',
+          cursor: total > visibleCount ? (isDragging ? 'grabbing' : 'grab') : 'default',
+          touchAction: 'pan-y',
         }}
       >
         <div 
@@ -194,7 +271,7 @@ export function Carousel({ children, autoPlay = true, intervalMs = 3800 }: Carou
             gap: `${gap}px`,
             width: 'max-content',
             transform: `translateX(${currentOffset}px)`,
-            transition: isAnimating ? 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
+            transition: isAnimating ? 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
             willChange: 'transform',
           }}
         >
