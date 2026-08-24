@@ -99,6 +99,20 @@ export const api = {
   },
 
   payment: {
+    applyPromo: (orderNo: string, promoCode: string) =>
+      request<{
+        ok: boolean;
+        promoCode: string;
+        discountInfo: string;
+        originalPrice: number;
+        discountAmount: number;
+        newTotal: number;
+        message: string;
+      }>('/api/payment/apply-promo', {
+        method: 'POST',
+        body: JSON.stringify({ orderNo, promoCode }),
+      }),
+
     initiate: (orderNo: string, method: 'card' | 'wallet' | 'fawry' = 'card', walletPhone?: string) =>
       request<{
         ok: boolean;

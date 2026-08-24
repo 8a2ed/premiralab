@@ -280,19 +280,36 @@ export interface PromoCode {
 export interface TrackerData {
   orderNo:         string;
   status:          OrderStatus;
+  clientName?:     string;
+  clientPhone?:    string;
+  clientEmail?:    string;
+  notes?:          string;
   paymentStatus?:  'pending_approval' | 'approved_for_payment' | 'paid' | 'waitlist' | 'rejected';
   paymentAmount?:  number;
   paymentApprovedAt?: string;
+  paymentTransactionId?: string;
   reviewNotes?:    string;
   projectType:     string;
   packageTitle:    string | null;
+  packagePrice?:   number;
   serviceTitle:    string | null;
   budget?:         number | null;
   paidAmount?:     number;
+  promoCode?:      string | null;
+  promoDiscount?:  string | null;
   paymentReceipt?: string | null;
   paymentMethod?:  string;
   deadline:        string | null;
   createdAt:       string;
+  companyInfo?: {
+    brand?:       string;
+    email?:       string;
+    phone?:       string;
+    whatsapp?:    string;
+    address?:     string;
+    taxNumber?:   string;
+    currency?:    string;
+  };
   paymentInfo?: {
     paymobEnabled?:       boolean;
     instapayUsername?:    string;

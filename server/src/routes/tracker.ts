@@ -31,7 +31,9 @@ router.get('/:orderNo', (req, res, next) => {
       SELECT o.*,
              c.name  client_name,
              c.phone client_phone,
+             c.email client_email,
              p.title package_title,
+             p.price package_price,
              s.title service_title
       FROM orders o
       JOIN clients c ON c.id = o.client_id
@@ -39,8 +41,8 @@ router.get('/:orderNo', (req, res, next) => {
       LEFT JOIN services s ON s.id = o.service_id
       WHERE o.order_no = ?
     `).get(orderNo) as (Order & {
-      client_name: string; client_phone: string;
-      package_title: string | null; service_title: string | null;
+      client_name: string; client_phone: string; client_email: string;
+      package_title: string | null; package_price: number | null; service_title: string | null;
       paid_amount?: number; payment_receipt?: string; payment_method?: string;
     }) | undefined;
 
@@ -53,22 +55,30 @@ router.get('/:orderNo', (req, res, next) => {
     const files = project ? db.prepare('SELECT * FROM files WHERE project_id=?').all(project.id) : [];
     const revisions = project ? db.prepare('SELECT * FROM revisions WHERE project_id=? ORDER BY id DESC').all(project.id) : [];
 
-    // Fetch Payment Settings
+    // Fetch Payment & Site Settings
     const siteRow = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
     const site: any = siteRow?.value ? JSON.parse(siteRow.value) : {};
 
     res.json({
       orderNo: order.order_no,
       status: order.status,
+      clientName: order.client_name,
+      clientPhone: order.client_phone,
+      clientEmail: order.client_email,
+      notes: order.notes,
       paymentStatus: order.payment_status || 'pending_approval',
       paymentAmount: Number(order.payment_amount) || Number(order.budget) || 0,
       paymentApprovedAt: order.payment_approved_at,
+      paymentTransactionId: order.payment_transaction_id,
       reviewNotes: order.review_notes,
       projectType: order.project_type,
       packageTitle: order.package_title,
+      packagePrice: order.package_price,
       serviceTitle: order.service_title,
       budget: order.budget,
       paidAmount: order.paid_amount || 0,
+      promoCode: order.promo_code,
+      promoDiscount: order.promo_discount,
       paymentReceipt: order.payment_receipt,
       paymentMethod: order.payment_method,
       deadline: order.deadline,
@@ -83,6 +93,15 @@ router.get('/:orderNo', (req, res, next) => {
         createdAt: f.created_at,
       })),
       revisions,
+      companyInfo: {
+        brand: site.brand || 'PremiraLab',
+        email: site.email || 'contact@premiralab.com',
+        phone: site.phone || site.whatsapp || '',
+        whatsapp: site.whatsapp || '',
+        address: site.address || 'القاهرة، جمهورية مصر العربية',
+        taxNumber: site.tax_number || '',
+        currency: site.currency || 'EGP',
+      },
       paymentInfo: {
         paymobEnabled: Boolean(site.paymob_enabled),
         instapayUsername: site.instapay_username,

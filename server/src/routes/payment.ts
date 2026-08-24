@@ -8,6 +8,97 @@ import type { OrderRow } from '../types.js';
 
 const router = Router();
 
+// POST /api/payment/apply-promo — Apply a promo code dynamically to an order
+router.post('/apply-promo', async (req, res, next) => {
+  try {
+    const schema = z.object({
+      orderNo:   z.string().trim().min(3),
+      promoCode: z.string().trim().min(2),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'بيانات غير صالحة' });
+      return;
+    }
+    const { orderNo, promoCode } = parsed.data;
+
+    const order = db.prepare(`
+      SELECT o.*, p.price package_price 
+      FROM orders o 
+      LEFT JOIN packages p ON p.id = o.package_id 
+      WHERE o.order_no = ?
+    `).get(orderNo) as (OrderRow & { package_price?: number }) | undefined;
+
+    if (!order) {
+      res.status(404).json({ error: 'الطلب غير موجود' });
+      return;
+    }
+
+    if (order.payment_status === 'paid') {
+      res.status(400).json({ error: 'تم سداد هذا الطلب مسبقاً ولا يمكن تعديل الخصم' });
+      return;
+    }
+
+    // Validate promo code
+    const promo = db.prepare('SELECT * FROM promo_codes WHERE code = ? AND active = 1').get(promoCode) as any;
+    if (!promo) {
+      res.status(400).json({ error: 'كوبون الخصم غير صحيح أو غير مفعل' });
+      return;
+    }
+
+    if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+      res.status(400).json({ error: 'عذرًا، انتهت صلاحية هذا الكوبون' });
+      return;
+    }
+
+    if (promo.max_uses && promo.current_uses >= promo.max_uses) {
+      res.status(400).json({ error: 'عذرًا، تم الوصول للحد الأقصى لاستخدام هذا الكوبون' });
+      return;
+    }
+
+    // Base price calculation
+    const basePrice = Number(order.package_price) || Number(order.budget) || Number(order.payment_amount) || 0;
+    if (basePrice <= 0) {
+      res.status(400).json({ error: 'لا يوجد مبلغ أساسي محدد للطلب لتطبيق الخصم عليه' });
+      return;
+    }
+
+    let discountAmount = 0;
+    let discountInfo = '';
+
+    if (promo.discount_type === 'percentage') {
+      discountAmount = (basePrice * promo.discount_value) / 100;
+      discountInfo = `${promo.discount_value}%`;
+    } else {
+      discountAmount = promo.discount_value;
+      discountInfo = `${promo.discount_value} ج.م`;
+    }
+
+    const newTotal = Math.max(0, basePrice - discountAmount);
+
+    // Update order in database
+    const t = now();
+    db.prepare(`
+      UPDATE orders 
+      SET promo_code = ?, promo_discount = ?, budget = ?, payment_amount = ?, updated_at = ?
+      WHERE id = ?
+    `).run(promo.code, discountInfo, newTotal, newTotal, t, order.id);
+
+    res.json({
+      ok: true,
+      promoCode: promo.code,
+      discountInfo,
+      originalPrice: basePrice,
+      discountAmount,
+      newTotal,
+      message: `تم تطبيق كود الخصم بنجاح! تم خصم ${discountInfo}`,
+    });
+  } catch (err: any) {
+    console.error('[apply-promo] Error:', err);
+    res.status(500).json({ error: err.message || 'فشل تطبيق الكوبون' });
+  }
+});
+
 // POST /api/payment/paymob/initiate — Initiate payment for an approved order
 router.post('/paymob/initiate', async (req, res, next) => {
   try {

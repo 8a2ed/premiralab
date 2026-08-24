@@ -5,6 +5,7 @@ import { money, formatDate, debounce, downloadUrl, waLink } from '../../lib/util
 import { ORDER_STATUS_LABELS, type Order, type OrderStatus, type Paginated } from '../../types.js';
 import { TableSkeleton } from '../ui/Skeleton.js';
 import { Modal } from '../ui/Modal.js';
+import { InvoiceModal } from '../ui/InvoiceModal.js';
 
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'all', label: 'جميع الحالات' },
@@ -32,6 +33,7 @@ export function Orders({ onToast }: OrdersProps) {
   const [viewMode,     setViewMode]     = useState<'table' | 'kanban'>('table');
   const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
   const [reviewOrder,  setReviewOrder]  = useState<Order | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
 
   const load = useCallback(async (s = search, st = status, p = page, mode = viewMode) => {
     setLoading(true);
@@ -81,7 +83,7 @@ export function Orders({ onToast }: OrdersProps) {
   };
 
   const exportCSV = () => downloadUrl(api.admin.exportOrdersUrl(), `orders-${new Date().toISOString().slice(0,10)}.csv`);
-  const openInvoice = (id: number) => window.open(api.admin.invoiceUrl(id), '_blank', 'noopener');
+  const openInvoice = (order: Order) => setInvoiceOrder(order);
 
   const getClientWhatsAppUrl = (order: Order) => {
     const cleanPhone = (order.client_phone || '').replace(/\D/g, '');
@@ -250,8 +252,8 @@ export function Orders({ onToast }: OrdersProps) {
                         <td className="actions-cell">
                           <button
                             className="btn btn--icon"
-                            title="فتح الفاتورة"
-                            onClick={() => openInvoice(o.id)}
+                            title="فتح واستعراض الفاتورة الرسمية"
+                            onClick={() => openInvoice(o)}
                             aria-label={`فاتورة الطلب ${o.order_no}`}
                           >
                             <FileText size={15} />
@@ -309,6 +311,14 @@ export function Orders({ onToast }: OrdersProps) {
                             >
                               💰 {o.paid_amount ? `${o.paid_amount} ج.م` : 'تعديل السداد'}
                             </button>
+                            <button
+                              className="btn btn--sm"
+                              style={{ fontSize: 11, padding: '3px 8px' }}
+                              onClick={() => openInvoice(o)}
+                              title="عرض وطباعة الفاتورة"
+                            >
+                              📄 فاتورة
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -364,6 +374,14 @@ export function Orders({ onToast }: OrdersProps) {
             } : prev);
             onToast('تم تحديث بيانات الميزانية والدفعة المسددة', 'success');
           }}
+        />
+      )}
+
+      {/* Official Printable Invoice Modal */}
+      {invoiceOrder && (
+        <InvoiceModal
+          order={invoiceOrder as any}
+          onClose={() => setInvoiceOrder(null)}
         />
       )}
     </div>
@@ -446,7 +464,15 @@ function QueueReviewModal({ order, onClose, onUpdated }: QueueReviewModalProps) 
         <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 8, fontSize: 13, lineHeight: 1.8 }}>
           <div><strong>العميل:</strong> {order.client_name} ({order.client_phone})</div>
           <div><strong>نوع الخدمة / الباقة:</strong> {order.package_title || order.service_title || order.project_type || 'طلب مخصص'}</div>
-          {order.budget && <div><strong>الميزانية المقترحة من العميل:</strong> {money(order.budget)}</div>}
+          {order.promo_code && (
+            <div style={{ color: '#22c55e', fontWeight: 600 }}>
+              🎁 <strong>كوبون الخصم المستخدم:</strong> {order.promo_code} ({order.promo_discount})
+            </div>
+          )}
+          {order.budget && <div><strong>إجمالي الميزانية الصافية المتفق عليها:</strong> <strong style={{ color: 'var(--accent)' }}>{money(order.budget)}</strong></div>}
+          {order.paid_amount != null && order.paid_amount > 0 && (
+            <div style={{ color: '#10b981' }}><strong>المدفوع مسبقاً:</strong> {money(order.paid_amount)}</div>
+          )}
           {order.notes && <div style={{ marginTop: 6, color: 'var(--text-muted)' }}><strong>ملاحظات العميل:</strong> <em>{order.notes}</em></div>}
         </div>
 

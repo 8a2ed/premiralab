@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, CheckCircle2, Clock, FileText, RefreshCw, XCircle, Plus, Send,
-  CreditCard, Upload, Copy, Check, ShieldAlert, Sparkles, Smartphone, QrCode
+  CreditCard, Upload, Copy, Check, ShieldAlert, Sparkles, Smartphone, QrCode,
+  Tag, Receipt, Printer, Share2
 } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { money, formatDate, formatBytes } from '../lib/utils.js';
@@ -9,6 +10,7 @@ import { ORDER_STATUS_LABELS } from '../types.js';
 import type { TrackerData } from '../types.js';
 import { Skeleton } from '../components/ui/Skeleton.js';
 import { Modal } from '../components/ui/Modal.js';
+import { InvoiceModal } from '../components/ui/InvoiceModal.js';
 
 interface TrackerProps {
   orderNo: string;
@@ -32,6 +34,9 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
 
+  // Invoice Modal State
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+
   // Client revision form state
   const [revOpen,       setRevOpen]       = useState(false);
   const [revTitle,      setRevTitle]      = useState('');
@@ -47,6 +52,12 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [paymobIframeUrl,  setPaymobIframeUrl]  = useState<string | null>(null);
   const [fawryRefCode,     setFawryRefCode]     = useState<string | null>(null);
   const [fawryCopied,      setFawryCopied]      = useState(false);
+
+  // Promo application inside checkout modal
+  const [checkoutPromo,    setCheckoutPromo]    = useState('');
+  const [applyingPromo,    setApplyingPromo]    = useState(false);
+  const [promoSuccessMsg,  setPromoSuccessMsg]  = useState('');
+  const [promoErrMsg,      setPromoErrMsg]      = useState('');
 
   // Manual payment receipt state
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
@@ -161,6 +172,26 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
     }
   };
 
+  const handleApplyCheckoutPromo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!checkoutPromo.trim()) return;
+    setApplyingPromo(true);
+    setPromoSuccessMsg('');
+    setPromoErrMsg('');
+    try {
+      const res = await api.payment.applyPromo(orderNo, checkoutPromo.trim().toUpperCase());
+      if (res.ok) {
+        setPromoSuccessMsg(res.message);
+        setCheckoutPromo('');
+        load();
+      }
+    } catch (err: any) {
+      setPromoErrMsg(err.message || 'كوبون الخصم غير صحيح أو منتهي');
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
   return (
     <div className="tracker">
       {/* Header */}
@@ -262,6 +293,69 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   <div className="tracker-meta__item">
                     <span className="muted">تاريخ الإنشاء:</span>
                     <span>{formatDate(data.createdAt)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial & Invoicing Summary Card */}
+              <div className="card" style={{ border: '1px solid rgba(124, 58, 237, 0.25)', background: 'var(--bg-2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Receipt size={22} style={{ color: 'var(--accent)' }} />
+                    <h3 style={{ margin: 0, fontSize: 16 }}>ملخص الفوترة والأسعار والحسابات</h3>
+                  </div>
+
+                  <button
+                    className="btn btn--sm btn--primary"
+                    style={{ gap: 6 }}
+                    onClick={() => setInvoiceOpen(true)}
+                  >
+                    <FileText size={15} /> عرض وطباعة الفاتورة الرسمية
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                  {/* Base Package / Service Price */}
+                  <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
+                    <span className="muted" style={{ fontSize: 12, display: 'block' }}>السعر الأساسي للخدمة</span>
+                    <strong style={{ fontSize: 16, marginTop: 4, display: 'block' }}>
+                      {money(data.packagePrice || data.budget || data.paymentAmount || 0)}
+                    </strong>
+                  </div>
+
+                  {/* Promo Code Discount */}
+                  <div style={{ background: data.promoCode ? 'rgba(34, 197, 94, 0.08)' : 'var(--bg-3)', padding: 14, borderRadius: 10, border: `1px solid ${data.promoCode ? 'rgba(34, 197, 94, 0.3)' : 'var(--border)'}` }}>
+                    <span className="muted" style={{ fontSize: 12, display: 'block' }}>كوبون الخصم</span>
+                    {data.promoCode ? (
+                      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Tag size={14} color="#22c55e" />
+                        <strong style={{ fontSize: 14, color: '#22c55e' }}>{data.promoCode}</strong>
+                        <span style={{ fontSize: 11, color: '#22c55e' }}>({data.promoDiscount})</span>
+                      </div>
+                    ) : (
+                      <span className="muted" style={{ fontSize: 13, marginTop: 4, display: 'block' }}>لا يوجد كوبون مطبق</span>
+                    )}
+                  </div>
+
+                  {/* Net Agreed Total */}
+                  <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
+                    <span className="muted" style={{ fontSize: 12, display: 'block' }}>الإجمالي الصافي المتفق عليه</span>
+                    <strong style={{ fontSize: 16, color: 'var(--accent)', marginTop: 4, display: 'block' }}>
+                      {money(data.budget || data.paymentAmount || 0)}
+                    </strong>
+                  </div>
+
+                  {/* Paid vs Remaining */}
+                  <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
+                    <span className="muted" style={{ fontSize: 12, display: 'block' }}>المدفوع / المتبقي</span>
+                    <div style={{ marginTop: 4, fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <strong style={{ color: (data.paidAmount || 0) > 0 ? '#22c55e' : 'inherit' }}>
+                        {money(data.paidAmount || 0)}
+                      </strong>
+                      <span className="muted" style={{ fontSize: 11 }}>
+                        (متبقي: {money(Math.max(0, (data.budget || data.paymentAmount || 0) - (data.paidAmount || 0)))})
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -512,18 +606,69 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           Interactive Payment Checkout Modal
       ───────────────────────────────────────────────────────────── */}
       {payModalOpen && data && (
-        <Modal title={`إتمام سداد الطلب #${data.orderNo}`} onClose={() => setPayModalOpen(false)}>
+        <Modal title={`إتمام سداد الفاتورة للطلب #${data.orderNo}`} onClose={() => setPayModalOpen(false)}>
           <div className="form-stack">
-            <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span className="muted" style={{ fontSize: 12 }}>المبلغ المستحق:</span>
-                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}>
-                  {money(data.paymentAmount || data.budget || 0)}
-                </div>
+            {/* Live Pricing Breakdown Box */}
+            <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
+                <span className="muted">بند الخدمة: <strong>{data.packageTitle || data.projectType || 'خدمة تصميم وتطوير متكاملة'}</strong></span>
+                <span style={{ fontWeight: 600 }}>{money(data.packagePrice || data.budget || data.paymentAmount || 0)}</span>
               </div>
-              <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
-                طلب معتمد 🚀
-              </span>
+
+              {data.promoCode && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13, color: '#22c55e' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Tag size={14} /> كود الخصم المطبق ({data.promoCode}):
+                  </span>
+                  <strong>-{data.promoDiscount}</strong>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px dashed var(--border)' }}>
+                <div>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'block' }}>المبلغ المطلوب سداده الآن:</span>
+                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', marginTop: 2 }}>
+                    معتمد ومتاح للدفع 🚀
+                  </span>
+                </div>
+                <strong style={{ fontSize: 22, color: 'var(--accent)' }}>
+                  {money(data.paymentAmount || data.budget || 0)}
+                </strong>
+              </div>
+            </div>
+
+            {/* Promo Code Form inside Checkout Modal */}
+            <div style={{ background: 'var(--bg-2)', padding: 12, borderRadius: 8, border: '1px solid var(--border)' }}>
+              <form onSubmit={handleApplyCheckoutPromo} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="هل لديك كوبون خصم؟ أدخله هنا..."
+                  value={checkoutPromo}
+                  onChange={e => setCheckoutPromo(e.target.value.toUpperCase())}
+                  style={{ textTransform: 'uppercase', letterSpacing: 1, flex: 1 }}
+                />
+                <button 
+                  type="submit" 
+                  className="btn btn--sm btn--outline"
+                  disabled={applyingPromo || !checkoutPromo.trim()}
+                  style={{ whiteSpace: 'nowrap', padding: '10px 16px' }}
+                >
+                  {applyingPromo ? 'جارٍ الفحص...' : 'تطبيق الكوبون 🎁'}
+                </button>
+              </form>
+
+              {promoSuccessMsg && (
+                <div style={{ color: '#22c55e', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Check size={14} /> {promoSuccessMsg}
+                </div>
+              )}
+
+              {promoErrMsg && (
+                <div style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <ShieldAlert size={14} /> {promoErrMsg}
+                </div>
+              )}
             </div>
 
             {/* Payment Method Selector */}
@@ -731,6 +876,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             />
           </div>
         </Modal>
+      )}
+
+      {/* Official Printable Invoice Modal */}
+      {invoiceOpen && data && (
+        <InvoiceModal order={data} onClose={() => setInvoiceOpen(false)} />
       )}
     </div>
   );
