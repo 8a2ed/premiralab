@@ -1349,5 +1349,19 @@ img {
   }
 }
 
+/* ─── Admin Clients Responsive Table & Cards ─── */
+.clients-mobile-cards {
+  display: none !important;
+}
+.clients-desktop-table {
+  display: block !important;
+}
 
-
+@media (max-width: 768px) {
+  .clients-desktop-table {
+    display: none !important;
+  }
+  .clients-mobile-cards {
+    display: flex !important;
+  }
+}

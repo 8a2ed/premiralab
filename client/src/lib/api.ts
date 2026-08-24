@@ -182,6 +182,47 @@ export const api = {
       return request<Paginated<Client>>(`/api/admin/clients?${q}`);
     },
 
+    client: (id: number) =>
+      request<{
+        client: Client;
+        orders: any[];
+        stats: {
+          totalOrders: number;
+          totalBudget: number;
+          totalPaid: number;
+          outstanding: number;
+        };
+      }>(`/api/admin/clients/${id}`),
+
+    updateClient: (id: number, data: { name?: string; phone?: string; email?: string }) =>
+      request<{ ok: boolean; message: string; client: Client }>(`/api/admin/clients/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    setClientPassword: (id: number, password: string) =>
+      request<{ ok: boolean; message: string }>(`/api/admin/clients/${id}/password`, {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      }),
+
+    resetClientPassword: (id: number) =>
+      request<{
+        ok: boolean;
+        tempPassword: string;
+        clientName: string;
+        clientPhone: string;
+        clientEmail: string;
+        message: string;
+      }>(`/api/admin/clients/${id}/reset-password`, {
+        method: 'POST',
+      }),
+
+    deleteClient: (id: number) =>
+      request<{ ok: boolean; message: string }>(`/api/admin/clients/${id}`, {
+        method: 'DELETE',
+      }),
+
     projects: () => request<Project[]>('/api/admin/projects'),
     createProject: (data: { orderId: number; title: string }) =>
       request<Project>('/api/admin/projects', { method: 'POST', body: JSON.stringify(data) }),

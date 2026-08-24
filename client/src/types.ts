@@ -135,13 +135,16 @@ export interface PublicData {
 // ─── Admin Data ───────────────────────────────────────────────────────────────
 
 export interface Client {
-  id:           number;
-  name:         string;
-  phone:        string;
-  email:        string;
-  orders_count: number;
-  created_at:   string;
-  updated_at:   string;
+  id:            number;
+  name:          string;
+  phone:         string;
+  email:         string;
+  orders_count?: number;
+  has_password?: number | boolean;
+  total_spent?:  number;
+  active_orders?: number;
+  created_at:    string;
+  updated_at:    string;
 }
 
 export interface Order {
