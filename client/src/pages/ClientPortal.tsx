@@ -64,11 +64,15 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       setView('register');
     }
 
+    const hasPendingOrder = () => {
+      return redirect === 'order' || !!sessionStorage.getItem('pending_order_pkg') || !!sessionStorage.getItem('pending_order_proj');
+    };
+
     // Check auth in background without blocking UI
     api.client.me()
       .then(res => {
         setClient(res.client);
-        if (redirect === 'order') {
+        if (hasPendingOrder()) {
           window.location.href = '/?order=1';
         } else {
           setView('dashboard');
@@ -79,6 +83,10 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
         // Not logged in, stay on login/register view
       });
   }, []);
+
+  const hasPendingOrder = () => {
+    return redirect === 'order' || !!sessionStorage.getItem('pending_order_pkg') || !!sessionStorage.getItem('pending_order_proj');
+  };
 
   const loadDashboard = async () => {
     try {
@@ -97,7 +105,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       setClient(res);
       onToast('تم تسجيل الدخول بنجاح', 'success');
       
-      if (redirect === 'order') {
+      if (hasPendingOrder()) {
         window.location.href = '/?order=1';
       } else {
         setView('dashboard');
@@ -118,7 +126,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       setClient(res);
       onToast('تم إنشاء الحساب بنجاح', 'success');
       
-      if (redirect === 'order') {
+      if (hasPendingOrder()) {
         window.location.href = '/?order=1';
       } else {
         setView('dashboard');
@@ -745,9 +753,9 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                   </>
                 )}
 
-                {redirect === 'order' && (
+                {hasPendingOrder() && (
                   <div style={{ background: 'rgba(124, 58, 237, 0.15)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '10px 14px', borderRadius: 10, marginTop: 14, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Sparkles size={16} /> يرجى تسجيل الدخول أو إنشاء حساب لتقديم ومتابعة طلبك.
+                    <Sparkles size={16} /> يرجى تسجيل الدخول أو إنشاء حسابك أولاً للبدء بطلب تصميم جديد ومتابعة مراحله.
                   </div>
                 )}
               </div>

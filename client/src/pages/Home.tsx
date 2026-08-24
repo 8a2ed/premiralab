@@ -93,16 +93,36 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openOrder = (pkg?: Package, initialProj?: string) => {
-    setSelected(pkg ?? null);
-    setInitialProjectType(initialProj);
-    setOrderOpen(true);
+  const openOrder = async (pkg?: Package, initialProj?: string) => {
+    try {
+      await api.client.me();
+      setSelected(pkg ?? null);
+      setInitialProjectType(initialProj);
+      setOrderOpen(true);
+    } catch {
+      onToast('يرجى تسجيل الدخول أو إنشاء حسابك أولاً للبدء بطلب تصميم ومتابعته ✨', 'info');
+      if (pkg) sessionStorage.setItem('pending_order_pkg', JSON.stringify(pkg));
+      if (initialProj) sessionStorage.setItem('pending_order_proj', initialProj);
+      onClientClick();
+    }
   };
 
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get('order') === '1') {
-      openOrder();
+      const savedPkg = sessionStorage.getItem('pending_order_pkg');
+      const savedProj = sessionStorage.getItem('pending_order_proj');
+      let pkgObj = null;
+      if (savedPkg) {
+        try { pkgObj = JSON.parse(savedPkg); } catch {}
+        sessionStorage.removeItem('pending_order_pkg');
+      }
+      if (savedProj) {
+        sessionStorage.removeItem('pending_order_proj');
+      }
+      setSelected(pkgObj);
+      setInitialProjectType(savedProj || undefined);
+      setOrderOpen(true);
       url.searchParams.delete('order');
       window.history.replaceState({}, '', url.toString());
     }
