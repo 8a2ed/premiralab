@@ -59,6 +59,9 @@ function App() {
         enterAdmin();
       } else if (isClient) {
         setView('client');
+      } else {
+        setView('home');
+        setTrackNo(null);
       }
     };
 
@@ -148,22 +151,15 @@ function App() {
     await api.logout().catch(() => {});
     await loadPublic();
     setView('home');
-    const url = new URL(window.location.href);
-    url.searchParams.delete('admin');
-    if (url.pathname === '/admin' || url.pathname === '/login') url.pathname = '/';
-    window.history.replaceState({}, '', url);
+    setTrackNo(null);
+    window.history.pushState({}, '', '/');
     showToast('تم تسجيل الخروج', 'info');
   };
 
   const goHome = () => {
     setView('home');
     setTrackNo(null);
-    // Clean URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('track');
-    url.searchParams.delete('admin');
-    if (url.pathname === '/admin' || url.pathname === '/login') url.pathname = '/';
-    window.history.replaceState({}, '', url);
+    window.history.pushState({}, '', '/');
   };
 
   return (

@@ -232,20 +232,34 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
               </p>
             </div>
           </div>
-          <button
-            className="btn btn--outline btn--sm"
-            onClick={handleLogout}
-            style={{
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 10,
-              fontSize: 12,
-              color: 'var(--text-muted)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <LogOut size={14} /> تسجيل الخروج
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              className="btn btn--outline btn--sm"
+              onClick={onNavigateHome}
+              style={{
+                gap: 6,
+                padding: '8px 14px',
+                borderRadius: 10,
+                fontSize: 12,
+              }}
+            >
+              <ArrowLeft size={14} /> الرئيسية
+            </button>
+            <button
+              className="btn btn--outline btn--sm"
+              onClick={handleLogout}
+              style={{
+                gap: 6,
+                padding: '8px 14px',
+                borderRadius: 10,
+                fontSize: 12,
+                color: 'var(--text-muted)',
+                borderColor: 'var(--border)',
+              }}
+            >
+              <LogOut size={14} /> تسجيل الخروج
+            </button>
+          </div>
         </div>
 
         {activeProject ? (
