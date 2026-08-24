@@ -9,17 +9,26 @@ router.use(clientAuth);
 // Get all orders for the logged in client
 router.get('/orders', (req: any, res) => {
   try {
+    const client = db.prepare('SELECT id, email, phone FROM clients WHERE id = ?').get(req.client.id) as any;
+    const clientEmail = client?.email?.toLowerCase() || '';
+    const rawPhone = client?.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+
     const orders = db.prepare(`
-      SELECT o.id, o.order_no, o.status, o.created_at, o.budget,
-             p.title as package_title, s.title as service_title,
+      SELECT o.id, o.order_no, o.status, o.created_at, o.budget, o.payment_status, o.payment_amount, o.paid_amount,
+             p.title as package_title, p.price as package_price,
+             s.title as service_title,
              proj.id as project_id, proj.progress
       FROM orders o
+      LEFT JOIN clients c ON c.id = o.client_id
       LEFT JOIN packages p ON p.id = o.package_id
       LEFT JOIN services s ON s.id = o.service_id
       LEFT JOIN projects proj ON proj.order_id = o.id
       WHERE o.client_id = ?
+         OR (c.email IS NOT NULL AND c.email != '' AND LOWER(c.email) = ?)
+         OR (? != '' AND c.phone IS NOT NULL AND REPLACE(REPLACE(REPLACE(c.phone, ' ', ''), '-', ''), '+', '') LIKE ?)
       ORDER BY o.id DESC
-    `).all(req.client.id);
+    `).all(req.client.id, clientEmail, cleanPhone, `%${cleanPhone}%`);
 
     res.json({ orders });
   } catch (err) {

@@ -34,20 +34,37 @@ function App() {
 
   // Check URL on load for tracker or admin access
   useEffect(() => {
-    const path = window.location.pathname;
-    const params = new URLSearchParams(window.location.search);
-    const track  = params.get('track');
-    const isAdmin = params.has('admin') || path === '/admin' || path === '/login';
-    const isClient = path === '/client' || path.startsWith('/client/');
+    const handleLocation = () => {
+      const path = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+      let track = params.get('track');
+      
+      if (!track && (path.startsWith('/track/') || path === '/track')) {
+        track = decodeURIComponent(path.replace(/^\/track\/?/, '')).trim();
+      }
 
-    if (track) {
-      setTrackNo(track);
-      setView('tracker');
-    } else if (isAdmin) {
-      enterAdmin();
-    } else if (isClient) {
-      setView('client');
-    }
+      const isAdmin = params.has('admin') || path === '/admin' || path === '/login';
+      const isClient = path === '/client' || path.startsWith('/client/');
+
+      if (track) {
+        const cleanTrack = decodeURIComponent(track).replace(/#/g, '').trim().toUpperCase();
+        if (cleanTrack) {
+          setTrackNo(cleanTrack);
+          setView('tracker');
+          return;
+        }
+      }
+      
+      if (isAdmin) {
+        enterAdmin();
+      } else if (isClient) {
+        setView('client');
+      }
+    };
+
+    handleLocation();
+    window.addEventListener('popstate', handleLocation);
+    return () => window.removeEventListener('popstate', handleLocation);
   }, []);
 
   // Secret keyboard shortcut for owner: Ctrl + Shift + A

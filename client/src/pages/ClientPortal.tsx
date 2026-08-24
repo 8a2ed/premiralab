@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api.js';
-import { Lock, Mail, User, Phone, LogOut, FileText, Download, FileBox, ShieldCheck, ArrowRight } from 'lucide-react';
-import { formatDate } from '../lib/utils.js';
+import { Lock, Mail, User, Phone, LogOut, FileText, Download, FileBox, ShieldCheck, ArrowRight, ExternalLink, Activity } from 'lucide-react';
+import { formatDate, money } from '../lib/utils.js';
 
 interface ClientPortalProps {
   onToast: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -247,24 +247,50 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                         <tr>
                           <th>رقم الطلب</th>
                           <th>الخدمة / الباقة</th>
-                          <th>الحالة</th>
+                          <th>الميزانية</th>
+                          <th>حالة الطلب</th>
                           <th>التاريخ</th>
-                          <th>المشروع</th>
+                          <th>الإجراء والمتابعة</th>
                         </tr>
                       </thead>
                       <tbody>
                         {orders.map(o => (
                           <tr key={o.id}>
-                            <td><strong>{o.order_no}</strong></td>
+                            <td>
+                              <a 
+                                href={`/?track=${o.order_no}`} 
+                                style={{ fontWeight: 700, color: 'var(--accent)', textDecoration: 'none' }}
+                                title="فتح صفحة تتبع الطلب"
+                              >
+                                #{o.order_no}
+                              </a>
+                            </td>
                             <td>{o.package_title || o.service_title || '—'}</td>
+                            <td>
+                              <strong>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
+                              {o.payment_status === 'paid' && (
+                                <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
+                                  مسدد
+                                </span>
+                              )}
+                            </td>
                             <td><span className={`badge status-${o.status}`}>{o.status}</span></td>
                             <td>{formatDate(o.created_at)}</td>
                             <td>
-                              {o.project_id ? (
-                                <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)}>
-                                  <FileText size={14} /> عرض المشروع
-                                </button>
-                              ) : <span className="muted">قيد الانتظار</span>}
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <a 
+                                  href={`/?track=${o.order_no}`} 
+                                  className="btn btn--sm btn--primary" 
+                                  style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                                >
+                                  <Activity size={13} /> تتبع الطلب والفاتورة
+                                </a>
+                                {o.project_id && (
+                                  <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '6px 10px', fontSize: 12 }}>
+                                    <FileText size={13} /> مساحة العمل
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}

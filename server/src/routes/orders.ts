@@ -2,12 +2,14 @@ import { Router } from 'express';
 import { z } from 'zod';
 import rateLimit from 'express-rate-limit';
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import { db, now } from '../db.js';
 import { sendEmail, orderConfirmationEmail } from '../services/email.js';
 import { sendTelegramAlert } from '../services/telegram.js';
 import type { Client } from '../types.js';
 
 const router = Router();
+const getSecret = () => process.env.JWT_SECRET!;
 
 const orderLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -40,6 +42,15 @@ router.post('/', orderLimiter, async (req, res, next) => {
     const d = parsed.data;
     const t = now();
 
+    // Check logged in client token if available
+    let loggedInClientId: number | null = null;
+    if (req.cookies?.client_session) {
+      try {
+        const decoded = jwt.verify(req.cookies.client_session, getSecret()) as any;
+        if (decoded?.id) loggedInClientId = decoded.id;
+      } catch {}
+    }
+
     const { id: orderId, orderNo, promoUsed, promoDiscountInfo } = db.transaction(() => {
       // Validate Promo Code inside transaction to prevent race conditions
       let validPromo = null;
@@ -53,13 +64,44 @@ router.post('/', orderLimiter, async (req, res, next) => {
         }
       }
 
-      // Upsert client by phone without clobbering existing email
-      let client = db.prepare('SELECT id, email FROM clients WHERE phone=?').get(d.phone) as { id: number; email: string } | undefined;
-      if (client) {
-        const emailToSave = d.email ? d.email : (client.email || '');
-        db.prepare('UPDATE clients SET name=?,email=?,updated_at=? WHERE id=?')
-          .run(d.name, emailToSave, t, client.id);
-      } else {
+      // Identify or Upsert client
+      let client: { id: number; email: string } | undefined;
+      
+      // 1. If client is logged in
+      if (loggedInClientId) {
+        const existing = db.prepare('SELECT id, email, phone FROM clients WHERE id=?').get(loggedInClientId) as any;
+        if (existing) {
+          const emailToSave = d.email ? d.email : (existing.email || '');
+          db.prepare('UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ""), ?), email=?, updated_at=? WHERE id=?')
+            .run(d.name, d.phone, emailToSave, t, existing.id);
+          client = { id: existing.id, email: emailToSave };
+        }
+      }
+
+      // 2. Check by email if provided
+      if (!client && d.email) {
+        const byEmail = db.prepare('SELECT id, email, phone FROM clients WHERE LOWER(email)=LOWER(?)').get(d.email.trim()) as any;
+        if (byEmail) {
+          db.prepare('UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ""), ?), updated_at=? WHERE id=?')
+            .run(d.name, d.phone, t, byEmail.id);
+          client = { id: byEmail.id, email: byEmail.email };
+        }
+      }
+
+      // 3. Check by normalized phone
+      if (!client && d.phone) {
+        const rawPhone = d.phone.replace(/\D/g, '').slice(-10);
+        const byPhone = db.prepare('SELECT id, email FROM clients WHERE phone LIKE ?').get(`%${rawPhone}%`) as any;
+        if (byPhone) {
+          const emailToSave = d.email ? d.email : (byPhone.email || '');
+          db.prepare('UPDATE clients SET name=?, email=?, updated_at=? WHERE id=?')
+            .run(d.name, emailToSave, t, byPhone.id);
+          client = { id: byPhone.id, email: emailToSave };
+        }
+      }
+
+      // 4. Create new client record if still not found
+      if (!client) {
         const r = db.prepare('INSERT INTO clients(name,phone,email,created_at,updated_at) VALUES(?,?,?,?,?)')
           .run(d.name, d.phone, d.email || '', t, t);
         client = { id: Number(r.lastInsertRowid), email: d.email || '' };

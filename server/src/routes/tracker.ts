@@ -25,22 +25,25 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 1
  */
 router.get('/:orderNo', (req, res, next) => {
   try {
-    const { orderNo } = req.params;
+    const rawNo = String(req.params.orderNo || '').trim();
+    const cleanNo = decodeURIComponent(rawNo).replace(/#/g, '').trim().toUpperCase();
 
     const order = db.prepare(`
       SELECT o.*,
-             c.name  client_name,
-             c.phone client_phone,
-             c.email client_email,
+             COALESCE(c.name, 'عميلنا العزيز')  client_name,
+             COALESCE(c.phone, '') client_phone,
+             COALESCE(c.email, '') client_email,
              p.title package_title,
              p.price package_price,
              s.title service_title
       FROM orders o
-      JOIN clients c ON c.id = o.client_id
+      LEFT JOIN clients c ON c.id = o.client_id
       LEFT JOIN packages p ON p.id = o.package_id
       LEFT JOIN services s ON s.id = o.service_id
-      WHERE o.order_no = ?
-    `).get(orderNo) as (Order & {
+      WHERE UPPER(TRIM(REPLACE(o.order_no, '#', ''))) = ?
+         OR UPPER(TRIM(o.order_no)) = ?
+         OR o.order_no = ?
+    `).get(cleanNo, cleanNo, rawNo) as (Order & {
       client_name: string; client_phone: string; client_email: string;
       package_title: string | null; package_price: number | null; service_title: string | null;
       paid_amount?: number; payment_receipt?: string; payment_method?: string;
