@@ -1309,4 +1309,21 @@ img {
   }
 }
 
+/* ─── Client Portal Responsive Orders ─── */
+.client-orders-mobile-cards {
+  display: none !important;
+}
+.client-orders-desktop-table {
+  display: block !important;
+}
+
+@media (max-width: 768px) {
+  .client-orders-desktop-table {
+    display: none !important;
+  }
+  .client-orders-mobile-cards {
+    display: flex !important;
+  }
+}
+
 

@@ -72,7 +72,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
         const existing = db.prepare('SELECT id, email, phone FROM clients WHERE id=?').get(loggedInClientId) as any;
         if (existing) {
           const emailToSave = d.email ? d.email : (existing.email || '');
-          db.prepare('UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ""), ?), email=?, updated_at=? WHERE id=?')
+          db.prepare("UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ''), ?), email=?, updated_at=? WHERE id=?")
             .run(d.name, d.phone, emailToSave, t, existing.id);
           client = { id: existing.id, email: emailToSave };
         }
@@ -82,7 +82,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
       if (!client && d.email) {
         const byEmail = db.prepare('SELECT id, email, phone FROM clients WHERE LOWER(email)=LOWER(?)').get(d.email.trim()) as any;
         if (byEmail) {
-          db.prepare('UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ""), ?), updated_at=? WHERE id=?')
+          db.prepare("UPDATE clients SET name=?, phone=COALESCE(NULLIF(phone, ''), ?), updated_at=? WHERE id=?")
             .run(d.name, d.phone, t, byEmail.id);
           client = { id: byEmail.id, email: byEmail.email };
         }

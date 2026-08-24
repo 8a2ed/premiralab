@@ -233,70 +233,137 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
         ) : (
           <div className="grid">
             <div className="col-12">
-              <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3 className="card-title" style={{ margin: 0 }}>طلباتي</h3>
-                  <button className="btn btn--primary" onClick={() => window.location.href = '/?order=1'}>طلب جديد</button>
+              <div className="card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h3 className="card-title" style={{ margin: 0, fontSize: 18 }}>سجل طلباتي</h3>
+                    <span className="muted" style={{ fontSize: 12 }}>إجمالي الطلبات: {orders.length}</span>
+                  </div>
+                  <button className="btn btn--primary" onClick={() => window.location.href = '/?order=1'}>+ طلب جديد</button>
                 </div>
+
                 {orders.length === 0 ? (
-                  <div className="empty">لا يوجد لديك طلبات سابقة.</div>
+                  <div className="empty" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                    <FileText size={40} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+                    <p style={{ margin: 0, fontSize: 15 }}>لا يوجد لديك طلبات سابقة حتى الآن.</p>
+                    <button className="btn btn--primary btn--sm" style={{ marginTop: 14 }} onClick={() => window.location.href = '/?order=1'}>
+                      ابدأ أول مشروع الآن
+                    </button>
+                  </div>
                 ) : (
-                  <div className="table-wrap">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>رقم الطلب</th>
-                          <th>الخدمة / الباقة</th>
-                          <th>الميزانية</th>
-                          <th>حالة الطلب</th>
-                          <th>التاريخ</th>
-                          <th>الإجراء والمتابعة</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {orders.map(o => (
-                          <tr key={o.id}>
-                            <td>
-                              <a 
-                                href={`/?track=${o.order_no}`} 
-                                style={{ fontWeight: 700, color: 'var(--accent)', textDecoration: 'none' }}
-                                title="فتح صفحة تتبع الطلب"
-                              >
-                                #{o.order_no}
-                              </a>
-                            </td>
-                            <td>{o.package_title || o.service_title || '—'}</td>
-                            <td>
-                              <strong>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
+                  <>
+                    {/* Desktop / Tablet Table View */}
+                    <div className="client-orders-desktop-table table-wrap" style={{ overflowX: 'auto' }}>
+                      <table className="table" style={{ width: '100%', minWidth: 650 }}>
+                        <thead>
+                          <tr>
+                            <th>رقم الطلب</th>
+                            <th>الخدمة / الباقة</th>
+                            <th>الميزانية</th>
+                            <th>حالة الطلب</th>
+                            <th>التاريخ</th>
+                            <th>الإجراء والمتابعة</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orders.map(o => (
+                            <tr key={o.id}>
+                              <td>
+                                <a 
+                                  href={`/?track=${o.order_no}`} 
+                                  style={{ fontWeight: 700, color: 'var(--accent)', textDecoration: 'none' }}
+                                  title="فتح صفحة تتبع الطلب"
+                                >
+                                  #{o.order_no}
+                                </a>
+                              </td>
+                              <td><strong>{o.package_title || o.service_title || 'خدمة مخصصة'}</strong></td>
+                              <td>
+                                <strong>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
+                                {o.payment_status === 'paid' && (
+                                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
+                                    مسدد
+                                  </span>
+                                )}
+                              </td>
+                              <td><span className={`badge status-${o.status}`}>{o.status}</span></td>
+                              <td>{formatDate(o.created_at)}</td>
+                              <td>
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                  <a 
+                                    href={`/?track=${o.order_no}`} 
+                                    className="btn btn--sm btn--primary" 
+                                    style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                                  >
+                                    <Activity size={13} /> تتبع الطلب والفاتورة
+                                  </a>
+                                  {o.project_id && (
+                                    <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '6px 10px', fontSize: 12 }}>
+                                      <FileText size={13} /> مساحة العمل
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Cards View */}
+                    <div className="client-orders-mobile-cards" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {orders.map(o => (
+                        <div 
+                          key={o.id} 
+                          style={{ 
+                            background: 'var(--bg-3)', 
+                            padding: 16, 
+                            borderRadius: 14, 
+                            border: '1px solid var(--border)', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: 10 
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <strong style={{ color: 'var(--accent)', fontSize: 15 }}>#{o.order_no}</strong>
+                            <span className={`badge status-${o.status}`} style={{ fontSize: 12 }}>{o.status}</span>
+                          </div>
+
+                          <div style={{ fontSize: 14, fontWeight: 700 }}>
+                            {o.package_title || o.service_title || 'خدمة مخصصة'}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--text-muted)', paddingTop: 8, borderTop: '1px dashed var(--border)' }}>
+                            <div>
+                              الميزانية: <strong style={{ color: 'var(--text)' }}>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
                               {o.payment_status === 'paid' && (
                                 <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
                                   مسدد
                                 </span>
                               )}
-                            </td>
-                            <td><span className={`badge status-${o.status}`}>{o.status}</span></td>
-                            <td>{formatDate(o.created_at)}</td>
-                            <td>
-                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <a 
-                                  href={`/?track=${o.order_no}`} 
-                                  className="btn btn--sm btn--primary" 
-                                  style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                                >
-                                  <Activity size={13} /> تتبع الطلب والفاتورة
-                                </a>
-                                {o.project_id && (
-                                  <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '6px 10px', fontSize: 12 }}>
-                                    <FileText size={13} /> مساحة العمل
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                            </div>
+                            <span style={{ fontSize: 11 }}>{formatDate(o.created_at)}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                            <a
+                              href={`/?track=${o.order_no}`}
+                              className="btn btn--primary btn--sm"
+                              style={{ flex: 1, justifyContent: 'center', gap: 6, padding: '10px 14px', fontSize: 13 }}
+                            >
+                              <Activity size={14} /> تتبع الطلب والفاتورة
+                            </a>
+                            {o.project_id && (
+                              <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '10px 14px' }}>
+                                <FileText size={14} /> مساحة العمل
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
