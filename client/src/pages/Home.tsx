@@ -93,16 +93,10 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openOrder = async (pkg?: Package, initialProj?: string) => {
-    try {
-      await api.client.me();
-      setSelected(pkg ?? null);
-      setInitialProjectType(initialProj);
-      setOrderOpen(true);
-    } catch {
-      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لتقديم طلب', 'info');
-      window.location.href = '/client?redirect=order';
-    }
+  const openOrder = (pkg?: Package, initialProj?: string) => {
+    setSelected(pkg ?? null);
+    setInitialProjectType(initialProj);
+    setOrderOpen(true);
   };
 
   useEffect(() => {

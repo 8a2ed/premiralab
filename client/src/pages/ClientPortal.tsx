@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api.js';
-import { Lock, Mail, User, Phone, LogOut, FileText, Download, FileBox, ShieldCheck, ArrowRight, ExternalLink, Activity } from 'lucide-react';
+import { 
+  Lock, Mail, User, Phone, LogOut, FileText, Download, FileBox, ShieldCheck, 
+  ArrowRight, ExternalLink, Activity, Eye, EyeOff, Sparkles, CheckCircle2, 
+  ArrowLeft, Zap, FolderLock, Check
+} from 'lucide-react';
 import { formatDate, money } from '../lib/utils.js';
 
 interface ClientPortalProps {
@@ -25,8 +29,9 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 
 export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
   const [view, setView] = useState<View>('login');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [client, setClient] = useState<any>(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Auth Form State
   const [email, setEmail] = useState('');
@@ -52,7 +57,6 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       setToken(urlToken);
       setEmail(urlEmail);
       setView('reset');
-      setLoading(false);
       return;
     }
 
@@ -60,7 +64,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       setView('register');
     }
 
-    // Check auth
+    // Check auth in background without blocking UI
     api.client.me()
       .then(res => {
         setClient(res.client);
@@ -73,8 +77,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       })
       .catch(() => {
         // Not logged in, stay on login/register view
-      })
-      .finally(() => setLoading(false));
+      });
   }, []);
 
   const loadDashboard = async () => {
@@ -174,23 +177,6 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       onToast('فشل تحميل تفاصيل المشروع', 'error');
     }
   };
-
-  if (loading && !client && view !== 'reset') {
-    return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-card)' }}>
-        <div className="auth-brand-side" style={{ flex: 1, background: 'linear-gradient(135deg, var(--bg-1), var(--accent-dim))', borderLeft: '1px solid var(--border)' }} />
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 20px' }}>
-          <div style={{ width: '100%', maxWidth: 400 }}>
-            <div style={{ height: 40, width: '60%', background: 'var(--bg-3)', borderRadius: 8, marginBottom: 10, margin: '0 auto' }} />
-            <div style={{ height: 20, width: '40%', background: 'var(--bg-3)', borderRadius: 8, marginBottom: 40, margin: '0 auto' }} />
-            <div style={{ height: 48, background: 'var(--bg-3)', borderRadius: 8, marginBottom: 15 }} />
-            <div style={{ height: 48, background: 'var(--bg-3)', borderRadius: 8, marginBottom: 25 }} />
-            <div style={{ height: 48, background: 'var(--accent-dim)', borderRadius: 8 }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render Dashboard
   if (view === 'dashboard' && client) {
@@ -545,152 +531,465 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     );
   }
 
-  // Auth Forms
+  // Auth Forms View
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-card)' }}>
-      {/* Left side: Branding (Hidden on mobile) */}
-      <div className="auth-brand-side" style={{ flex: 1, background: 'linear-gradient(135deg, var(--bg-1), var(--accent-dim))', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 60, borderLeft: '1px solid var(--border)' }}>
-        <h1 style={{ fontSize: 42, marginBottom: 15, lineHeight: 1.2 }}>مرحبًا بك في<br/>بوابة العملاء</h1>
-        <p style={{ fontSize: 18, color: 'var(--text-muted)', maxWidth: 400, lineHeight: 1.6, marginBottom: 40 }}>
-          تابع طلباتك ومشاريعك بكل سهولة، وحمل ملفاتك النهائية بأمان تام في أي وقت.
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, color: 'var(--text)', background: 'var(--bg-3)', padding: '15px 20px', borderRadius: 12, width: 'fit-content' }}>
-          <ShieldCheck size={28} color="var(--success)" />
-          <div>
-            <div style={{ fontWeight: 'bold' }}>منصة آمنة 100%</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>جميع بياناتك وملفاتك مشفرة بالكامل.</div>
-          </div>
-        </div>
-      </div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
+      {/* Background Ambient Glows */}
+      <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: '-10%', left: '-5%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      {/* Right side: Form */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 20px' }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
+      {/* Top Navbar */}
+      <header style={{ height: 72, borderBottom: '1px solid var(--border)', background: 'rgba(10, 8, 14, 0.75)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50 }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: 1200, padding: '0 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={onNavigateHome}>
+            <img src="/logo.png" alt="PREMIRALAB" style={{ width: 34, height: 34, borderRadius: 8, objectFit: 'contain' }} />
+            <div>
+              <strong style={{ fontSize: 16, letterSpacing: 0.5, display: 'block', lineHeight: 1.2 }}>PREMIRALAB</strong>
+              <span className="muted" style={{ fontSize: 11 }}>بوابة العملاء الرسمية</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn--outline btn--sm"
+            onClick={onNavigateHome}
+            style={{ borderRadius: 10, gap: 6, fontSize: 12, padding: '7px 14px' }}
+          >
+            <ArrowLeft size={15} /> العودة للرئيسية
+          </button>
+        </div>
+      </header>
+
+      {/* Main Split Content */}
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', zIndex: 1 }}>
+        <div style={{ width: '100%', maxWidth: 1080, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 40, alignItems: 'center' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            {view === 'login' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>تسجيل الدخول</h2><p className="muted">أهلًا بعودتك! سجل دخولك لمتابعة أعمالك.</p></>}
-            {view === 'register' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>إنشاء حساب</h2><p className="muted">أهلًا بك! يرجى ملء بياناتك للبدء.</p></>}
-            {view === 'forgot' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>استرجاع الحساب</h2><p className="muted">أدخل بريدك وسنرسل لك رابطًا للتغيير.</p></>}
-            {view === 'reset' && <><h2 style={{ fontSize: 28, marginBottom: 5 }}>كلمة المرور الجديدة</h2><p className="muted">يرجى اختيار كلمة مرور قوية.</p></>}
-            {redirect === 'order' && view === 'register' && (
-              <div style={{ background: 'var(--accent-dim)', color: 'var(--accent)', padding: 12, borderRadius: 8, marginTop: 15, fontSize: 14 }}>
-                يرجى إنشاء حسابك أولًا لتتمكن من تقديم الطلب ومتابعته لاحقًا.
+          {/* Brand Showcase Side */}
+          <div className="auth-brand-side" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'rgba(124, 58, 237, 0.15)',
+                border: '1px solid rgba(124, 58, 237, 0.3)',
+                padding: '6px 14px',
+                borderRadius: 20,
+                color: 'var(--accent)',
+                fontSize: 12,
+                fontWeight: 700,
+                marginBottom: 16,
+              }}>
+                <Sparkles size={14} /> بوابة العميل السحابية الفاخرة
               </div>
-            )}
-            {redirect === 'order' && view === 'login' && (
-              <div style={{ background: 'var(--accent-dim)', color: 'var(--accent)', padding: 12, borderRadius: 8, marginTop: 15, fontSize: 14 }}>
-                يرجى تسجيل الدخول أولًا لتتمكن من تقديم الطلب ومتابعته لاحقًا.
+
+              <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 900, lineHeight: 1.25, margin: '0 0 14px' }}>
+                تابع مسار مشروعك بكل <span style={{ background: 'linear-gradient(135deg, var(--accent), #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>احترافية ووضوح</span>
+              </h1>
+
+              <p className="muted" style={{ fontSize: 15, lineHeight: 1.7, margin: 0, maxWidth: 460 }}>
+                منصتك الرقمية المخصصة لمتابعة مراحل التنفيذ، مراجعة واعتماد التصاميم، وتحميل الأصول والملفات بجودتها الأصلية وفواتيرك الرسمية في أي وقت.
+              </p>
+            </div>
+
+            {/* Feature Highlights Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border)',
+                padding: '14px 18px',
+                borderRadius: 14,
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(124, 58, 237, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', flexShrink: 0 }}>
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: 14, display: 'block' }}>متابعة حية ومباشرة</strong>
+                  <span className="muted" style={{ fontSize: 12 }}>إشعارات بتطورات مشروعك ونسبة الإنجاز لحظة بلحظة.</span>
+                </div>
               </div>
-            )}
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border)',
+                padding: '14px 18px',
+                borderRadius: 14,
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa', flexShrink: 0 }}>
+                  <FolderLock size={20} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: 14, display: 'block' }}>أرشيف دائم لملفاتك وتصاميمك</strong>
+                  <span className="muted" style={{ fontSize: 12 }}>تحميل فوري للأصول النهائية والفواتير الضريبية المعتمدة.</span>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border)',
+                padding: '14px 18px',
+                borderRadius: 14,
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(34, 197, 94, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', flexShrink: 0 }}>
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: 14, display: 'block' }}>خصوصية وأمان تام 100%</strong>
+                  <span className="muted" style={{ fontSize: 12 }}>تشفير عالي الأمان لحماية بياناتك ومعاملاتك الرقمية.</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {view === 'login' && (
-            <form onSubmit={handleLogin} className="form-stack">
-              <div className="form-field">
-                <label className="form-label">البريد الإلكتروني</label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="email" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={email} onChange={e => setEmail(e.target.value)} placeholder="example@domain.com" />
-                </div>
-              </div>
-              <div className="form-field">
-                <label className="form-label">كلمة المرور</label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="password" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-                </div>
-              </div>
-              <div style={{ textAlign: 'left', marginBottom: 25 }}>
-                <button type="button" className="link" onClick={() => setView('forgot')} style={{ fontSize: 13 }}>نسيت كلمة المرور؟</button>
-              </div>
-              <button type="submit" className="btn btn--primary btn--lg" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
-                {loading ? 'جاري الدخول...' : 'تسجيل الدخول'}
-              </button>
-              <div style={{ textAlign: 'center', marginTop: 30 }}>
-                <span className="muted">ليس لديك حساب؟ </span>
-                <button type="button" className="link" onClick={() => setView('register')}>إنشاء حساب جديد</button>
-              </div>
-            </form>
-          )}
+          {/* Form Card Side */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              width: '100%',
+              maxWidth: 440,
+              background: 'rgba(18, 14, 24, 0.85)',
+              border: '1px solid rgba(124, 58, 237, 0.25)',
+              borderRadius: 22,
+              padding: 'clamp(24px, 5vw, 36px)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(124, 58, 237, 0.1)',
+              backdropFilter: 'blur(20px)',
+              boxSizing: 'border-box',
+            }}>
 
-          {view === 'register' && (
-            <form onSubmit={handleRegister} className="form-stack">
-              <div className="form-field">
-                <label className="form-label">الاسم بالكامل</label>
-                <div style={{ position: 'relative' }}>
-                  <User size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="text" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={name} onChange={e => setName(e.target.value)} placeholder="أحمد محمد" />
+              {/* Segmented Tabs (Login vs Register) */}
+              {(view === 'login' || view === 'register') && (
+                <div style={{
+                  display: 'flex',
+                  background: 'var(--bg-3)',
+                  padding: 4,
+                  borderRadius: 12,
+                  marginBottom: 26,
+                  border: '1px solid var(--border)',
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => { setView('login'); setShowPassword(false); }}
+                    style={{
+                      flex: 1,
+                      padding: '9px 0',
+                      borderRadius: 9,
+                      fontSize: 13,
+                      fontWeight: view === 'login' ? 800 : 600,
+                      background: view === 'login' ? 'var(--accent)' : 'transparent',
+                      color: view === 'login' ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: view === 'login' ? '0 2px 10px rgba(124, 58, 237, 0.4)' : 'none',
+                    }}
+                  >
+                    تسجيل الدخول
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setView('register'); setShowPassword(false); }}
+                    style={{
+                      flex: 1,
+                      padding: '9px 0',
+                      borderRadius: 9,
+                      fontSize: 13,
+                      fontWeight: view === 'register' ? 800 : 600,
+                      background: view === 'register' ? 'var(--accent)' : 'transparent',
+                      color: view === 'register' ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: view === 'register' ? '0 2px 10px rgba(124, 58, 237, 0.4)' : 'none',
+                    }}
+                  >
+                    حساب جديد
+                  </button>
                 </div>
-              </div>
-              <div className="form-field">
-                <label className="form-label">رقم الجوال</label>
-                <div style={{ position: 'relative' }}>
-                  <Phone size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="tel" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={phone} onChange={e => setPhone(e.target.value)} placeholder="05xxxxxxxx" />
-                </div>
-              </div>
-              <div className="form-field">
-                <label className="form-label">البريد الإلكتروني</label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="email" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={email} onChange={e => setEmail(e.target.value)} placeholder="example@domain.com" />
-                </div>
-                <div className="form-hint" style={{ fontSize: 12, marginTop: 6, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <ShieldCheck size={14} /> سيتم ربط طلباتك السابقة بحسابك تلقائيًا إذا استخدمت نفس الإيميل.
-                </div>
-              </div>
-              <div className="form-field">
-                <label className="form-label">كلمة المرور</label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="password" required minLength={6} className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-                </div>
-              </div>
-              <button type="submit" className="btn btn--primary btn--lg" style={{ width: '100%', justifyContent: 'center', marginTop: 15 }} disabled={loading}>
-                {loading ? 'جاري الإنشاء...' : 'إنشاء حساب'}
-              </button>
-              <div style={{ textAlign: 'center', marginTop: 30 }}>
-                <span className="muted">لديك حساب بالفعل؟ </span>
-                <button type="button" className="link" onClick={() => setView('login')}>تسجيل الدخول</button>
-              </div>
-            </form>
-          )}
+              )}
 
-          {view === 'forgot' && (
-            <form onSubmit={handleForgot} className="form-stack">
-              <div className="form-field">
-                <label className="form-label">البريد الإلكتروني</label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="email" required className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={email} onChange={e => setEmail(e.target.value)} placeholder="example@domain.com" />
-                </div>
-              </div>
-              <button type="submit" className="btn btn--primary btn--lg" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
-                {loading ? 'جاري الإرسال...' : 'إرسال رابط الاسترجاع'}
-              </button>
-              <div style={{ textAlign: 'center', marginTop: 30 }}>
-                <button type="button" className="link" onClick={() => setView('login')}>العودة لتسجيل الدخول</button>
-              </div>
-            </form>
-          )}
+              {/* Form Title */}
+              <div style={{ marginBottom: 22 }}>
+                {view === 'login' && (
+                  <>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px' }}>تسجيل الدخول 🔑</h2>
+                    <p className="muted" style={{ margin: 0, fontSize: 13 }}>أهلاً بعودتك! أدخل بياناتك لمتابعة أعمالك.</p>
+                  </>
+                )}
+                {view === 'register' && (
+                  <>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px' }}>إنشاء حساب عميل ✨</h2>
+                    <p className="muted" style={{ margin: 0, fontSize: 13 }}>سجّل بياناتك لبدء مشروعك ومتابعته بأمان.</p>
+                  </>
+                )}
+                {view === 'forgot' && (
+                  <>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px' }}>استرجاع كلمة المرور 🔐</h2>
+                    <p className="muted" style={{ margin: 0, fontSize: 13 }}>أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين.</p>
+                  </>
+                )}
+                {view === 'reset' && (
+                  <>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px' }}>تعيين كلمة مرور جديدة 🔒</h2>
+                    <p className="muted" style={{ margin: 0, fontSize: 13 }}>اختر كلمة مرور جديدة وقوية لحسابك.</p>
+                  </>
+                )}
 
-          {view === 'reset' && (
-            <form onSubmit={handleReset} className="form-stack">
-              <div className="form-field">
-                <label className="form-label">كلمة المرور الجديدة</label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
-                  <input type="password" required minLength={6} className="form-input" style={{ paddingRight: 42, paddingLeft: 12, height: 48 }} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-                </div>
+                {redirect === 'order' && (
+                  <div style={{ background: 'rgba(124, 58, 237, 0.15)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '10px 14px', borderRadius: 10, marginTop: 14, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Sparkles size={16} /> يرجى تسجيل الدخول أو إنشاء حساب لتقديم ومتابعة طلبك.
+                  </div>
+                )}
               </div>
-              <button type="submit" className="btn btn--primary btn--lg" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
-                {loading ? 'جاري الحفظ...' : 'حفظ كلمة المرور'}
-              </button>
-            </form>
-          )}
+
+              {/* ─── Login Form ─── */}
+              {view === 'login' && (
+                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>البريد الإلكتروني</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="email"
+                        required
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, height: 46, fontSize: 14, borderRadius: 10 }}
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="example@domain.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-field">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <label className="form-label" style={{ fontSize: 12, fontWeight: 700, margin: 0 }}>كلمة المرور</label>
+                      <button type="button" className="link" onClick={() => setView('forgot')} style={{ fontSize: 12 }}>نسيت كلمة المرور؟</button>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, paddingLeft: 42, height: 46, fontSize: 14, borderRadius: 10, fontFamily: 'monospace' }}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--lg btn--glow"
+                    style={{ width: '100%', justifyContent: 'center', height: 48, borderRadius: 12, fontSize: 15, fontWeight: 800, marginTop: 6 }}
+                    disabled={loading}
+                  >
+                    {loading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول 🚀'}
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: 14, fontSize: 13 }}>
+                    <span className="muted">ليس لديك حساب بعد؟ </span>
+                    <button type="button" className="link" style={{ fontWeight: 700 }} onClick={() => setView('register')}>إنشاء حساب جديد</button>
+                  </div>
+                </form>
+              )}
+
+              {/* ─── Register Form ─── */}
+              {view === 'register' && (
+                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>الاسم بالكامل</label>
+                    <div style={{ position: 'relative' }}>
+                      <User size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="text"
+                        required
+                        className="input"
+                        style={{ paddingRight: 42, height: 44, fontSize: 14, borderRadius: 10 }}
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="أحمد محمد"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>رقم الهاتف / الواتساب</label>
+                    <div style={{ position: 'relative' }}>
+                      <Phone size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="tel"
+                        required
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, height: 44, fontSize: 14, borderRadius: 10 }}
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        placeholder="010xxxxxxxx"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>البريد الإلكتروني</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="email"
+                        required
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, height: 44, fontSize: 14, borderRadius: 10 }}
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="example@domain.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>كلمة المرور</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, paddingLeft: 42, height: 44, fontSize: 14, borderRadius: 10, fontFamily: 'monospace' }}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="أدخل 6 خانات على الأقل"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--lg btn--glow"
+                    style={{ width: '100%', justifyContent: 'center', height: 48, borderRadius: 12, fontSize: 15, fontWeight: 800, marginTop: 6 }}
+                    disabled={loading}
+                  >
+                    {loading ? 'جارٍ إنشاء الحساب...' : 'إنشاء حسابك الآن ✨'}
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: 14, fontSize: 13 }}>
+                    <span className="muted">لديك حساب بالفعل؟ </span>
+                    <button type="button" className="link" style={{ fontWeight: 700 }} onClick={() => setView('login')}>تسجيل الدخول</button>
+                  </div>
+                </form>
+              )}
+
+              {/* ─── Forgot Password Form ─── */}
+              {view === 'forgot' && (
+                <form onSubmit={handleForgot} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>البريد الإلكتروني المسجل</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="email"
+                        required
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, height: 46, fontSize: 14, borderRadius: 10 }}
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="example@domain.com"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--lg btn--glow"
+                    style={{ width: '100%', justifyContent: 'center', height: 48, borderRadius: 12, fontSize: 14, fontWeight: 800 }}
+                    disabled={loading}
+                  >
+                    {loading ? 'جارٍ الإرسال...' : 'إرسال رابط الاسترجاع ✉️'}
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: 10 }}>
+                    <button type="button" className="link" onClick={() => setView('login')} style={{ fontSize: 13 }}>
+                      العودة لتسجيل الدخول
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* ─── Reset Password Form ─── */}
+              {view === 'reset' && (
+                <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="form-field">
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>كلمة المرور الجديدة</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        className="input"
+                        dir="ltr"
+                        style={{ paddingRight: 42, paddingLeft: 42, height: 46, fontSize: 14, borderRadius: 10, fontFamily: 'monospace' }}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--lg btn--glow"
+                    style={{ width: '100%', justifyContent: 'center', height: 48, borderRadius: 12, fontSize: 15, fontWeight: 800 }}
+                    disabled={loading}
+                  >
+                    {loading ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة 💾'}
+                  </button>
+                </form>
+              )}
+
+            </div>
+          </div>
 
         </div>
-      </div>
+      </main>
     </div>
   );
 }
