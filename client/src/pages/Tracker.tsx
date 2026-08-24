@@ -901,11 +901,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   سيتم فتح نافذة الدفع الآمنة المعتمدة لسداد مبلغ <strong>{money(reqPayment)}</strong> ببطاقتك البنكية.
                 </p>
 
-                <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
-                  <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 لتجربة الدفع في وضع الاختبار (Test Mode):</strong>
-                  <div>• رقم الكارت: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>4111 1111 1111 1111</code></div>
-                  <div style={{ marginTop: 2 }}>• تاريخ الانتهاء: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>12/28</code> | CVV: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123</code></div>
-                  <div style={{ marginTop: 2 }}>• كود تأكيد OTP (إن طلب): <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
+                <div style={{ background: 'rgba(34, 197, 94, 0.06)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12, color: 'var(--text-muted)' }}>
+                  <strong style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <ShieldCheck size={16} /> دفع إلكتروني مشفر وآمن 100%
+                  </strong>
+                  <span>يتم تشفير ومعالجة بيانات بطاقتك البنكية بأعلى معايير الأمان الدولية (PCI-DSS) عبر بوابة Paymob المعتمدة رسمياً من البنك المركزي المصري.</span>
                 </div>
 
                 <button
