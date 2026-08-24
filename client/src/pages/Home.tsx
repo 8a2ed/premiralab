@@ -93,13 +93,31 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openOrder = async (pkg?: Package, initialProj?: string) => {
+  const [clientUser, setClientUser] = useState<any>(() => {
     try {
-      await api.client.me();
+      const raw = sessionStorage.getItem('client_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => {
+    api.client.me()
+      .then(res => {
+        setClientUser(res.client);
+        sessionStorage.setItem('client_user', JSON.stringify(res.client));
+      })
+      .catch(() => {
+        setClientUser(null);
+        sessionStorage.removeItem('client_user');
+      });
+  }, []);
+
+  const openOrder = (pkg?: Package, initialProj?: string) => {
+    if (clientUser) {
       setSelected(pkg ?? null);
       setInitialProjectType(initialProj);
       setOrderOpen(true);
-    } catch {
+    } else {
       onToast('يرجى تسجيل الدخول أو إنشاء حسابك أولاً للبدء بطلب تصميم ومتابعته ✨', 'info');
       if (pkg) sessionStorage.setItem('pending_order_pkg', JSON.stringify(pkg));
       if (initialProj) sessionStorage.setItem('pending_order_proj', initialProj);

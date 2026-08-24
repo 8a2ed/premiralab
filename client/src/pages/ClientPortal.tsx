@@ -72,6 +72,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     api.client.me()
       .then(res => {
         setClient(res.client);
+        sessionStorage.setItem('client_user', JSON.stringify(res.client));
         if (hasPendingOrder()) {
           window.location.href = '/?order=1';
         } else {
@@ -80,6 +81,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
         }
       })
       .catch(() => {
+        sessionStorage.removeItem('client_user');
         // Not logged in, stay on login/register view
       });
   }, []);
@@ -103,6 +105,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     try {
       const res = await api.client.login({ email, password });
       setClient(res);
+      sessionStorage.setItem('client_user', JSON.stringify(res.client || res));
       onToast('تم تسجيل الدخول بنجاح', 'success');
       
       if (hasPendingOrder()) {
@@ -124,6 +127,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     try {
       const res = await api.client.register({ name, phone, email, password });
       setClient(res);
+      sessionStorage.setItem('client_user', JSON.stringify(res.client || res));
       onToast('تم إنشاء الحساب بنجاح', 'success');
       
       if (hasPendingOrder()) {
@@ -173,6 +177,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
 
   const handleLogout = async () => {
     await api.client.logout();
+    sessionStorage.removeItem('client_user');
     setClient(null);
     setView('login');
   };
