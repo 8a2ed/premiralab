@@ -580,7 +580,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                 fontWeight: 700,
                 marginBottom: 16,
               }}>
-                <Sparkles size={14} /> بوابة العميل السحابية الفاخرة
+                <Sparkles size={14} /> بوابة التسجيل
               </div>
 
               <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 900, lineHeight: 1.25, margin: '0 0 14px' }}>
