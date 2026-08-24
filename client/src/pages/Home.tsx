@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { 
   ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, 
-  ExternalLink, X, Eye, AlertCircle, ChevronDown, Sparkles, Shield, Zap
+  ExternalLink, X, Eye, AlertCircle, ChevronDown, Sparkles, Shield, Zap,
+  TrendingUp, Award, Clock, Headphones, ArrowUp, Layers
 } from 'lucide-react';
 import { Nav } from '../components/layout/Nav.js';
 import { Footer } from '../components/layout/Footer.js';
@@ -28,9 +29,10 @@ const DynamicIcon = ({ name, size = 28, className = '' }: { name?: string, size?
 const FaqItem = ({ faq }: { faq: FAQ }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderBottom: '1px solid var(--border-2)', padding: '18px 0' }}>
+    <div className="faq-item" style={{ borderBottom: '1px solid var(--border-2)', padding: '18px 0' }}>
       <button 
         onClick={() => setOpen(!open)}
+        className="faq-trigger"
         style={{ 
           width: '100%', 
           display: 'flex', 
@@ -71,6 +73,25 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
   const [selected,           setSelected]           = useState<Package | null>(null);
   const [initialProjectType, setInitialProjectType] = useState<string | undefined>(undefined);
   const [activePortfolio,    setActivePortfolio]    = useState<PortfolioItem | null>(null);
+  const [selectedCategory,   setSelectedCategory]   = useState<string>('all');
+  const [scrollProgress,     setScrollProgress]     = useState(0);
+  const [showScrollTop,      setShowScrollTop]      = useState(false);
+
+  // Track scroll progress and back-to-top visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const currentProgress = totalScroll > 0 ? (window.scrollY / totalScroll) * 100 : 0;
+      setScrollProgress(currentProgress);
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const openOrder = async (pkg?: Package, initialProj?: string) => {
     try {
@@ -79,7 +100,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
       setInitialProjectType(initialProj);
       setOrderOpen(true);
     } catch {
-      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولًا لتقديم طلب', 'info');
+      onToast('يرجى تسجيل الدخول أو إنشاء حساب أولاً لتقديم طلب', 'info');
       window.location.href = '/client?redirect=order';
     }
   };
@@ -108,6 +129,20 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
     }
   }, [data.site]);
 
+  // Extract unique categories from portfolio
+  const categories = useMemo(() => {
+    if (!data.portfolio) return ['all'];
+    const cats = Array.from(new Set(data.portfolio.map(p => p.category).filter(Boolean))) as string[];
+    return ['all', ...cats];
+  }, [data.portfolio]);
+
+  // Filtered portfolio list
+  const filteredPortfolio = useMemo(() => {
+    if (!data.portfolio) return [];
+    if (selectedCategory === 'all') return data.portfolio;
+    return data.portfolio.filter(p => p.category === selectedCategory);
+  }, [data.portfolio, selectedCategory]);
+
   return (
     <>
       <style>{`
@@ -117,6 +152,21 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
           ${data.site?.accent_color ? `--accent-dim: ${data.site.accent_color}1a;` : ''}
         }
       `}</style>
+
+      {/* Top Scroll Progress Indicator */}
+      <div 
+        className="top-scroll-progress" 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          height: 3, 
+          width: `${scrollProgress}%`, 
+          background: 'linear-gradient(90deg, var(--accent), #f59e0b)', 
+          zIndex: 100, 
+          transition: 'width 0.1s ease-out' 
+        }} 
+      />
 
       <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} />
 
@@ -179,6 +229,59 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
           </div>
         </section>
 
+        {/* Live Metrics & Highlights Bar */}
+        <section className="stats-banner-section">
+          <div className="container">
+            <div className="stats-glass-bar card">
+              <div className="stat-tile">
+                <div className="stat-tile__icon-wrap">
+                  <TrendingUp size={22} className="stat-tile__icon" />
+                </div>
+                <div>
+                  <div className="stat-tile__number">+150</div>
+                  <div className="stat-tile__label">مشروع ناجح ومكتمل</div>
+                </div>
+              </div>
+
+              <div className="stat-tile__divider" />
+
+              <div className="stat-tile">
+                <div className="stat-tile__icon-wrap">
+                  <Award size={22} className="stat-tile__icon" />
+                </div>
+                <div>
+                  <div className="stat-tile__number">100%</div>
+                  <div className="stat-tile__label">نسبة رضا وثقة العملاء</div>
+                </div>
+              </div>
+
+              <div className="stat-tile__divider" />
+
+              <div className="stat-tile">
+                <div className="stat-tile__icon-wrap">
+                  <Clock size={22} className="stat-tile__icon" />
+                </div>
+                <div>
+                  <div className="stat-tile__number">48 س</div>
+                  <div className="stat-tile__label">متوسط بدء التنفيذ</div>
+                </div>
+              </div>
+
+              <div className="stat-tile__divider" />
+
+              <div className="stat-tile">
+                <div className="stat-tile__icon-wrap">
+                  <Headphones size={22} className="stat-tile__icon" />
+                </div>
+                <div>
+                  <div className="stat-tile__number">24/7</div>
+                  <div className="stat-tile__label">متابعة ودعم مستمر</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Testimonials (Social Proof) */}
         {data.testimonials && data.testimonials.length > 0 && (
           <section className="section" id="testimonials" style={{ background: 'var(--bg-2)' }}>
@@ -189,9 +292,9 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                 <p className="muted">تجارب حقيقية لشركاء النجاح الذين وضعوا ثقتهم في استوديوهاتنا</p>
               </div>
 
-              <Carousel autoPlay={true} intervalMs={3500}>
+              <Carousel autoPlay={true} intervalMs={3800}>
                 {data.testimonials.map(t => (
-                  <div className="card testimonial-card carousel-item-wrapper" key={t.id}>
+                  <div className="card testimonial-card" key={t.id}>
                     <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} size={16} fill={i < t.rating ? '#f59e0b' : 'none'} color={i < t.rating ? '#f59e0b' : 'var(--border)'} />
@@ -293,12 +396,27 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
               <p className="muted">نماذج وتجارب بصرية صممناها لشركائنا بأعلى درجات الإتقان والابتكار</p>
             </div>
 
-            <div style={{ marginTop: 28 }}>
-              {data.portfolio?.length ? (
-                <Carousel autoPlay={true} intervalMs={4000}>
-                  {data.portfolio.map(p => (
+            {/* Category Filter Pills */}
+            {categories.length > 2 && (
+              <div className="portfolio-filter-bar">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    className={`portfolio-filter-pill ${selectedCategory === cat ? 'portfolio-filter-pill--active' : ''}`}
+                    onClick={() => setSelectedCategory(cat)}
+                  >
+                    {cat === 'all' ? 'جميع الأعمال' : cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginTop: 24 }}>
+              {filteredPortfolio.length ? (
+                <Carousel autoPlay={true} intervalMs={4200}>
+                  {filteredPortfolio.map(p => (
                     <div
-                      className="card portfolio-card-clickable carousel-item-wrapper"
+                      className="card portfolio-card-clickable"
                       key={p.id}
                       onClick={() => setActivePortfolio(p)}
                       role="button"
@@ -326,7 +444,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                   ))}
                 </Carousel>
               ) : (
-                <div className="empty">أضف أعمالك من لوحة الإدارة لتظهر هنا في المعرض.</div>
+                <div className="empty">لا توجد أعمال في هذا التصنيف حاليًا.</div>
               )}
             </div>
           </div>
@@ -349,9 +467,55 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
             </div>
           </section>
         )}
+
+        {/* High-Converting Bottom CTA Banner */}
+        <section className="cta-banner-section">
+          <div className="container">
+            <div className="cta-banner card">
+              <div className="cta-banner-glow" />
+              <div className="cta-banner-content">
+                <div className="cta-banner-badge">
+                  <Sparkles size={14} /> لنبدأ معًا اليوم
+                </div>
+                <h2 className="cta-banner-title">جاهز لنقل علامتك التجارية إلى المستوى التالي؟</h2>
+                <p className="cta-banner-desc">
+                  دعنا نبتكر لك هوية وتجربة رقمية فريدة تُميّزك عن منافسيك وتحقق أهدافك بأعلى احترافية.
+                </p>
+                <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
+                  <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
+                    ابدأ مشروعك الآن <ArrowLeft size={18} />
+                  </button>
+                  {data.site?.whatsapp && (
+                    <a 
+                      href={waLink(data.site.whatsapp, `مرحباً ${data.site.brand || 'PREMIRALAB'}، أريد استشارة سريعة حول مشروعي.`)} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn--lg btn--outline"
+                      style={{ borderColor: '#25D366', color: '#25D366' }}
+                    >
+                      💬 استشارة عبر واتساب
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer site={data.site} />
+
+      {/* Floating Back to Top Button */}
+      {showScrollTop && (
+        <button 
+          onClick={scrollToTop} 
+          className="back-to-top-btn" 
+          aria-label="العودة للأعلى"
+          type="button"
+        >
+          <ArrowUp size={20} />
+        </button>
+      )}
 
       {/* Floating WhatsApp Quick-Chat Widget */}
       <FloatingWhatsApp whatsapp={data.site?.whatsapp} brand={data.site?.brand} />
@@ -753,7 +917,7 @@ interface CaseStudyModalProps {
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
   const waUrl = whatsapp
-    ? waLink(whatsapp, `مرحبًا ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
+    ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
     : null;
 
   return (
@@ -783,7 +947,7 @@ function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyMo
                   onOrder(undefined, item.title);
                 }}
               >
-                اطلب مشروعًا مماثلًا
+                اطلب مشروعًا مماثلاً
               </button>
             </div>
           </div>
@@ -807,9 +971,9 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
   if (!whatsapp) return null;
 
   const quickLinks = [
-    { title: 'طلب عرض سعر سريع', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
-    { title: 'استفسار عن الباقات المتاحة', msg: `مرحبًا ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
-    { title: 'متابعة طلب قائم', msg: `مرحبًا ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
+    { title: 'طلب عرض سعر سريع', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الحصول على عرض سعر لمشروعي الجديد.` },
+    { title: 'استفسار عن الباقات المتاحة', msg: `مرحباً ${brand || 'PREMIRALAB'}، لدي استفسار بخصوص باقات التصميم.` },
+    { title: 'متابعة طلب قائم', msg: `مرحباً ${brand || 'PREMIRALAB'}، أريد الاستفسار عن حالة طلبي.` },
   ];
 
   return (
