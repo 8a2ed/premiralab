@@ -20,6 +20,17 @@ function getPaymobSettings() {
   };
 }
 
+function normalizeEgyptPhone(phone: string): { e164: string; local: string } {
+  let cleaned = String(phone || '').replace(/\D/g, '');
+  if (cleaned.startsWith('0020')) cleaned = cleaned.slice(4);
+  else if (cleaned.startsWith('20')) cleaned = cleaned.slice(2);
+  else if (cleaned.startsWith('0')) cleaned = cleaned.slice(1);
+
+  const local = '0' + cleaned;
+  const e164 = '+20' + cleaned;
+  return { e164, local };
+}
+
 /**
  * Paymob Unified Payment Initiation
  * Supports: Cards (Visa/Mastercard/Meeza), Mobile Wallets (Vodafone Cash, etc.), Fawry
@@ -86,11 +97,11 @@ export async function createPaymobPayment({
   }
   const paymobOrder = await orderRes.json();
 
-  // Split name for billing data
+  // Split name and format phone
   const nameParts = clientName.trim().split(' ');
   const firstName = nameParts[0] || 'Client';
   const lastName = nameParts.slice(1).join(' ') || 'Customer';
-  const formattedPhone = clientPhone.startsWith('+') ? clientPhone : `+20${clientPhone.replace(/^0+/, '')}`;
+  const { e164: formattedPhone, local: localPhone } = normalizeEgyptPhone(clientPhone);
 
   // Select appropriate integration ID
   let integrationId = settings.integrationCard;
@@ -147,21 +158,13 @@ export async function createPaymobPayment({
   let fawryCode = '';
 
   if (method === 'wallet') {
-    // Format Egyptian mobile wallet number (e.g. 010xxxxxxxx)
-    let rawPhone = clientPhone.replace(/\D/g, '');
-    if (rawPhone.startsWith('20') && rawPhone.length === 12) {
-      rawPhone = rawPhone.slice(1);
-    } else if (!rawPhone.startsWith('0') && rawPhone.length === 10) {
-      rawPhone = '0' + rawPhone;
-    }
-
     // Paymob Mobile Wallet URL Pay Request
     const walletRes = await fetch('https://accept.paymob.com/api/acceptance/payments/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         source: {
-          identifier: rawPhone,
+          identifier: localPhone,
           subtype: 'WALLET',
         },
         payment_token: paymentKey,

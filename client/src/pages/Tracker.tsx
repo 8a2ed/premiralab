@@ -189,14 +189,15 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
     setUploadingReceipt(true);
     try {
       const res = await api.uploadReceipt(orderNo, file);
-      if (res.ok) {
+      if (res.ok || res.receiptUrl) {
         setData(prev => prev ? {
           ...prev,
           paymentReceipt: res.receiptUrl,
-          status: res.status as any,
+          status: (res.status as any) || prev.status,
         } : prev);
         setReceiptSuccess(true);
-        setTimeout(() => setReceiptSuccess(false), 5000);
+        setTimeout(() => setReceiptSuccess(false), 6000);
+        load();
       }
     } catch (e) {
       alert((e as Error).message);
@@ -206,9 +207,14 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   };
 
   const handleInitiatePaymob = async (method: 'card' | 'wallet' | 'fawry') => {
+    const phoneToUse = walletPhone.trim() || data?.clientPhone || '';
+    if (method === 'wallet' && !phoneToUse) {
+      alert('يرجى إدخال رقم محفظة فودافون كاش / المحفظة الإلكترونية');
+      return;
+    }
     setInitiatingPay(true);
     try {
-      const res = await api.payment.initiate(orderNo, method, method === 'wallet' ? walletPhone : undefined);
+      const res = await api.payment.initiate(orderNo, method, method === 'wallet' ? phoneToUse : undefined);
       if (method === 'fawry' && res.fawryCode) {
         setFawryRefCode(res.fawryCode);
       } else if (res.redirectionUrl) {
@@ -280,6 +286,17 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
 
           {data && (
             <div className="tracker-grid">
+              {/* Receipt Uploaded Success Banner */}
+              {receiptSuccess && (
+                <div className="card animation-fade-in" style={{ border: '1px solid #22c55e', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <CheckCircle2 size={24} />
+                  <div>
+                    <strong style={{ display: 'block', fontSize: 14 }}>تم رفع إيصال التحويل بنجاح! 📸</strong>
+                    <span style={{ fontSize: 12 }}>يقوم فريق الإدارة بمطابقة الإيصال وتأكيد بدء مشروعك فوراً.</span>
+                  </div>
+                </div>
+              )}
+
               {/* Payment Success / Failure Notice Banners */}
               {paymentNotice === 'success' && (
                 <div className="card animation-fade-in" style={{ border: '1px solid #22c55e', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1170,11 +1187,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
       {/* Paymob iFrame Overlay Modal */}
       {paymobIframeUrl && (
         <Modal title="بوابة الدفع الإلكتروني الآمنة — Paymob" onClose={() => setPaymobIframeUrl(null)}>
-          <div style={{ width: '100%', minHeight: '600px', position: 'relative' }}>
+          <div style={{ width: '100%', height: '70vh', minHeight: '480px', maxHeight: '720px', position: 'relative' }}>
             <iframe
               src={paymobIframeUrl}
               title="Paymob Payment"
-              style={{ width: '100%', height: '600px', border: 'none', borderRadius: 8 }}
+              style={{ width: '100%', height: '100%', border: 'none', borderRadius: 10 }}
             />
           </div>
         </Modal>

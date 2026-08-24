@@ -144,8 +144,8 @@ router.post('/paymob/initiate', async (req, res, next) => {
       return;
     }
 
-    // Determine amount to charge
-    let amount = Number(order.payment_amount) || Number(order.package_price) || Number(order.budget) || 0;
+    // Determine amount to charge (discounted budget or payment_amount has precedence)
+    let amount = Number(order.payment_amount) || Number(order.budget) || Number(order.package_price) || 0;
     if (amount <= 0) {
       res.status(400).json({ error: 'لم يتم تحديد المبلغ المطلوب سداده لهذا الطلب بعد' });
       return;
@@ -183,9 +183,9 @@ router.post('/paymob/webhook', async (req, res, next) => {
       return;
     }
 
-    // Verify HMAC Signature
-    const queryForHmac = req.query?.hmac ? req.query : data;
-    const isValid = verifyPaymobHMAC(queryForHmac);
+    // Verify HMAC Signature (support query, body, or nested obj)
+    const receivedHmac = String(req.query?.hmac || req.body?.hmac || data?.hmac || '');
+    const isValid = verifyPaymobHMAC({ obj: data, hmac: receivedHmac });
     if (!isValid) {
       console.warn('[paymob-webhook] Invalid HMAC signature received!');
       // Respond 200 to prevent Paymob infinite retry storm, but do not process

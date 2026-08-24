@@ -140,7 +140,7 @@ router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next
       finalFilename = opt.newFilename;
     }
 
-    db.prepare('UPDATE orders SET payment_receipt = ? WHERE id = ?').run(finalFilename, order.id);
+    db.prepare('UPDATE orders SET payment_receipt = ?, payment_method = COALESCE(NULLIF(payment_method, ""), "تحويل بنكي / محفظة") WHERE id = ?').run(finalFilename, order.id);
 
     const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
     const message = `🧾 <b>إيصال دفع جديد!</b>
@@ -151,7 +151,7 @@ router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next
       buttons: [{ text: '💻 مراجعة في لوحة التحكم', url: adminUrl }]
     }).catch(console.error);
 
-    res.json({ message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${finalFilename}` });
+    res.json({ ok: true, message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${finalFilename}`, status: (order as any).status });
   } catch (err) {
     next(err);
   }
