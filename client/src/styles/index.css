@@ -393,6 +393,8 @@ img {
 /* Portfolio */
 .portfolio-card-clickable {
   cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
   transition: all .25s ease;
 }
 .portfolio-card-clickable:hover {
@@ -440,6 +442,9 @@ img {
   flex-direction: column; 
   gap: 14px; 
   padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 200px;
 }
 .stars { display: flex; gap: 4px; }
 .testimonial-quote { line-height: 1.8; font-style: italic; color: var(--text); flex: 1; margin: 4px 0 12px; }
