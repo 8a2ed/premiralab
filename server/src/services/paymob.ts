@@ -147,13 +147,21 @@ export async function createPaymobPayment({
   let fawryCode = '';
 
   if (method === 'wallet') {
+    // Format Egyptian mobile wallet number (e.g. 010xxxxxxxx)
+    let rawPhone = clientPhone.replace(/\D/g, '');
+    if (rawPhone.startsWith('20') && rawPhone.length === 12) {
+      rawPhone = rawPhone.slice(1);
+    } else if (!rawPhone.startsWith('0') && rawPhone.length === 10) {
+      rawPhone = '0' + rawPhone;
+    }
+
     // Paymob Mobile Wallet URL Pay Request
     const walletRes = await fetch('https://accept.paymob.com/api/acceptance/payments/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         source: {
-          identifier: clientPhone.replace(/\D/g, ''),
+          identifier: rawPhone,
           subtype: 'WALLET',
         },
         payment_token: paymentKey,

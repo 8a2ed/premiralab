@@ -12,8 +12,9 @@ const router = Router();
 router.post('/paymob/initiate', async (req, res, next) => {
   try {
     const schema = z.object({
-      orderNo: z.string().trim().min(3),
-      method:  z.enum(['card', 'wallet', 'fawry']).default('card'),
+      orderNo:     z.string().trim().min(3),
+      method:      z.enum(['card', 'wallet', 'fawry']).default('card'),
+      walletPhone: z.string().trim().optional(),
     });
 
     const parsed = schema.safeParse(req.body);
@@ -22,7 +23,7 @@ router.post('/paymob/initiate', async (req, res, next) => {
       return;
     }
 
-    const { orderNo, method } = parsed.data;
+    const { orderNo, method, walletPhone } = parsed.data;
 
     // Fetch order with client and package details
     const order = db.prepare(`
@@ -65,7 +66,7 @@ router.post('/paymob/initiate', async (req, res, next) => {
       amount,
       clientName: order.client_name,
       clientEmail: order.client_email,
-      clientPhone: order.client_phone,
+      clientPhone: walletPhone || order.client_phone,
       method,
     });
 
@@ -195,8 +196,12 @@ router.post('/paymob/webhook', async (req, res, next) => {
 // GET /api/payment/paymob/callback — Browser Redirection after Payment
 router.get('/paymob/callback', (req, res) => {
   const isSuccess = req.query.success === 'true';
-  const orderNo = String(req.query.merchant_order_id || '').split('-').slice(0, 3).join('-');
-  const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+  const merchantOrderId = String(req.query.merchant_order_id || '');
+  const orderNo = merchantOrderId.split('-').slice(0, 3).join('-');
+  const host = req.get('host') || 'localhost:5173';
+  const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+  const fallbackOrigin = `${protocol}://${host}`;
+  const clientOrigin = (process.env.CLIENT_ORIGIN && !process.env.CLIENT_ORIGIN.includes('localhost')) ? process.env.CLIENT_ORIGIN : fallbackOrigin;
 
   if (isSuccess && orderNo) {
     res.redirect(`${clientOrigin}/?track=${orderNo}&payment=success`);

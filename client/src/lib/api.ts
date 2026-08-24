@@ -99,7 +99,7 @@ export const api = {
   },
 
   payment: {
-    initiate: (orderNo: string, method: 'card' | 'wallet' | 'fawry' = 'card') =>
+    initiate: (orderNo: string, method: 'card' | 'wallet' | 'fawry' = 'card', walletPhone?: string) =>
       request<{
         ok: boolean;
         amount: number;
@@ -110,7 +110,7 @@ export const api = {
         paymentKey?: string;
       }>('/api/payment/paymob/initiate', {
         method: 'POST',
-        body: JSON.stringify({ orderNo, method }),
+        body: JSON.stringify({ orderNo, method, walletPhone }),
       }),
   },
 

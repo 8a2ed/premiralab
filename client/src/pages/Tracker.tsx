@@ -42,9 +42,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   // Payment UI state
   const [payModalOpen,     setPayModalOpen]     = useState(false);
   const [selectedMethod,   setSelectedMethod]   = useState<'card' | 'wallet' | 'fawry' | 'manual'>('card');
+  const [walletPhone,      setWalletPhone]      = useState('');
   const [initiatingPay,    setInitiatingPay]    = useState(false);
   const [paymobIframeUrl,  setPaymobIframeUrl]  = useState<string | null>(null);
   const [fawryRefCode,     setFawryRefCode]     = useState<string | null>(null);
+  const [fawryCopied,      setFawryCopied]      = useState(false);
 
   // Manual payment receipt state
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
@@ -106,6 +108,13 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
     });
   };
 
+  const copyFawryCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setFawryCopied(true);
+      setTimeout(() => setFawryCopied(false), 2500);
+    });
+  };
+
   const handleUploadReceipt = async (file: File) => {
     setUploadingReceipt(true);
     try {
@@ -129,7 +138,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const handleInitiatePaymob = async (method: 'card' | 'wallet' | 'fawry') => {
     setInitiatingPay(true);
     try {
-      const res = await api.payment.initiate(orderNo, method);
+      const res = await api.payment.initiate(orderNo, method, method === 'wallet' ? walletPhone : undefined);
       if (method === 'fawry' && res.fawryCode) {
         setFawryRefCode(res.fawryCode);
       } else if (res.redirectionUrl) {
@@ -539,17 +548,45 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                     <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 2, background: 'var(--bg-3)', padding: 12, borderRadius: 8, color: 'var(--accent)' }}>
                       {fawryRefCode}
                     </div>
-                    <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                    <div style={{ marginTop: 12 }}>
+                      <button
+                        type="button"
+                        className={`btn btn--sm ${fawryCopied ? 'btn--primary' : 'btn--outline'}`}
+                        onClick={() => copyFawryCode(fawryRefCode)}
+                        style={{ margin: '0 auto', gap: 6 }}
+                      >
+                        {fawryCopied ? <><Check size={14} /> تم نسخ الكود</> : <><Copy size={14} /> نسخ الكود المرجعي</>}
+                      </button>
+                    </div>
+                    <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
                       تفضل بزيارة أي منفذ فوري أو استخدم تطبيق ماي فوري للدفع بهذا الكود خلال 48 ساعة.
                     </p>
                   </div>
                 ) : (
                   <div>
                     <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-                      {selectedMethod === 'card' && 'سيتم تحويلك لنافذة الدفع الآمنة لسداد المبلغ ببطاقة فيزا، ماستركارد، أو ميزة.'}
-                      {selectedMethod === 'wallet' && 'ادفع بسهولة من محفظة فودافون كاش، أورنج كاش، اتصالات كاش، أو WE Pay.'}
+                      {selectedMethod === 'card' && 'سيتم فتح نافذة الدفع الآمنة لسداد المبلغ ببطاقة فيزا، ماستركارد، أو ميزة.'}
+                      {selectedMethod === 'wallet' && 'ادخل رقم محفظة فودافون كاش أو المحفظة الذكية الخاصة بك للمتابعة:'}
                       {selectedMethod === 'fawry' && 'الحصول على كود سداد فوري لإتمام الدفع نقدًا من أي فرع أو كشك فوري.'}
                     </p>
+
+                    {selectedMethod === 'wallet' && (
+                      <div className="form-field" style={{ marginBottom: 14 }}>
+                        <label className="form-label">رقم محفظة فودافون كاش / المحفظة الذكية</label>
+                        <input
+                          className="input"
+                          type="tel"
+                          dir="ltr"
+                          placeholder="مثال: 01012345678"
+                          value={walletPhone}
+                          onChange={e => setWalletPhone(e.target.value)}
+                        />
+                        <span className="muted" style={{ fontSize: 11, marginTop: 3 }}>
+                          سيتم تحويلك لصفحة تأكيد المحفظة وخصم المبلغ مباشرة
+                        </span>
+                      </div>
+                    )}
+
                     <button
                       className="btn btn--primary"
                       style={{ width: '100%', padding: 14, fontSize: 14, justifyContent: 'center' }}
@@ -625,11 +662,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
       {/* Paymob iFrame Overlay Modal */}
       {paymobIframeUrl && (
         <Modal title="بوابة الدفع الإلكتروني الآمنة — Paymob" onClose={() => setPaymobIframeUrl(null)}>
-          <div style={{ width: '100%', height: '550px', position: 'relative' }}>
+          <div style={{ width: '100%', minHeight: '600px', position: 'relative' }}>
             <iframe
               src={paymobIframeUrl}
               title="Paymob Payment"
-              style={{ width: '100%', height: '100%', border: 'none', borderRadius: 8 }}
+              style={{ width: '100%', height: '600px', border: 'none', borderRadius: 8 }}
             />
           </div>
         </Modal>
