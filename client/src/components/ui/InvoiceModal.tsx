@@ -51,33 +51,56 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
     currency: 'EGP',
   };
 
-  // 1. Base / Original Price
-  const originalPrice = Number(packagePrice) > 0 
-    ? Number(packagePrice) 
-    : (Number(budget) > 0 ? Number(budget) : (Number(paymentAmount) > 0 ? Number(paymentAmount) : 0));
+  // Pricing calculations
+  const pkgPrice = Number(packagePrice) || 0;
+  const rawBudget = Number(budget) || 0;
+  const rawPayment = Number(paymentAmount) || 0;
 
-  // 2. Discount Amount Calculation (From promo code and promo discount string)
+  let originalPrice = 0;
   let discountAmount = 0;
+  let finalAgreedTotal = 0;
+
+  // Percentage or fixed discount parsing
+  let discountPct = 0;
+  let discountFixed = 0;
   if (promoCode && promoDiscount) {
-    const discountStr = String(promoDiscount).trim();
-    if (discountStr.includes('%')) {
-      const pct = parseFloat(discountStr.replace('%', '')) || 0;
-      discountAmount = (originalPrice * pct) / 100;
+    const dStr = String(promoDiscount).trim();
+    if (dStr.includes('%')) {
+      discountPct = parseFloat(dStr.replace('%', '')) || 0;
     } else {
-      discountAmount = parseFloat(discountStr.replace(/[^\d.]/g, '')) || 0;
+      discountFixed = parseFloat(dStr.replace(/[^\d.]/g, '')) || 0;
     }
-  } else if (budget > 0 && originalPrice > budget) {
-    discountAmount = originalPrice - budget;
   }
 
-  // 3. Final Net Agreed Total
-  let finalAgreedTotal = originalPrice > 0 ? Math.max(0, originalPrice - discountAmount) : (Number(budget) || Number(paymentAmount) || 0);
-  if (budget > 0 && !discountAmount) {
-    finalAgreedTotal = budget;
+  if (pkgPrice > 0) {
+    originalPrice = pkgPrice;
+    if (discountPct > 0) {
+      discountAmount = (originalPrice * discountPct) / 100;
+    } else if (discountFixed > 0) {
+      discountAmount = discountFixed;
+    }
+    finalAgreedTotal = Math.max(0, originalPrice - discountAmount);
+  } else if (rawBudget > 0) {
+    if (discountPct > 0 && discountPct < 100) {
+      originalPrice = Math.round(rawBudget / (1 - discountPct / 100));
+      discountAmount = originalPrice - rawBudget;
+      finalAgreedTotal = rawBudget;
+    } else if (discountFixed > 0) {
+      originalPrice = rawBudget + discountFixed;
+      discountAmount = discountFixed;
+      finalAgreedTotal = rawBudget;
+    } else {
+      originalPrice = rawBudget;
+      discountAmount = 0;
+      finalAgreedTotal = rawBudget;
+    }
+  } else if (rawPayment > 0) {
+    originalPrice = rawPayment;
+    finalAgreedTotal = rawPayment;
   }
 
   // 4. Required Payment Amount & Remaining
-  const currentRequiredPayment = Number(paymentAmount) > 0 ? Number(paymentAmount) : finalAgreedTotal;
+  const currentRequiredPayment = rawPayment > 0 ? rawPayment : finalAgreedTotal;
   const remainingAmount = Math.max(0, finalAgreedTotal - Number(paidAmount));
 
   // Status mapping
@@ -155,7 +178,7 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           ref={printRef} 
           className="printable-invoice-content"
           style={{
-            padding: '32px 36px',
+            padding: '28px 32px',
             overflowY: 'auto',
             flex: 1,
             color: 'var(--text)',
@@ -164,71 +187,71 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           }}
         >
           {/* Invoice Top Row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20, borderBottom: '2px solid var(--border)', paddingBottom: 24, marginBottom: 24 }}>
+          <div className="inv-print-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, borderBottom: '2px solid var(--border)', paddingBottom: 18, marginBottom: 20 }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                 <img 
                   src="/logo.png" 
                   alt="PREMIRALAB" 
-                  style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'contain', background: '#000', padding: 2, border: '1px solid rgba(255,255,255,0.1)' }} 
+                  style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'contain', background: '#000', padding: 2, border: '1px solid rgba(255,255,255,0.1)' }} 
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
                 <div>
-                  <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: 'var(--text)' }}>
+                  <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: -0.5, color: 'var(--text)' }}>
                     {company.brand || 'PREMIRALAB'}
                   </h1>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Creative Design & Digital Engineering Studio</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Creative Design & Digital Engineering Studio</span>
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 <div>{company.address}</div>
                 <div>البريد: {company.email} | هاتف: {company.phone}</div>
               </div>
             </div>
 
-            <div style={{ textAlign: 'left', minWidth: 200 }} dir="ltr">
-              <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent)', letterSpacing: 1 }}>INVOICE</div>
-              <div style={{ fontSize: 14, fontWeight: 700, marginTop: 4 }}>#INV-{orderNo}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Date: {formatDate(createdAt)}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Order Ref: #{orderNo}</div>
+            <div style={{ textAlign: 'left', minWidth: 180 }} dir="ltr">
+              <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)', letterSpacing: 1 }}>INVOICE</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>#INV-{orderNo}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Date: {formatDate(createdAt)}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Order Ref: #{orderNo}</div>
             </div>
           </div>
 
           {/* Billed To & Status Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 28 }}>
+          <div className="inv-print-meta-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 20 }}>
             {/* Client Info */}
-            <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--accent)', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
-                <User size={16} /> فاتورة إلى (العميل):
+            <div className="inv-card" style={{ background: '#13131a', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                <User size={14} /> فاتورة إلى (العميل):
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{clientName}</div>
-              {clientPhone && <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 2 }}>الهاتف: {clientPhone}</div>}
-              {clientEmail && <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 2 }}>البريد: {clientEmail}</div>}
-              <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 6, fontWeight: 600 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{clientName}</div>
+              {clientPhone && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>الهاتف: {clientPhone}</div>}
+              {clientEmail && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>البريد: {clientEmail}</div>}
+              <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4, fontWeight: 600 }}>
                 نوع المشروع: {packageTitle}
               </div>
             </div>
 
             {/* Payment & Audit Info */}
-            <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)', position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--accent)', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
-                <CreditCard size={16} /> حالة وسجل السداد:
+            <div className="inv-card" style={{ background: '#13131a', padding: 14, borderRadius: 10, border: '1px solid var(--border)', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                <CreditCard size={14} /> حالة وسجل السداد:
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span className="muted" style={{ fontSize: 13 }}>الحالة المالية:</span>
-                <strong style={{ color: isPaid ? '#22c55e' : (isApproved ? 'var(--accent)' : '#eab308'), fontSize: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span className="muted" style={{ fontSize: 12 }}>الحالة المالية:</span>
+                <strong style={{ color: isPaid ? '#22c55e' : (isApproved ? 'var(--accent)' : '#eab308'), fontSize: 13 }}>
                   {isPaid ? 'مسددة بنجاح 🎉' : (isApproved ? 'معتمدة وجاهزة للسداد' : 'قيد الاعتماد والمراجعة')}
                 </strong>
               </div>
 
               {paymentMethod && (
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>
                   طريقة السداد: <strong>{paymentMethod}</strong>
                 </div>
               )}
 
               {paymentTransactionId && (
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                   رقم المعاملة: {paymentTransactionId}
                 </div>
               )}
@@ -237,15 +260,15 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
               {isPaid && (
                 <div style={{
                   position: 'absolute',
-                  top: 16,
-                  left: 16,
+                  top: 12,
+                  left: 12,
                   transform: 'rotate(-12deg)',
                   border: '2px dashed #22c55e',
                   color: '#22c55e',
-                  padding: '4px 10px',
-                  borderRadius: 8,
+                  padding: '3px 8px',
+                  borderRadius: 6,
                   fontWeight: 900,
-                  fontSize: 12,
+                  fontSize: 11,
                   textTransform: 'uppercase',
                   letterSpacing: 1,
                   background: 'rgba(34, 197, 94, 0.05)',
@@ -258,31 +281,31 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           </div>
 
           {/* Line Items Table */}
-          <div style={{ marginBottom: 28 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <FileText size={16} style={{ color: 'var(--accent)' }} /> تفاصيل بنود الخدمة والأسعار:
+          <div className="inv-print-table-wrap" style={{ marginBottom: 20 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <FileText size={15} style={{ color: 'var(--accent)' }} /> تفاصيل بنود الخدمة والأسعار:
             </h3>
 
-            <div style={{ borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: 14 }}>
+            <div style={{ borderRadius: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: 'var(--bg-3)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>البند / تفاصيل الخدمة</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600 }}>الكمية</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600 }}>السعر الأساسي</th>
+                  <tr style={{ background: '#181824', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '10px 14px', fontWeight: 600 }}>البند / تفاصيل الخدمة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600 }}>الكمية</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600 }}>السعر الأساسي</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Main Package / Service Item */}
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '16px' }}>
-                      <strong style={{ display: 'block', fontSize: 15, color: 'var(--text)' }}>{packageTitle}</strong>
-                      <span className="muted" style={{ fontSize: 12 }}>
+                    <td style={{ padding: '12px 14px' }}>
+                      <strong style={{ display: 'block', fontSize: 14, color: 'var(--text)' }}>{packageTitle}</strong>
+                      <span className="muted" style={{ fontSize: 11 }}>
                         تنفيذ كامل ومخصص للمشروع وفقاً لمتطلبات وتفاصيل الحجز رقم #{orderNo}
                       </span>
                     </td>
-                    <td style={{ padding: '16px', textAlign: 'center' }}>1</td>
-                    <td style={{ padding: '16px', textAlign: 'left', fontWeight: 700 }}>
+                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>1</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'left', fontWeight: 700 }}>
                       {money(originalPrice)}
                     </td>
                   </tr>
@@ -290,21 +313,21 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
                   {/* Promo Code Discount Row (If applied) */}
                   {promoCode && (
                     <tr style={{ background: 'rgba(34, 197, 94, 0.05)', borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Tag size={15} style={{ color: '#22c55e' }} />
+                      <td style={{ padding: '10px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Tag size={13} style={{ color: '#22c55e' }} />
                           <div>
-                            <strong style={{ color: '#22c55e', fontSize: 14 }}>
+                            <strong style={{ color: '#22c55e', fontSize: 13 }}>
                               خصم كوبون ترويجي ({promoCode})
                             </strong>
-                            <span style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)' }}>
+                            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)' }}>
                               تم تطبيق كود الخصم بنجاح {promoDiscount ? `(خصم بقيمة ${promoDiscount})` : ''}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td style={{ padding: '14px 16px', textAlign: 'center', color: '#22c55e' }}>—</td>
-                      <td style={{ padding: '14px 16px', textAlign: 'left', color: '#22c55e', fontWeight: 700 }}>
+                      <td style={{ padding: '10px 14px', textAlign: 'center', color: '#22c55e' }}>—</td>
+                      <td style={{ padding: '10px 14px', textAlign: 'left', color: '#22c55e', fontWeight: 700 }}>
                         -{discountAmount > 0 ? `${money(discountAmount)} (${promoDiscount})` : (promoDiscount || 'خصم خاص')}
                       </td>
                     </tr>
@@ -315,36 +338,36 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           </div>
 
           {/* Financial Totals Calculation Box */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 30 }}>
-            <div style={{ width: '100%', maxWidth: '380px', background: '#13131a', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
+          <div className="inv-print-totals-box" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+            <div style={{ width: '100%', maxWidth: '360px', background: '#13131a', padding: 14, borderRadius: 10, border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 }}>
                 <span className="muted">المجموع الفرعي (السعر الأصلي):</span>
                 <span>{money(originalPrice)}</span>
               </div>
 
               {discountAmount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: '#22c55e' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12, color: '#22c55e' }}>
                   <span>قيمة الخصم المطبق {promoDiscount ? `(${promoDiscount})` : ''}:</span>
                   <strong>-{money(discountAmount)}</strong>
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '1px solid var(--border)', fontSize: 15, fontWeight: 700 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '1px solid var(--border)', fontSize: 14, fontWeight: 700 }}>
                 <span>إجمالي المشروع الصافي المتفق عليه:</span>
                 <span style={{ color: 'var(--accent)' }}>{money(finalAgreedTotal)}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 }}>
                 <span className="muted">المطلوب سداده للدفعة الحالية:</span>
                 <strong>{money(currentRequiredPayment)}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: isPaid ? '#22c55e' : 'var(--text)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12, color: isPaid ? '#22c55e' : 'var(--text)' }}>
                 <span>المبلغ المسدد بالفعل:</span>
                 <strong style={{ color: isPaid ? '#22c55e' : 'inherit' }}>{money(paidAmount)}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '1px dashed var(--border)', fontSize: 14, fontWeight: 700 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '1px dashed var(--border)', fontSize: 13, fontWeight: 700 }}>
                 <span className="muted">المبلغ المتبقي بعد هذه الدفعة:</span>
                 <span style={{ color: remainingAmount > 0 ? '#ef4444' : '#22c55e' }}>
                   {remainingAmount > 0 ? money(remainingAmount) : '0 ج.م (خالص السداد)'}
@@ -354,9 +377,9 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
           </div>
 
           {/* Footer & Terms */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+          <div className="inv-print-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, fontSize: 11, color: 'var(--text-muted)' }}>
             <div>
-              <p style={{ margin: '0 0 4px' }}>شكراً لاختياركم <strong>{company.brand || 'PremiraLab'}</strong> لشراكة النجاح والتميز الإبداعي.</p>
+              <p style={{ margin: '0 0 2px' }}>شكراً لاختياركم <strong>{company.brand || 'PremiraLab'}</strong> لشراكة النجاح والتميز الإبداعي.</p>
               <p style={{ margin: 0 }}>تُعد هذه الفاتورة وثيقة إلكترونية رسمية معتمدة من استوديو بريميرالاب للحلول الرقمية.</p>
             </div>
             <div style={{ textAlign: 'left', fontWeight: 600 }} dir="ltr">
@@ -366,9 +389,20 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
         </div>
       </div>
 
-      {/* Global CSS for Clean A4 Printing without UI junk */}
+      {/* Global CSS for Single-Page A4 Printing */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
+          html, body {
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -376,31 +410,63 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             visibility: visible !important;
           }
           .modal-backdrop {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: static !important;
+            display: block !important;
             width: 100% !important;
             height: auto !important;
-            background: #fff !important;
+            max-height: none !important;
+            background: #ffffff !important;
             padding: 0 !important;
             margin: 0 !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
           }
           .modal--invoice {
+            position: static !important;
             max-width: 100% !important;
             width: 100% !important;
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
             border: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            background: #fff !important;
-            color: #000 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
           }
           .printable-invoice-content {
-            background: #fff !important;
-            color: #111 !important;
-            padding: 20px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
           }
           .no-print {
             display: none !important;
+          }
+          .inv-card, .inv-print-totals-box > div {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+          }
+          .printable-invoice-content tr {
+            border-color: #cbd5e1 !important;
+          }
+          .printable-invoice-content th {
+            background: #f1f5f9 !important;
+            color: #334155 !important;
+            border-color: #cbd5e1 !important;
+          }
+          .printable-invoice-content td {
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+          }
+          .muted {
+            color: #64748b !important;
+          }
+          h1, h2, h3, strong {
+            color: #0f172a !important;
           }
         }
       `}</style>

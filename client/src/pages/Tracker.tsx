@@ -60,29 +60,53 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [promoErrMsg,      setPromoErrMsg]      = useState('');
 
   // Robust financial and coupon calculations
-  const origPrice = Number(data?.packagePrice) > 0 
-    ? Number(data?.packagePrice) 
-    : (Number(data?.budget) > 0 ? Number(data?.budget) : (Number(data?.paymentAmount) > 0 ? Number(data?.paymentAmount) : 0));
+  const pkgPrice = Number(data?.packagePrice) || 0;
+  const rawBudget = Number(data?.budget) || 0;
+  const rawPayment = Number(data?.paymentAmount) || 0;
 
+  let origPrice = 0;
   let discAmount = 0;
+  let agreedTotal = 0;
+
+  let discountPct = 0;
+  let discountFixed = 0;
   if (data?.promoCode && data?.promoDiscount) {
-    const discountStr = String(data.promoDiscount).trim();
-    if (discountStr.includes('%')) {
-      const pct = parseFloat(discountStr.replace('%', '')) || 0;
-      discAmount = (origPrice * pct) / 100;
+    const dStr = String(data.promoDiscount).trim();
+    if (dStr.includes('%')) {
+      discountPct = parseFloat(dStr.replace('%', '')) || 0;
     } else {
-      discAmount = parseFloat(discountStr.replace(/[^\d.]/g, '')) || 0;
+      discountFixed = parseFloat(dStr.replace(/[^\d.]/g, '')) || 0;
     }
-  } else if (Number(data?.budget) > 0 && origPrice > Number(data?.budget)) {
-    discAmount = origPrice - Number(data?.budget);
   }
 
-  let agreedTotal = origPrice > 0 ? Math.max(0, origPrice - discAmount) : (Number(data?.budget) || Number(data?.paymentAmount) || 0);
-  if (Number(data?.budget) > 0 && !discAmount) {
-    agreedTotal = Number(data?.budget);
+  if (pkgPrice > 0) {
+    origPrice = pkgPrice;
+    if (discountPct > 0) {
+      discAmount = (origPrice * discountPct) / 100;
+    } else if (discountFixed > 0) {
+      discAmount = discountFixed;
+    }
+    agreedTotal = Math.max(0, origPrice - discAmount);
+  } else if (rawBudget > 0) {
+    if (discountPct > 0 && discountPct < 100) {
+      origPrice = Math.round(rawBudget / (1 - discountPct / 100));
+      discAmount = origPrice - rawBudget;
+      agreedTotal = rawBudget;
+    } else if (discountFixed > 0) {
+      origPrice = rawBudget + discountFixed;
+      discAmount = discountFixed;
+      agreedTotal = rawBudget;
+    } else {
+      origPrice = rawBudget;
+      discAmount = 0;
+      agreedTotal = rawBudget;
+    }
+  } else if (rawPayment > 0) {
+    origPrice = rawPayment;
+    agreedTotal = rawPayment;
   }
 
-  const reqPayment = Number(data?.paymentAmount) > 0 ? Number(data?.paymentAmount) : agreedTotal;
+  const reqPayment = rawPayment > 0 ? rawPayment : agreedTotal;
   const paid = Number(data?.paidAmount || 0);
   const remaining = Math.max(0, agreedTotal - paid);
 
@@ -704,6 +728,28 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             <div className="form-field">
               <label className="form-label">اختر طريقة السداد المفضلة:</label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+                {/* Vodafone Cash Direct */}
+                <button
+                  type="button"
+                  className={`btn ${selectedMethod === 'wallet' ? 'btn--primary' : 'btn--outline'}`}
+                  onClick={() => { setSelectedMethod('wallet'); setFawryRefCode(null); }}
+                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                >
+                  <Smartphone size={20} />
+                  <span style={{ fontSize: 12 }}>فودافون كاش 📱</span>
+                </button>
+
+                {/* InstaPay */}
+                <button
+                  type="button"
+                  className={`btn ${selectedMethod === 'manual' ? 'btn--primary' : 'btn--outline'}`}
+                  onClick={() => { setSelectedMethod('manual'); setFawryRefCode(null); }}
+                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
+                >
+                  <Send size={20} />
+                  <span style={{ fontSize: 12 }}>انستاباي (InstaPay) ⚡</span>
+                </button>
+
                 {/* Cards */}
                 <button
                   type="button"
@@ -712,18 +758,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
                 >
                   <CreditCard size={20} />
-                  <span style={{ fontSize: 12 }}>فيزا / ماستركارد / ميزة</span>
-                </button>
-
-                {/* Mobile Wallets */}
-                <button
-                  type="button"
-                  className={`btn ${selectedMethod === 'wallet' ? 'btn--primary' : 'btn--outline'}`}
-                  onClick={() => { setSelectedMethod('wallet'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
-                >
-                  <Smartphone size={20} />
-                  <span style={{ fontSize: 12 }}>فودافون / محافظ كاش</span>
+                  <span style={{ fontSize: 12 }}>فيزا / ماستركارد / ميزة 💳</span>
                 </button>
 
                 {/* Fawry */}
@@ -734,25 +769,159 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
                 >
                   <QrCode size={20} />
-                  <span style={{ fontSize: 12 }}>كود فوري (Fawry Pay)</span>
-                </button>
-
-                {/* Manual InstaPay */}
-                <button
-                  type="button"
-                  className={`btn ${selectedMethod === 'manual' ? 'btn--primary' : 'btn--outline'}`}
-                  onClick={() => { setSelectedMethod('manual'); setFawryRefCode(null); }}
-                  style={{ flexDirection: 'column', padding: '12px 8px', gap: 6 }}
-                >
-                  <Send size={20} />
-                  <span style={{ fontSize: 12 }}>تحويل انستاباي يدوي</span>
+                  <span style={{ fontSize: 12 }}>كود فوري (Fawry Pay) 🏪</span>
                 </button>
               </div>
             </div>
 
-            {/* Paymob Action Buttons for Electronic Payments */}
-            {selectedMethod !== 'manual' && (
-              <div style={{ background: 'var(--bg-2)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
+            {/* Vodafone Cash Panel */}
+            {selectedMethod === 'wallet' && (
+              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Smartphone size={16} color="var(--accent)" /> تحويل فودافون كاش المباشر (سريع وبدون عمولة):
+                  </div>
+                  <p className="muted" style={{ fontSize: 12, margin: 0 }}>
+                    حول مبلغ <strong>{money(reqPayment)}</strong> إلى رقم فودافون كاش الخاص بنا أدناه:
+                  </p>
+                </div>
+
+                {/* Vodafone Cash Number Box */}
+                {(() => {
+                  const vodaNum = data.paymentInfo?.vodafoneCash || '01069572748';
+                  const ussdCode = `*9*7*${vodaNum}*${reqPayment}#`;
+                  return (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 10 }}>
+                        <div>
+                          <div className="muted" style={{ fontSize: 11 }}>رقم محفظة فودافون كاش الرسمية:</div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)', letterSpacing: 1, marginTop: 2 }}>{vodaNum}</div>
+                        </div>
+                        <button className="btn btn--sm btn--primary" onClick={() => copyText(vodaNum, 'voda')} style={{ gap: 6 }}>
+                          {copiedField === 'voda' ? <><Check size={14} /> تم النسخ</> : <><Copy size={14} /> نسخ الرقم</>}
+                        </button>
+                      </div>
+
+                      {/* USSD Dial Helper */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(124, 58, 237, 0.08)', padding: '10px 14px', borderRadius: 8, border: '1px dashed rgba(124, 58, 237, 0.3)', marginBottom: 14 }}>
+                        <div style={{ fontSize: 12 }}>
+                          <span className="muted">كود التحويل السريع للهاتف: </span>
+                          <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', direction: 'ltr', display: 'inline-block' }}>{ussdCode}</code>
+                        </div>
+                        <button className="btn btn--sm btn--outline" onClick={() => copyText(ussdCode, 'ussd')} style={{ fontSize: 11, padding: '4px 8px' }}>
+                          {copiedField === 'ussd' ? 'تم النسخ ✔' : 'نسخ الكود'}
+                        </button>
+                      </div>
+
+                      {/* Upload Receipt */}
+                      <div style={{ marginTop: 12 }}>
+                        <button
+                          className="btn btn--primary"
+                          style={{ width: '100%', padding: 14, justifyContent: 'center', gap: 8, fontSize: 14 }}
+                          onClick={() => receiptFileRef.current?.click()}
+                          disabled={uploadingReceipt}
+                        >
+                          <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل (سكرين شوت) 📸'}
+                        </button>
+                      </div>
+
+                      {/* Paymob Gateway Fallback */}
+                      <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px dashed var(--border)' }}>
+                        <details style={{ fontSize: 12 }}>
+                          <summary style={{ cursor: 'pointer', color: 'var(--accent)', fontWeight: 600 }}>
+                            أو ادفع أونلاين عبر بوابة Paymob الإلكترونية (خصم مباشر من المحفظة) ⚡
+                          </summary>
+                          <div style={{ marginTop: 10, padding: 10, background: 'var(--bg-3)', borderRadius: 8 }}>
+                            <input
+                              className="input"
+                              type="tel"
+                              dir="ltr"
+                              placeholder="أدخل رقم محفظتك للدفع عبر البوابة"
+                              value={walletPhone}
+                              onChange={e => setWalletPhone(e.target.value)}
+                              style={{ marginBottom: 8 }}
+                            />
+                            <button
+                              className="btn btn--outline btn--sm"
+                              style={{ width: '100%', justifyContent: 'center' }}
+                              onClick={() => handleInitiatePaymob('wallet')}
+                              disabled={initiatingPay}
+                            >
+                              {initiatingPay ? 'جارٍ الاتصال بالبوابة...' : 'متابعة الدفع عبر بوابة Paymob'}
+                            </button>
+                          </div>
+                        </details>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* InstaPay Panel */}
+            {selectedMethod === 'manual' && (
+              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Send size={16} color="var(--accent)" /> تحويل انستاباي InstaPay (فوري 0% رسوم):
+                  </div>
+                  <p className="muted" style={{ fontSize: 12, margin: 0 }}>
+                    حول مبلغ <strong>{money(reqPayment)}</strong> إلى معرف انستاباي الخاص بنا أدناه:
+                  </p>
+                </div>
+
+                {data.paymentInfo?.instapayUsername && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 14 }}>
+                    <div>
+                      <div className="muted" style={{ fontSize: 11 }}>عنوان انستاباي (InstaPay IPA):</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)', marginTop: 2 }}>{data.paymentInfo.instapayUsername}</div>
+                    </div>
+                    <button className="btn btn--sm btn--primary" onClick={() => copyText(data.paymentInfo?.instapayUsername || '', 'insta')} style={{ gap: 6 }}>
+                      {copiedField === 'insta' ? <><Check size={14} /> تم النسخ</> : <><Copy size={14} /> نسخ المعرف</>}
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload Receipt */}
+                <button
+                  className="btn btn--primary"
+                  style={{ width: '100%', padding: 14, justifyContent: 'center', gap: 8, fontSize: 14 }}
+                  onClick={() => receiptFileRef.current?.click()}
+                  disabled={uploadingReceipt}
+                >
+                  <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل (سكرين شوت) 📸'}
+                </button>
+              </div>
+            )}
+
+            {/* Cards (Visa/Mastercard) Panel */}
+            {selectedMethod === 'card' && (
+              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
+                <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
+                  سيتم فتح نافذة الدفع الآمنة المعتمدة لسداد مبلغ <strong>{money(reqPayment)}</strong> ببطاقتك البنكية.
+                </p>
+
+                <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
+                  <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 لتجربة الدفع في وضع الاختبار (Test Mode):</strong>
+                  <div>• رقم الكارت: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>4111 1111 1111 1111</code></div>
+                  <div style={{ marginTop: 2 }}>• تاريخ الانتهاء: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>12/28</code> | CVV: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123</code></div>
+                  <div style={{ marginTop: 2 }}>• كود تأكيد OTP (إن طلب): <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
+                </div>
+
+                <button
+                  className="btn btn--primary"
+                  style={{ width: '100%', padding: 14, fontSize: 14, justifyContent: 'center' }}
+                  onClick={() => handleInitiatePaymob('card')}
+                  disabled={initiatingPay}
+                >
+                  {initiatingPay ? 'جارٍ الاتصال ببوابة الدفع...' : 'متابعة الدفع بالبطاقة البنكية 💳'}
+                </button>
+              </div>
+            )}
+
+            {/* Fawry Panel */}
+            {selectedMethod === 'fawry' && (
+              <div style={{ background: 'var(--bg-2)', padding: 18, borderRadius: 12, border: '1px solid var(--border)' }}>
                 {fawryRefCode ? (
                   <div style={{ textAlign: 'center', padding: 10 }}>
                     <h4 style={{ color: '#f59e0b', margin: '0 0 8px' }}>كود الدفع المرجعي لفوري:</h4>
@@ -776,110 +945,19 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 ) : (
                   <div>
                     <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-                      {selectedMethod === 'card' && 'سيتم فتح نافذة الدفع الآمنة لسداد المبلغ ببطاقة فيزا، ماستركارد، أو ميزة.'}
-                      {selectedMethod === 'wallet' && 'ادخل رقم محفظة فودافون كاش أو المحفظة الذكية الخاصة بك للمتابعة:'}
-                      {selectedMethod === 'fawry' && 'الحصول على كود سداد فوري لإتمام الدفع نقدًا من أي فرع أو كشك فوري.'}
+                      الحصول على كود سداد فوري لإتمام دفع مبلغ <strong>{money(reqPayment)}</strong> نقدًا من أي فرع أو كشك فوري.
                     </p>
-
-                    {selectedMethod === 'card' && (
-                      <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
-                        <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 لتجربة الدفع في وضع الاختبار (Test Mode):</strong>
-                        <div>• رقم الكارت: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>4111 1111 1111 1111</code></div>
-                        <div style={{ marginTop: 2 }}>• تاريخ الانتهاء: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>12/28</code> | CVV: <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123</code></div>
-                        <div style={{ marginTop: 2 }}>• كود تأكيد OTP (إن طلب): <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
-                      </div>
-                    )}
-
-                    {selectedMethod === 'wallet' && (
-                      <div>
-                        <div className="form-field" style={{ marginBottom: 12 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                            <label className="form-label" style={{ margin: 0 }}>رقم محفظة فودافون كاش / المحفظة الذكية</label>
-                            <button
-                              type="button"
-                              className="btn btn--sm"
-                              style={{ padding: '2px 8px', fontSize: 11 }}
-                              onClick={() => setWalletPhone('01010101010')}
-                            >
-                              استخدام رقم تجريبي 01010101010
-                            </button>
-                          </div>
-                          <input
-                            className="input"
-                            type="tel"
-                            dir="ltr"
-                            placeholder="مثال: 01012345678 أو 01010101010"
-                            value={walletPhone}
-                            onChange={e => setWalletPhone(e.target.value)}
-                          />
-                        </div>
-
-                        <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px dashed rgba(124, 58, 237, 0.3)', padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 12 }}>
-                          <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: 4 }}>💡 بيانات شاشة تأكيد المحفظة التالية (Paymob):</strong>
-                          <div>• في خانة YOUR MPIN: اكتب <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>123456</code></div>
-                          <div style={{ marginTop: 2 }}>• في خانة One Time Password: اكتب <code style={{ userSelect: 'all', background: 'var(--bg-3)', padding: '2px 6px', borderRadius: 4 }}>1234</code></div>
-                        </div>
-                      </div>
-                    )}
 
                     <button
                       className="btn btn--primary"
                       style={{ width: '100%', padding: 14, fontSize: 14, justifyContent: 'center' }}
-                      onClick={() => handleInitiatePaymob(selectedMethod)}
+                      onClick={() => handleInitiatePaymob('fawry')}
                       disabled={initiatingPay}
                     >
-                      {initiatingPay ? 'جارٍ الاتصال ببوابة الدفع...' : 'متابعة الدفع الإلكتروني ⚡'}
+                      {initiatingPay ? 'جارٍ توليد الكود...' : 'إصدار كود فوري للسداد 🏪'}
                     </button>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* Manual Offline Payment (InstaPay / Vodafone) */}
-            {selectedMethod === 'manual' && data.paymentInfo && (
-              <div style={{ background: 'var(--bg-2)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
-                {data.paymentInfo.instapayUsername && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '10px 14px', borderRadius: 8, marginBottom: 8 }}>
-                    <div>
-                      <div className="muted" style={{ fontSize: 11 }}>عنوان انستاباي (InstaPay):</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{data.paymentInfo.instapayUsername}</div>
-                    </div>
-                    <button className="btn btn--sm" onClick={() => copyText(data.paymentInfo?.instapayUsername || '', 'insta')}>
-                      {copiedField === 'insta' ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                )}
-
-                {data.paymentInfo.vodafoneCash && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-3)', padding: '10px 14px', borderRadius: 8, marginBottom: 8 }}>
-                    <div>
-                      <div className="muted" style={{ fontSize: 11 }}>رقم فودافون كاش:</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{data.paymentInfo.vodafoneCash}</div>
-                    </div>
-                    <button className="btn btn--sm" onClick={() => copyText(data.paymentInfo?.vodafoneCash || '', 'voda')}>
-                      {copiedField === 'voda' ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                )}
-
-                {data.paymentInfo.bankDetails && (
-                  <div style={{ background: 'var(--bg-3)', padding: '10px 14px', borderRadius: 8, marginBottom: 8 }}>
-                    <div className="muted" style={{ fontSize: 11 }}>بيانات الحساب البنكي والآيبان:</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}>{data.paymentInfo.bankDetails}</div>
-                  </div>
-                )}
-
-                {/* Upload Receipt */}
-                <div style={{ marginTop: 12 }}>
-                  <button
-                    className="btn btn--outline"
-                    style={{ width: '100%', padding: 12, justifyContent: 'center', gap: 8 }}
-                    onClick={() => receiptFileRef.current?.click()}
-                    disabled={uploadingReceipt}
-                  >
-                    <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إيصال التحويل للمراجعة'}
-                  </button>
-                </div>
               </div>
             )}
 
