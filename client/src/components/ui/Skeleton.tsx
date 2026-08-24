@@ -4,11 +4,13 @@ interface SkeletonProps {
   radius?: number;
   count?:  number;
   gap?:    number;
+  style?:  React.CSSProperties;
+  className?: string;
 }
 
-export function Skeleton({ height = 20, width = '100%', radius = 8, count = 1, gap = 10 }: SkeletonProps) {
+export function Skeleton({ height = 20, width = '100%', radius = 8, count = 1, gap = 10, style, className }: SkeletonProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+    <div className={className} style={{ display: 'flex', flexDirection: 'column', gap, ...style }}>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

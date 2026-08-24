@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, CheckCircle2, Clock, FileText, RefreshCw, XCircle, Plus, Send,
-  CreditCard, Upload, Copy, Check, ShieldAlert, Sparkles, Smartphone, QrCode,
+  CreditCard, Upload, Copy, Check, ShieldAlert, ShieldCheck, Sparkles, Smartphone, QrCode,
   Tag, Receipt, Printer, Share2
 } from 'lucide-react';
 import { api } from '../lib/api.js';
@@ -23,7 +23,7 @@ const STATUS_COLOR: Record<string, string> = {
   review: '#7c7cf0', revisions: '#f97316', completed: '#22c55e', cancelled: '#ef4444',
 };
 
-const REVISION_ICONS = {
+const REVISION_ICONS: Record<string, React.ReactNode> = {
   approved: <CheckCircle2 size={16} className="icon--success" />,
   rejected: <XCircle      size={16} className="icon--danger" />,
   pending:  <Clock        size={16} className="icon--muted" />,

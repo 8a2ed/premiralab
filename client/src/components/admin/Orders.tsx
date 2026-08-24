@@ -63,7 +63,7 @@ export function Orders({ onToast }: OrdersProps) {
       rows: prev.rows.map(o => o.id === id ? { ...o, status: newStatus as OrderStatus } : o),
     } : prev);
     try {
-      await api.admin.updateOrder(id, { status: newStatus });
+      await api.admin.updateOrder(id, { status: newStatus as OrderStatus });
       onToast('تم تحديث الحالة', 'success');
     } catch (e) {
       onToast((e as Error).message, 'error');

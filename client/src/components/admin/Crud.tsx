@@ -84,7 +84,7 @@ export function Crud({ resource, title, onToast }: CrudProps) {
     setRows(reordered);
 
     try {
-      await api.admin.crud(resource).reorder(reordered.map(r => ({ id: r.id as number, sort_order: r.sort_order as number })));
+      await api.admin.crud(resource).reorder(reordered.map(r => ({ id: (r as any).id as number, sort_order: (r as any).sort_order as number })));
       onToast('تم تحديث ترتيب العرض بنجاح', 'success');
     } catch (err) {
       onToast('فشل تحديث الترتيب', 'error');
@@ -212,7 +212,7 @@ export function Crud({ resource, title, onToast }: CrudProps) {
                   </td>
                   <td className="muted">{String((r.description ?? r.content ?? r.price ?? '—')).slice(0, 80)}</td>
                   <td className="actions-cell">
-                    {r.image_url && (
+                    {Boolean(r.image_url) && (
                       <button className="btn btn--icon" onClick={() => window.open(r.image_url as string, '_blank')} aria-label="معاينة الصورة" title="معاينة الصورة">
                         <Eye size={14} />
                       </button>
@@ -288,7 +288,7 @@ export function Crud({ resource, title, onToast }: CrudProps) {
                     id={`field-${f}`}
                     className="textarea"
                     rows={f === 'features' ? 5 : 3}
-                    style={{ direction: f === 'features' || f === 'image_url' || f === 'icon' ? 'ltr' : undefined, textAlign: f === 'features' || f === 'image_url' || f === 'icon' ? 'left' : undefined, fontFamily: f === 'features' ? 'monospace' : undefined }}
+                    style={{ direction: f === 'features' ? 'ltr' : undefined, textAlign: f === 'features' ? 'left' : undefined, fontFamily: f === 'features' ? 'monospace' : undefined }}
                     value={form[f] ?? ''}
                     onChange={e => setForm(prev => ({ ...prev, [f]: e.target.value }))}
                   />

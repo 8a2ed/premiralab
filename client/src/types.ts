@@ -172,8 +172,11 @@ export interface Order {
   client_phone:           string;
   client_email:           string;
   package_title:          string | null;
+  package_price?:         number;
   service_title:          string | null;
 }
+
+export type OrderRow = Order;
 
 export type OrderStatus =
   | 'new' | 'contacted' | 'approved' | 'payment_pending' | 'paid'

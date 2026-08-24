@@ -1,7 +1,7 @@
 import type {
   PublicData, Order, Client, Project, Revision, Notification,
   ActivityLogEntry, Analytics, SiteSettings, Package, Service,
-  PortfolioItem, Testimonial, TrackerData, Paginated,
+  PortfolioItem, Testimonial, TrackerData, Paginated, PromoCode,
 } from '../types.js';
 
 const BASE = '';  // Vite proxy handles /api → http://localhost:4000

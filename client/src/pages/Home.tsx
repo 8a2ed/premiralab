@@ -16,7 +16,7 @@ import type { PublicData, Package, PortfolioItem, FAQ } from '../types.js';
 
 interface HomeProps {
   data:    PublicData;
-  onToast: (msg: string, type?: 'success' | 'error') => void;
+  onToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
   onClientClick: () => void;
 }
 
