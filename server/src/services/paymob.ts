@@ -168,7 +168,11 @@ export async function createPaymobPayment({
       }),
     });
     const walletData = await walletRes.json();
+    console.log('[paymob-wallet] Response:', JSON.stringify(walletData));
     redirectionUrl = walletData.redirect_url || walletData.iframe_redirection_url || '';
+    if (!redirectionUrl && walletData.data?.message) {
+      throw new Error(`بوابة المحافظ: ${walletData.data.message}`);
+    }
     paymentUrl = redirectionUrl || `https://accept.paymob.com/api/acceptance/iframes/${settings.iframeId}?payment_token=${paymentKey}`;
   } else if (method === 'fawry') {
     // Fawry Reference Code Generation

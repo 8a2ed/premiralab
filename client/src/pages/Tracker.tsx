@@ -52,18 +52,23 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [receiptSuccess,   setReceiptSuccess]   = useState(false);
   const [copiedField,      setCopiedField]      = useState<string | null>(null);
+  const [paymentNotice,    setPaymentNotice]    = useState<'success' | 'failed' | null>(null);
   const receiptFileRef = useRef<HTMLInputElement>(null);
 
-  // Check URL query parameters for payment return status
+  // Check URL query parameters for payment return status and clean URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get('payment');
-    if (paymentStatus === 'success') {
-      alert('🎉 تم استلام وسداد دفعتك الإلكترونية بنجاح! تم اعتماد بدء العمل على المشروع فورًا.');
-    } else if (paymentStatus === 'failed') {
-      alert('⚠️ تعذر إتمام عملية الدفع الإلكتروني. يرجى المحاولة مرة أخرى أو اختيار طريقة دفع بديلة.');
+    const pStatus = urlParams.get('payment');
+    if (pStatus === 'success') {
+      setPaymentNotice('success');
+      // Clean query parameter from URL bar
+      window.history.replaceState({}, document.title, window.location.pathname + `?track=${encodeURIComponent(orderNo)}`);
+    } else if (pStatus === 'failed') {
+      setPaymentNotice('failed');
+      // Clean query parameter from URL bar
+      window.history.replaceState({}, document.title, window.location.pathname + `?track=${encodeURIComponent(orderNo)}`);
     }
-  }, []);
+  }, [orderNo]);
 
   const load = async () => {
     setLoading(true); setError(null);
@@ -190,6 +195,32 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
 
           {data && (
             <div className="tracker-grid">
+              {/* Payment Success / Failure Notice Banners */}
+              {paymentNotice === 'success' && (
+                <div className="card animation-fade-in" style={{ border: '1px solid #22c55e', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <CheckCircle2 size={24} />
+                  <div>
+                    <strong style={{ display: 'block', fontSize: 14 }}>تم استلام وسداد دفعتك الإلكترونية بنجاح! 🎉</strong>
+                    <span style={{ fontSize: 12 }}>تم تأكيد الحجز وبدأ العمل على مشروعك رسميًا.</span>
+                  </div>
+                </div>
+              )}
+
+              {paymentNotice === 'failed' && (
+                <div className="card animation-fade-in" style={{ border: '1px solid #ef4444', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <ShieldAlert size={24} style={{ color: '#ef4444' }} />
+                    <div>
+                      <strong style={{ display: 'block', fontSize: 14, color: '#ef4444' }}>لم تكتمل عملية الدفع الإلكتروني السابقة</strong>
+                      <span className="muted" style={{ fontSize: 12 }}>يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع بديلة (مثل فيزا/ميزة، كود فوري، أو انستاباي).</span>
+                    </div>
+                  </div>
+                  <button className="btn btn--sm btn--primary" onClick={() => { setPaymentNotice(null); setPayModalOpen(true); }}>
+                    إعادة المحاولة
+                  </button>
+                </div>
+              )}
+
               {/* Order Info Card */}
               <div className="card">
                 <div className="tracker-card__header">
