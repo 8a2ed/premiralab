@@ -10,6 +10,19 @@ interface ClientPortalProps {
 
 type View = 'login' | 'register' | 'forgot' | 'reset' | 'dashboard';
 
+const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; dot: string }> = {
+  new:             { label: 'طلب جديد', bg: 'rgba(124, 58, 237, 0.12)', color: '#c084fc', dot: '#c084fc' },
+  contacted:       { label: 'تم التواصل', bg: 'rgba(59, 130, 246, 0.12)', color: '#60a5fa', dot: '#60a5fa' },
+  approved:        { label: 'معتمد للتنفيذ', bg: 'rgba(34, 197, 94, 0.12)', color: '#4ade80', dot: '#4ade80' },
+  payment_pending: { label: 'بانتظار الدفع', bg: 'rgba(245, 158, 11, 0.12)', color: '#fbbf24', dot: '#fbbf24' },
+  paid:            { label: 'تم السداد', bg: 'rgba(16, 185, 129, 0.12)', color: '#34d399', dot: '#34d399' },
+  in_progress:     { label: 'قيد التنفيذ', bg: 'rgba(236, 72, 153, 0.12)', color: '#f472b6', dot: '#f472b6' },
+  review:          { label: 'مراجعة العميل', bg: 'rgba(99, 102, 241, 0.12)', color: '#818cf8', dot: '#818cf8' },
+  revisions:       { label: 'تعديلات مطلوبة', bg: 'rgba(249, 115, 22, 0.12)', color: '#fb923c', dot: '#fb923c' },
+  completed:       { label: 'مكتمل ومسلّم 🎉', bg: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', dot: '#4ade80' },
+  cancelled:       { label: 'ملغي', bg: 'rgba(239, 68, 68, 0.12)', color: '#f87171', dot: '#f87171' },
+};
+
 export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
   const [view, setView] = useState<View>('login');
   const [loading, setLoading] = useState(true);
@@ -182,47 +195,90 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
   // Render Dashboard
   if (view === 'dashboard' && client) {
     return (
-      <div className="container" style={{ marginTop: 100, minHeight: '70vh' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
-          <div>
-            <h2 style={{ margin: '0 0 5px' }}>مرحبًا بك، {client.name}</h2>
-            <p className="muted" style={{ margin: 0 }}>بوابة العميل الخاصة بك</p>
+      <div className="container" style={{ marginTop: 90, minHeight: '75vh', padding: '0 16px', maxWidth: 1100, boxSizing: 'border-box' }}>
+        {/* Luxury Top Header Card */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 14,
+          background: 'linear-gradient(145deg, rgba(124, 58, 237, 0.08), var(--bg-2))',
+          border: '1px solid var(--border)',
+          borderRadius: 18,
+          padding: '16px 20px',
+          marginBottom: 24,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--accent), #7c3aed)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: 900,
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+            }}>
+              {(client.name || 'U').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>مرحبًا بك، {client.name}</h2>
+              <p className="muted" style={{ margin: '2px 0 0', fontSize: 12 }}>
+                بوابة العميل الرسمية • {client.phone || client.email}
+              </p>
+            </div>
           </div>
-          <button className="btn btn--outline" onClick={handleLogout}>
-            <LogOut size={18} /> تسجيل الخروج
+          <button
+            className="btn btn--outline btn--sm"
+            onClick={handleLogout}
+            style={{
+              gap: 6,
+              padding: '8px 14px',
+              borderRadius: 10,
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              borderColor: 'var(--border)',
+            }}
+          >
+            <LogOut size={14} /> تسجيل الخروج
           </button>
         </div>
 
         {activeProject ? (
-          <div className="card">
-            <button className="btn btn--ghost" onClick={() => setActiveProject(null)} style={{ marginBottom: 20, padding: 0 }}>
-              <ArrowRight size={18} /> عودة للطلبات
+          <div className="card" style={{ borderRadius: 18, padding: 24 }}>
+            <button className="btn btn--ghost" onClick={() => setActiveProject(null)} style={{ marginBottom: 20, padding: 0, gap: 6 }}>
+              <ArrowRight size={16} /> عودة للطلبات
             </button>
-            <h3 className="card-title">مشروع: {activeProject.project.title}</h3>
+            <h3 className="card-title" style={{ fontSize: 20 }}>مشروع: {activeProject.project.title}</h3>
             
-            <div className="progress-bar" style={{ marginTop: 20 }}>
+            <div className="progress-bar" style={{ marginTop: 20, height: 10, borderRadius: 10 }}>
               <div className="progress-bar-fill" style={{ width: `${activeProject.project.progress}%` }}></div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 13 }} className="muted">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 13 }} className="muted">
               <span>تقدم المشروع</span>
-              <span>{activeProject.project.progress}%</span>
+              <strong style={{ color: 'var(--accent)' }}>{activeProject.project.progress}%</strong>
             </div>
 
             {activeProject.files?.length > 0 && (
-              <div style={{ marginTop: 40 }}>
-                <h4>الملفات المرفقة والتسليمات</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 15 }}>
+              <div style={{ marginTop: 32 }}>
+                <h4 style={{ fontSize: 16, marginBottom: 14 }}>الملفات المرفقة والتسليمات</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {activeProject.files.map((f: any) => (
-                    <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: 15, borderRadius: 8, border: '1px solid var(--border)' }}>
+                    <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <FileBox size={24} className="muted" />
+                        <FileBox size={22} className="muted" />
                         <div>
-                          <strong>{f.original_name}</strong>
-                          <div className="muted" style={{ fontSize: 12 }}>{Math.round(f.size / 1024)} KB • {formatDate(f.created_at)}</div>
+                          <strong style={{ fontSize: 14 }}>{f.original_name}</strong>
+                          <div className="muted" style={{ fontSize: 11 }}>{Math.round(f.size / 1024)} KB • {formatDate(f.created_at)}</div>
                         </div>
                       </div>
-                      <a href={`/uploads/${f.stored_name}`} target="_blank" rel="noreferrer" download={f.original_name} className="btn btn--primary btn--sm">
-                        <Download size={16} /> تحميل
+                      <a href={`/uploads/${f.stored_name}`} target="_blank" rel="noreferrer" download={f.original_name} className="btn btn--primary btn--sm" style={{ padding: '6px 12px', fontSize: 12 }}>
+                        <Download size={14} /> تحميل
                       </a>
                     </div>
                   ))}
@@ -232,14 +288,22 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
           </div>
         ) : (
           <div className="grid">
-            <div className="col-12">
-              <div className="card" style={{ padding: '24px' }}>
+            <div className="col-12" style={{ padding: 0 }}>
+              <div className="card" style={{ padding: '20px', borderRadius: 18, border: '1px solid var(--border)', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-                  <div>
-                    <h3 className="card-title" style={{ margin: 0, fontSize: 18 }}>سجل طلباتي</h3>
-                    <span className="muted" style={{ fontSize: 12 }}>إجمالي الطلبات: {orders.length}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <h3 className="card-title" style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>سجل طلباتي</h3>
+                    <span className="badge" style={{ background: 'rgba(124, 58, 237, 0.15)', color: 'var(--accent)', fontSize: 11 }}>
+                      {orders.length} طلبات
+                    </span>
                   </div>
-                  <button className="btn btn--primary" onClick={() => window.location.href = '/?order=1'}>+ طلب جديد</button>
+                  <button
+                    className="btn btn--primary btn--glow btn--sm"
+                    onClick={() => window.location.href = '/?order=1'}
+                    style={{ padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}
+                  >
+                    + طلب جديد
+                  </button>
                 </div>
 
                 {orders.length === 0 ? (
@@ -266,102 +330,210 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                           </tr>
                         </thead>
                         <tbody>
-                          {orders.map(o => (
-                            <tr key={o.id}>
-                              <td>
-                                <a 
-                                  href={`/?track=${o.order_no}`} 
-                                  style={{ fontWeight: 700, color: 'var(--accent)', textDecoration: 'none' }}
-                                  title="فتح صفحة تتبع الطلب"
-                                >
-                                  #{o.order_no}
-                                </a>
-                              </td>
-                              <td><strong>{o.package_title || o.service_title || 'خدمة مخصصة'}</strong></td>
-                              <td>
-                                <strong>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
-                                {o.payment_status === 'paid' && (
-                                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
-                                    مسدد
-                                  </span>
-                                )}
-                              </td>
-                              <td><span className={`badge status-${o.status}`}>{o.status}</span></td>
-                              <td>{formatDate(o.created_at)}</td>
-                              <td>
-                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          {orders.map(o => {
+                            const statusCfg = STATUS_CONFIG[o.status] || {
+                              label: o.status,
+                              bg: 'rgba(255,255,255,0.08)',
+                              color: 'var(--text)',
+                              dot: '#aaa',
+                            };
+                            return (
+                              <tr key={o.id}>
+                                <td>
                                   <a 
                                     href={`/?track=${o.order_no}`} 
-                                    className="btn btn--sm btn--primary" 
-                                    style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                                    style={{ fontWeight: 800, color: 'var(--accent)', textDecoration: 'none', fontFamily: 'monospace' }}
+                                    title="فتح صفحة تتبع الطلب"
                                   >
-                                    <Activity size={13} /> تتبع الطلب والفاتورة
+                                    #{o.order_no}
                                   </a>
-                                  {o.project_id && (
-                                    <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '6px 10px', fontSize: 12 }}>
-                                      <FileText size={13} /> مساحة العمل
-                                    </button>
+                                </td>
+                                <td><strong>{o.package_title || o.service_title || 'خدمة مخصصة'}</strong></td>
+                                <td>
+                                  <strong>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
+                                  {o.payment_status === 'paid' && (
+                                    <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
+                                      مسدد ✔
+                                    </span>
                                   )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                                <td>
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 6,
+                                      padding: '4px 10px',
+                                      borderRadius: 20,
+                                      background: statusCfg.bg,
+                                      color: statusCfg.color,
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      border: `1px solid ${statusCfg.color}35`,
+                                    }}
+                                  >
+                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusCfg.dot }} />
+                                    {statusCfg.label}
+                                  </span>
+                                </td>
+                                <td>{formatDate(o.created_at)}</td>
+                                <td>
+                                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    <a 
+                                      href={`/?track=${o.order_no}`} 
+                                      className="btn btn--sm btn--primary" 
+                                      style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                                    >
+                                      <Activity size={13} /> تتبع الطلب والفاتورة
+                                    </a>
+                                    {o.project_id && (
+                                      <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '6px 10px', fontSize: 12 }}>
+                                        <FileText size={13} /> مساحة العمل
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
 
-                    {/* Mobile Cards View */}
-                    <div className="client-orders-mobile-cards" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {orders.map(o => (
-                        <div 
-                          key={o.id} 
-                          style={{ 
-                            background: 'var(--bg-3)', 
-                            padding: 16, 
-                            borderRadius: 14, 
-                            border: '1px solid var(--border)', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: 10 
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <strong style={{ color: 'var(--accent)', fontSize: 15 }}>#{o.order_no}</strong>
-                            <span className={`badge status-${o.status}`} style={{ fontSize: 12 }}>{o.status}</span>
-                          </div>
+                    {/* Mobile Luxury Cards View */}
+                    <div className="client-orders-mobile-cards" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      {orders.map(o => {
+                        const statusCfg = STATUS_CONFIG[o.status] || {
+                          label: o.status,
+                          bg: 'rgba(255,255,255,0.08)',
+                          color: 'var(--text)',
+                          dot: '#aaa',
+                        };
 
-                          <div style={{ fontSize: 14, fontWeight: 700 }}>
-                            {o.package_title || o.service_title || 'خدمة مخصصة'}
-                          </div>
+                        return (
+                          <div 
+                            key={o.id} 
+                            style={{ 
+                              background: 'linear-gradient(145deg, var(--bg-2), var(--bg-3))', 
+                              padding: '16px', 
+                              borderRadius: 16, 
+                              border: '1px solid var(--border)', 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              gap: 12,
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                              overflow: 'hidden',
+                              boxSizing: 'border-box',
+                            }}
+                          >
+                            {/* Top Header: Order No + Localized Status Badge */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                              <a
+                                href={`/?track=${o.order_no}`}
+                                style={{
+                                  fontFamily: 'monospace',
+                                  fontWeight: 800,
+                                  fontSize: 15,
+                                  color: 'var(--accent)',
+                                  textDecoration: 'none',
+                                  letterSpacing: 0.5,
+                                }}
+                              >
+                                #{o.order_no}
+                              </a>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 5,
+                                  padding: '4px 10px',
+                                  borderRadius: 20,
+                                  background: statusCfg.bg,
+                                  color: statusCfg.color,
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  border: `1px solid ${statusCfg.color}35`,
+                                }}
+                              >
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusCfg.dot }} />
+                                {statusCfg.label}
+                              </span>
+                            </div>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--text-muted)', paddingTop: 8, borderTop: '1px dashed var(--border)' }}>
-                            <div>
-                              الميزانية: <strong style={{ color: 'var(--text)' }}>{money(o.budget || o.package_price || o.payment_amount || 0)}</strong>
-                              {o.payment_status === 'paid' && (
-                                <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, marginRight: 6 }}>
-                                  مسدد
-                                </span>
+                            {/* Service / Package Title */}
+                            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', lineHeight: 1.4 }}>
+                              {o.package_title || o.service_title || 'خدمة تصميم وتطوير متكاملة'}
+                            </div>
+
+                            {/* Financial & Date Summary */}
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              background: 'rgba(0,0,0,0.2)',
+                              padding: '8px 12px',
+                              borderRadius: 10,
+                              border: '1px solid rgba(255,255,255,0.04)',
+                              fontSize: 12,
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>الميزانية:</span>
+                                <strong style={{ fontSize: 13, color: 'var(--text)' }}>
+                                  {money(o.budget || o.package_price || o.payment_amount || 0)}
+                                </strong>
+                                {o.payment_status === 'paid' && (
+                                  <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 10, padding: '2px 6px' }}>
+                                    مسدد ✔
+                                  </span>
+                                )}
+                              </div>
+                              <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+                                {formatDate(o.created_at)}
+                              </span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div style={{ display: 'flex', gap: 8, marginTop: 2, width: '100%' }}>
+                              <a
+                                href={`/?track=${o.order_no}`}
+                                className="btn btn--primary btn--sm btn--glow"
+                                style={{
+                                  flex: 1,
+                                  justifyContent: 'center',
+                                  gap: 6,
+                                  padding: '10px 12px',
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  borderRadius: 10,
+                                  textDecoration: 'none',
+                                  textAlign: 'center',
+                                  minWidth: 0,
+                                }}
+                              >
+                                <Activity size={14} /> تتبع الطلب والفاتورة
+                              </a>
+                              {o.project_id && (
+                                <button
+                                  className="btn btn--outline btn--sm"
+                                  onClick={() => loadProject(o.project_id)}
+                                  style={{
+                                    flex: 1,
+                                    justifyContent: 'center',
+                                    gap: 6,
+                                    padding: '10px 12px',
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    borderRadius: 10,
+                                    minWidth: 0,
+                                  }}
+                                >
+                                  <FileText size={14} /> مساحة العمل
+                                </button>
                               )}
                             </div>
-                            <span style={{ fontSize: 11 }}>{formatDate(o.created_at)}</span>
                           </div>
-
-                          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                            <a
-                              href={`/?track=${o.order_no}`}
-                              className="btn btn--primary btn--sm"
-                              style={{ flex: 1, justifyContent: 'center', gap: 6, padding: '10px 14px', fontSize: 13 }}
-                            >
-                              <Activity size={14} /> تتبع الطلب والفاتورة
-                            </a>
-                            {o.project_id && (
-                              <button className="btn btn--outline btn--sm" onClick={() => loadProject(o.project_id)} style={{ padding: '10px 14px' }}>
-                                <FileText size={14} /> مساحة العمل
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </>
                 )}
