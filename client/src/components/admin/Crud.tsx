@@ -398,6 +398,25 @@ export function Crud({ resource, title, onToast }: CrudProps) {
     return String(v);
   };
 
+  const getColumnLabels = () => {
+    switch (resource) {
+      case 'faqs':
+        return { primary: 'السؤال', secondary: 'الإجابة' };
+      case 'testimonials':
+        return { primary: 'اسم العميل', secondary: 'التقييم / الرأي' };
+      case 'portfolio':
+        return { primary: 'عنوان العمل', secondary: 'التفاصيل / التصنيف' };
+      case 'packages':
+        return { primary: 'اسم الباقة', secondary: 'السعر والمميزات' };
+      case 'services':
+        return { primary: 'اسم الخدمة', secondary: 'الوصف' };
+      default:
+        return { primary: 'العنوان / الاسم', secondary: 'التفاصيل' };
+    }
+  };
+
+  const colLabels = getColumnLabels();
+
   return (
     <div className="card">
       <div className="topbar">
@@ -412,9 +431,9 @@ export function Crud({ resource, title, onToast }: CrudProps) {
           <table className="table">
             <thead>
               <tr>
-                <th>العنوان / الاسم</th>
-                <th>التفاصيل</th>
-                <th>إجراء</th>
+                <th style={{ width: '40%' }}>{colLabels.primary}</th>
+                <th style={{ width: '45%' }}>{colLabels.secondary}</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>إجراء</th>
               </tr>
             </thead>
             <tbody>
@@ -440,20 +459,25 @@ export function Crud({ resource, title, onToast }: CrudProps) {
                   }}
                 >
                   <td style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {supportsSort && <GripVertical size={16} className="muted" style={{ cursor: 'grab' }} />}
-                    <strong>{String(r.title ?? r.name ?? '—')}</strong>
+                    {supportsSort && <GripVertical size={16} className="muted" style={{ cursor: 'grab', flexShrink: 0 }} />}
+                    <strong style={{ wordBreak: 'break-word' }}>
+                      {String(r.question ?? r.title ?? r.name ?? '—')}
+                    </strong>
                   </td>
-                  <td className="muted">{String((r.description ?? r.content ?? r.price ?? '—')).slice(0, 80)}</td>
-                  <td className="actions-cell">
+                  <td className="muted" style={{ wordBreak: 'break-word', fontSize: 13, lineHeight: 1.5 }}>
+                    {String(r.answer ?? r.description ?? r.content ?? (r.price != null ? `${r.price}` : '—')).slice(0, 120)}
+                    {String(r.answer ?? r.description ?? r.content ?? '').length > 120 ? '...' : ''}
+                  </td>
+                  <td className="actions-cell" style={{ textAlign: 'center' }}>
                     {Boolean(r.image_url) && (
                       <button className="btn btn--icon" onClick={() => window.open(r.image_url as string, '_blank')} aria-label="معاينة الصورة" title="معاينة الصورة">
                         <Eye size={14} />
                       </button>
                     )}
-                    <button className="btn btn--icon" onClick={() => openEdit(r)} aria-label="تعديل">
+                    <button className="btn btn--icon" onClick={() => openEdit(r)} aria-label="تعديل" title="تعديل">
                       <Pencil size={14} />
                     </button>
-                    <button className="btn btn--icon btn--danger" onClick={() => setConfirm(r.id as number)} aria-label="حذف">
+                    <button className="btn btn--icon btn--danger" onClick={() => setConfirm(r.id as number)} aria-label="حذف" title="حذف">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -521,11 +545,11 @@ export function Crud({ resource, title, onToast }: CrudProps) {
                     value={form[f] ?? ''}
                     onChange={val => setForm(prev => ({ ...prev, [f]: val }))}
                   />
-                ) : f === 'description' || f === 'content' || f === 'features' ? (
+                ) : f === 'description' || f === 'content' || f === 'features' || f === 'answer' ? (
                   <textarea
                     id={`field-${f}`}
                     className="textarea"
-                    rows={f === 'features' ? 5 : 3}
+                    rows={f === 'features' ? 5 : (f === 'answer' ? 4 : 3)}
                     style={{ direction: f === 'features' ? 'ltr' : undefined, textAlign: f === 'features' ? 'left' : undefined, fontFamily: f === 'features' ? 'monospace' : undefined }}
                     value={form[f] ?? ''}
                     onChange={e => setForm(prev => ({ ...prev, [f]: e.target.value }))}
