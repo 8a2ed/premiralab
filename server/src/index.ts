@@ -151,10 +151,50 @@ const CLIENT_DIST = candidatePaths.find(p => fs.existsSync(p));
 
 if (CLIENT_DIST) {
   console.log(`[static] Serving frontend from: ${CLIENT_DIST}`);
-  app.use(express.static(CLIENT_DIST, { maxAge: '1h' }));
+  app.use(express.static(CLIENT_DIST, { maxAge: '1h', index: false }));
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-      return res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+      try {
+        let html = fs.readFileSync(path.join(CLIENT_DIST, 'index.html'), 'utf-8');
+        
+        // Fetch SEO settings from DB
+        const row = db.prepare("SELECT value FROM settings WHERE key='site'").get() as { value: string } | undefined;
+        let siteSettings: any = {};
+        if (row) {
+          try { siteSettings = JSON.parse(row.value); } catch (e) {}
+        }
+        
+        const ogTitle = siteSettings.seo_title || "PREMIRALAB | منصة تصميم احترافية لطلب أعمالك";
+        const ogDesc  = siteSettings.seo_description || "نحول الأفكار إلى هويات بصرية قوية ومشاريع رقمية مبدعة. اطلب أعمالك الآن.";
+        
+        // Handle image URL (ensure absolute URL if relative)
+        let ogImage = siteSettings.seo_image || "/og-image.png";
+        if (ogImage.startsWith('/')) {
+            const host = req.get('host') || 'premiralab.up.railway.app';
+            const protocol = req.protocol || 'https';
+            ogImage = `${protocol}://${host}${ogImage}`;
+        }
+        
+        const reqUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+        
+        // Inject dynamic tags (Regex replacement)
+        html = html.replace(/<title>.*?<\/title>/, `<title>${ogTitle}</title>`);
+        html = html.replace(/<meta name="title" content=".*?"\/>/, `<meta name="title" content="${ogTitle}"/>`);
+        html = html.replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${ogDesc}"/>`);
+        
+        html = html.replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${ogTitle}"/>`);
+        html = html.replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${ogDesc}"/>`);
+        html = html.replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${ogImage}"/>`);
+        html = html.replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${reqUrl}"/>`);
+        
+        html = html.replace(/<meta property="twitter:title" content=".*?"\/>/, `<meta property="twitter:title" content="${ogTitle}"/>`);
+        html = html.replace(/<meta property="twitter:description" content=".*?"\/>/, `<meta property="twitter:description" content="${ogDesc}"/>`);
+        
+        return res.send(html);
+      } catch (err) {
+        console.error('Error serving index.html:', err);
+        return res.sendFile(path.join(CLIENT_DIST, 'index.html')); // Fallback to raw file
+      }
     }
     next();
   });

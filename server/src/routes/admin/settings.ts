@@ -14,6 +14,9 @@ const siteSettingsSchema = z.object({
   currency:  z.string().trim().max(10).default('EGP'),
   whatsapp:  z.string().trim().max(50).default(''),
   telegram:  z.string().trim().max(50).default(''),
+  seo_title: z.string().trim().optional(),
+  seo_description: z.string().trim().optional(),
+  seo_image: z.string().trim().optional(),
 }).passthrough();
 
 router.get('/', auth, admin, (_req, res, next) => {

@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   stat_4_num: '24/7', stat_4_label: 'متابعة ودعم مستمر',
   // Section Headings
   testimonials_eyebrow: 'آراء العملاء',
+  seo_title: '', seo_description: '', seo_image: '/og-image.png',
   testimonials_title: 'ثقة عملائنا هي سر نجاحنا',
   testimonials_subtitle: 'تجارب حقيقية لشركاء النجاح الذين وضعوا ثقتهم في استوديوهاتنا',
   services_eyebrow: 'خدماتنا المتخصصة',
@@ -117,6 +118,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
         <TabBtn label="بيانات التواصل والعامة" icon={<MessageSquare size={16} />} active={activeTab === 'general'} onClick={() => setActiveTab('general')} />
         <TabBtn label="طرق الدفع والبنوك" icon={<CreditCard size={16} />} active={activeTab === 'payments'} onClick={() => setActiveTab('payments')} />
         <TabBtn label="الربط والإشعارات" icon={<Bot size={16} />} active={activeTab === 'integrations'} onClick={() => setActiveTab('integrations')} />
+        <TabBtn label="الظهور والروابط (SEO)" icon={<Sparkles size={16} />} active={activeTab === 'seo'} onClick={() => setActiveTab('seo')} />
       </div>
 
       {/* TAB 1: Hero & Appearance */}
