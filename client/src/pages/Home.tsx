@@ -398,7 +398,7 @@ export function Home({
               <p className="muted">{data.site?.packages_subtitle || 'اختر الباقة الأنسب لحجم مشروعك وابدأ رحلة التفوق الرقمي بكل ثقة ووضوح'}</p>
             </div>
 
-            <div className="grid grid-3">
+            <div className="grid grid-3 pricing-grid">
               {data.packages?.map(p => (
                 <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
                   {p.popular && (
