@@ -1,3 +1,4 @@
+import { Mail, Phone, MessageCircle, MapPin, ChevronLeft } from 'lucide-react';
 import { waLink } from '../../lib/utils.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -7,38 +8,71 @@ interface FooterProps {
 
 export function Footer({ site }: FooterProps) {
   const whatsappHref = site.whatsapp
-    ? waLink(site.whatsapp, `مرحبًا ${site.brand || 'PREMIRALAB'}، أريد الاستفسار عن خدماتكم.`)
+    ? waLink(site.whatsapp, `مرحباً ${site.brand || 'PREMIRALAB'}، أريد الاستفسار عن خدماتكم.`)
     : null;
 
   return (
-    <footer className="footer">
-      <div className="container footer-inner">
-        <div className="footer-brand">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <img src={site.logo_url || '/logo.png'} alt={site.brand || 'PREMIRALAB'} style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain' }} />
-            <strong style={{ fontSize: 18 }}>{site.brand || 'PREMIRALAB'}</strong>
+    <footer className="footer-modern">
+      <div className="footer-glow-line" />
+      <div className="container">
+        <div className="footer-modern__top">
+          {/* Brand & Description */}
+          <div className="footer-col brand-col">
+            <div className="footer-logo">
+              <img src={site.logo_url || '/logo.png'} alt={site.brand || 'PREMIRALAB'} />
+              <span>{site.brand || 'PREMIRALAB'}</span>
+            </div>
+            <p className="footer-desc">
+              {site.footer_text || 'نحوّل أفكارك إلى تجارب بصرية قوية ومشاريع رقمية مبتكرة تصنع الفارق وتميزك عن منافسيك.'}
+            </p>
           </div>
-          <p style={{ opacity: 0.8, maxWidth: 300, lineHeight: 1.6 }}>{site.footer_text || 'نحوّل أفكارك إلى تجارب بصرية قوية.'}</p>
+
+          {/* Quick Links */}
+          <div className="footer-col">
+            <h4 className="footer-title">روابط سريعة</h4>
+            <div className="footer-links">
+              <a href="#services" className="footer-link"><ChevronLeft size={14} /> خدماتنا</a>
+              <a href="#portfolio" className="footer-link"><ChevronLeft size={14} /> معرض الأعمال</a>
+              <a href="#packages" className="footer-link"><ChevronLeft size={14} /> الباقات والأسعار</a>
+              <a href="#faqs" className="footer-link"><ChevronLeft size={14} /> الأسئلة الشائعة</a>
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="footer-col">
+            <h4 className="footer-title">تواصل معنا</h4>
+            <div className="footer-contact-list">
+              {site.email && (
+                <a href={`mailto:${site.email}`} className="footer-contact-item">
+                  <div className="icon-wrap"><Mail size={16} /></div>
+                  <span dir="ltr">{site.email}</span>
+                </a>
+              )}
+              {site.phone && (
+                <a href={`tel:${site.phone}`} className="footer-contact-item" dir="ltr">
+                  <div className="icon-wrap"><Phone size={16} /></div>
+                  <span>{site.phone}</span>
+                </a>
+              )}
+              {whatsappHref && (
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="footer-contact-item wa-item">
+                  <div className="icon-wrap"><MessageCircle size={16} /></div>
+                  <span>استشارة عبر واتساب</span>
+                </a>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="footer-contact">
-          {site.email && (
-            <a href={`mailto:${site.email}`} className="footer-link" aria-label={`البريد الإلكتروني: ${site.email}`}>
-              📧 {site.email}
-            </a>
-          )}
-          {site.phone && (
-            <a href={`tel:${site.phone}`} className="footer-link" aria-label={`اتصل بنا: ${site.phone}`}>
-              📞 {site.phone}
-            </a>
-          )}
-          {whatsappHref && (
-            <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="footer-link footer-link--whatsapp" aria-label="تواصل معنا عبر واتساب">
-              💬 واتساب
-            </a>
-          )}
-        </div>
-        <div className="footer-copy">
-          © {new Date().getFullYear()} {site.brand || 'PREMIRALAB'}. جميع الحقوق محفوظة.
+
+        <div className="footer-modern__bottom">
+          <p className="copyright">
+            © {new Date().getFullYear()} <span className="brand-highlight">{site.brand || 'PREMIRALAB'}</span>. جميع الحقوق محفوظة.
+          </p>
+          <div className="footer-legal">
+            <a href="#">سياسة الخصوصية</a>
+            <span className="dot">•</span>
+            <a href="#">الشروط والأحكام</a>
+          </div>
         </div>
       </div>
     </footer>

@@ -1135,7 +1135,7 @@ img {
   .brand { max-width: 180px; font-size: 18px; }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .footer-inner { grid-template-columns: 1fr; gap: 20px; }
+  
   
   /* Stats & CTA on Tablet */
   .stats-glass-bar {
@@ -1320,7 +1320,7 @@ img {
   .main { padding: 12px !important; }
   .tracker-meta-grid { grid-template-columns: 1fr !important; }
   .notification-panel { width: calc(100vw - 24px) !important; left: auto !important; right: 0 !important; transform: none !important; }
-  .footer-contact { align-items: flex-start !important; }
+  
   
   /* Floating Elements on Mobile */
   .floating-wa-container {
