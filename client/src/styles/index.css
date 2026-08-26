@@ -328,7 +328,7 @@ img {
 
 /* Service cards */
 .service-card {
-  transition: all .25s ease;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
 }
 .service-card:hover {
   border-color: var(--accent);
@@ -356,7 +356,7 @@ img {
    
   padding: 32px 26px;
   border: 1px solid var(--border);
-  transition: all .25s ease;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
 }
 .package-card:hover { transform: translateY(-4px); border-color: var(--accent); }
 .package-card--popular { 
@@ -396,7 +396,7 @@ img {
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
-  transition: all .25s ease;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
 }
 .portfolio-card-clickable:hover {
   transform: translateY(-4px);
@@ -669,7 +669,7 @@ img {
   -webkit-backdrop-filter: blur(12px);
   cursor: pointer;
   z-index: 98;
-  transition: all 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
   animation: fadeIn 0.2s ease-out;
 }
 .back-to-top-btn:hover {
@@ -692,7 +692,7 @@ img {
 .footer-copy { font-size: 13px; color: var(--text-dim); }
 
 /* ─── Modal ────────────────────────────────────────────────────────────────── */
-.modal-backdrop { position: fixed; inset: 0; background: #000b; display: grid; place-items: center; z-index: 100; padding: 20px }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; z-index: 100; padding: 20px }
 .modal { width: min(640px, 100%); background: color-mix(in srgb, var(--bg) 97%, white); border: 1px solid var(--border); border-radius: var(--radius); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
 .modal--sm { width: min(420px, 100%) }
 .modal--lg { width: min(760px, 100%) }
@@ -1484,7 +1484,7 @@ img {
   transform: translateY(-2px);
 }
 .cta-banner .btn--primary {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
 }
 .cta-banner .btn--primary:hover {
   transform: translateY(-2px);
@@ -1588,7 +1588,7 @@ img {
   border-radius: 50%;
   background: var(--bg-3);
   color: var(--accent);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
   flex-shrink: 0;
 }
 .footer-contact-item:hover {
@@ -1729,9 +1729,12 @@ img {
 }
 body::before {
   content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform, opacity;
   background: radial-gradient(circle at 15% 50%, var(--accent-dim) 0%, transparent 40%),
               radial-gradient(circle at 85% 30%, var(--accent-glow) 0%, transparent 40%);
   z-index: -1;
@@ -1797,16 +1800,16 @@ body::before {
 
 
 
-/* Smooth Scroll Reveal */
+/* Smooth Scroll Reveal (Hardware Accelerated & Optimized) */
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(40px) scale(0.98);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 20px, 0);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   will-change: opacity, transform;
 }
 .reveal-on-scroll.visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0);
 }
 
 
@@ -2062,8 +2065,8 @@ body::before {
   will-change: transform, opacity;
 }
 @keyframes backdrop-fade-in {
-  from { opacity: 0; backdrop-filter: blur(0px); }
-  to { opacity: 1; backdrop-filter: blur(4px); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @keyframes modal-scale-in {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
@@ -2092,8 +2095,30 @@ body::before {
 
 /* Button Click Feedback */
 .btn {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  transition: transform 0.1s ease-out, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 .btn:active:not(:disabled) {
   transform: scale(0.96) !important;
+  transition: transform 0.05s ease !important;
+}
+
+
+/* ─── Touch & Rendering Performance Fixes ────────────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent; /* Fix mobile touch glitch/flash */
+}
+
+/* Fix mobile hover glitch (sticking hover state after tap) */
+@media (hover: none) {
+  .btn:hover:not(:active) {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important; /* revert to base shadow */
+  }
+  .package-card--popular:hover {
+    transform: scale(1) !important; /* Disable hover scale on mobile */
+  }
 }
