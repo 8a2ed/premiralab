@@ -580,12 +580,18 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
   const [paid,    setPaid]    = useState(String(order.paid_amount || 0));
   const [loading, setLoading] = useState(false);
 
+  const budgetNum  = Math.max(0, Number(budget) || 0);
+  const paidNum    = Math.max(0, Number(paid) || 0);
+  const remaining  = Math.max(0, budgetNum - paidNum);
+  const isOverpaid = paidNum > budgetNum && budgetNum > 0;
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isOverpaid) { alert('المبلغ المسدد لا يمكن أن يتجاوز الميزانية الإجمالية'); return; }
     setLoading(true);
     try {
-      const b = Number(budget) || 0;
-      const p = Number(paid) || 0;
+      const b = budgetNum;
+      const p = paidNum;
       await api.admin.updateOrder(order.id, { budget: b, paid_amount: p });
       onSaved(order.id, b, p);
       onClose();
@@ -622,10 +628,10 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
           />
         </div>
 
-        <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="muted">المتبقي للسداد:</span>
-          <strong style={{ color: 'var(--accent)' }}>
-            {money(Math.max(0, (Number(budget) || 0) - (Number(paid) || 0)))}
+          <strong style={{ color: remaining > 0 ? 'var(--accent)' : '#22c55e', fontSize: 15 }}>
+            {remaining > 0 ? money(remaining) : '0 ج.م ✔ مكتمل'}
           </strong>
         </div>
 
@@ -651,7 +657,7 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
             type="button"
             className="btn btn--sm"
             style={{ color: '#10b981', borderColor: '#10b981' }}
-            onClick={() => setPaid(budget)}
+            onClick={() => setPaid(String(budgetNum))}
             title="تعيين كامل المبلغ كمدفوع"
           >
             مسدد بالكامل

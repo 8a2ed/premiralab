@@ -302,7 +302,9 @@ router.get('/paymob/callback', (req, res) => {
       const t = now();
       const order = db.prepare('SELECT o.*, c.name client_name, c.phone client_phone FROM orders o JOIN clients c ON c.id=o.client_id WHERE o.order_no=?').get(orderNo) as any;
       if (order && order.payment_status !== 'paid') {
-        const amountPaid = Number(order.payment_amount) || Number(order.budget) || 0;
+        // Use actual amount_cents from Paymob callback if provided, otherwise fall back to order amount
+        const rawAmountCents = Number(req.query.amount_cents || 0);
+        const amountPaid = rawAmountCents > 0 ? rawAmountCents / 100 : (Number(order.payment_amount) || Number(order.budget) || 0);
         db.transaction(() => {
           db.prepare(`
             UPDATE orders 

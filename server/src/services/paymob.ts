@@ -214,13 +214,16 @@ export async function createPaymobPayment({
  */
 export function verifyPaymobHMAC(payload: any, hmacSecret?: string): boolean {
   const secret = hmacSecret || getPaymobSettings().hmacSecret;
-  if (!secret) return true; // If no secret configured, proceed
+  if (!secret) {
+    console.warn('[paymob] HMAC secret not configured — accepting webhook without verification (configure paymob_hmac_secret to secure)');
+    return true; // No secret configured yet — allow but warn
+  }
 
   try {
     const receivedHmac = payload?.hmac || payload?.query?.hmac;
     if (!receivedHmac) {
-      console.warn('[paymob] No HMAC parameter attached to request');
-      return true;
+      console.warn('[paymob] HMAC secret is configured but no HMAC attached to webhook request — REJECTING');
+      return false; // Secret configured but no HMAC provided = reject
     }
 
     const source = payload.obj || payload;
