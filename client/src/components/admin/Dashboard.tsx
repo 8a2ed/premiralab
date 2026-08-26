@@ -8,11 +8,12 @@ export function Dashboard({ analytics: a }: DashboardProps) {
   return (
     <div className="dashboard">
       {/* Stat cards */}
-      <div className="stats">
+            <div className="stats">
         <StatCard label="إجمالي الطلبات"     value={String(a.total    ?? 0)} />
         <StatCard label="العملاء"             value={String(a.clients  ?? 0)} />
         <StatCard label="المشاريع النشطة"    value={String(a.active   ?? 0)} />
-        <StatCard label="إيرادات مكتملة"     value={money(a.revenue   ?? 0)} />
+        <StatCard label="الميزانية (مكتملة)"     value={money(a.revenue   ?? 0)} />
+        <StatCard label="إيرادات محصّلة (مدفوع)" value={money(a.totalCollected ?? 0)} />
       </div>
 
       <div className="dashboard-grid">

@@ -163,7 +163,7 @@ router.post('/:id/approve-payment', auth, admin, async (req: AuthRequest, res, n
             <p>مرحبًا <strong>${order.client_name}</strong>،</p>
             <p>قام فريق العمل بمراجعة متطلباتك وجدول المواعيد، وتم تأكيد حجز موعد مشروعك رقم <strong>${order.order_no}</strong>.</p>
             <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 4px 0;"><strong>المبلغ المطلوب سداده:</strong> ${amount} ج.م</p>
+              <p style="margin: 4px 0;"><strong>المبلغ المطلوب سداده:</strong> ${new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(amount)}</p>
               ${notes ? `<p style="margin: 4px 0;"><strong>ملاحظات الفريق:</strong> ${notes}</p>` : ''}
               <p style="margin: 4px 0;"><strong>طرق الدفع المتاحة:</strong> فودافون كاش، فيزا وماستركارد، كود فوري، انستاباي</p>
             </div>

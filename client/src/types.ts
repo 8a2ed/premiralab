@@ -255,6 +255,7 @@ export interface Analytics {
   clients:  number;
   active:   number;
   revenue:  number;
+  totalCollected?: number;
   byStatus: Array<{ status: OrderStatus; count: number }>;
   recent:   Array<{ order_no: string; status: OrderStatus; created_at: string; client_name: string }>;
 }

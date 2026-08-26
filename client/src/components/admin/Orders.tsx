@@ -193,6 +193,11 @@ export function Orders({ onToast }: OrdersProps) {
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <PaymentStatusBadge status={payStatus} />
+                            {o.payment_approved_at && (
+                              <span style={{ fontSize: 11, color: '#888' }}>
+                                اعتُمد: {new Date(o.payment_approved_at).toLocaleDateString('ar-EG')}
+                              </span>
+                            )}
                             <button
                               className="btn btn--sm btn--outline"
                               style={{ fontSize: 11, padding: '4px 8px', alignSelf: 'flex-start' }}

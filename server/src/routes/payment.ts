@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { db, now } from '../db.js';
 import { createPaymobPayment, verifyPaymobHMAC } from '../services/paymob.js';
@@ -100,7 +101,13 @@ router.post('/apply-promo', async (req, res, next) => {
 });
 
 // POST /api/payment/paymob/initiate — Initiate payment for an approved order
-router.post('/paymob/initiate', async (req, res, next) => {
+const paymentLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'تم تجاوز الحد المسموح به من محاولات الدفع. يرجى المحاولة بعد دقيقة.' }
+});
+
+router.post('/paymob/initiate', paymentLimiter, async (req, res, next) => {
   try {
     const schema = z.object({
       orderNo:     z.string().trim().min(3),
@@ -260,7 +267,7 @@ router.post('/paymob/webhook', async (req, res, next) => {
               <div dir="rtl" style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px;">
                 <h2 style="color: #7c3aed; margin-top: 0;">تم استلام دفعتك بنجاح! 🎉</h2>
                 <p>مرحبًا <strong>${order.client_name}</strong>،</p>
-                <p>تم تأكيد سداد مبلغ <strong>${amountPaid} ج.م</strong> لمشروعك رقم <strong>${order.order_no}</strong>.</p>
+                <p>تم تأكيد سداد مبلغ <strong>${new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(amountPaid)}</strong> لمشروعك رقم <strong>${order.order_no}</strong>.</p>
                 <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0;">
                   <p style="margin: 4px 0;"><strong>رقم المعاملة:</strong> ${transactionId}</p>
                   <p style="margin: 4px 0;"><strong>طريقة الدفع:</strong> Paymob الإلكترونية</p>

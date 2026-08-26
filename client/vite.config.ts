@@ -52,6 +52,18 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-icons': ['lucide-react'],
+          'admin': ['./src/pages/Admin.tsx'],
+          'tracker': ['./src/pages/Tracker.tsx']
+        }
+      }
+    }
+  },
   server: {
     port: 5173,
     proxy: {

@@ -135,6 +135,13 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
     }
   }, [orderNo]);
 
+  useEffect(() => {
+    if (paymentNotice === 'success') {
+      const timer = setTimeout(() => load(), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentNotice]);
+
   const load = async () => {
     setLoading(true); setError(null);
     try {
