@@ -59,11 +59,19 @@ const FaqItem = ({ faq }: { faq: FAQ }) => {
           }} 
         />
       </button>
-      {open && (
-        <div className="animation-fade-in" style={{ marginTop: 12, color: 'var(--text-muted)', lineHeight: 1.8, fontSize: 15 }}>
-          {faq.answer.split('\n').map((line, i) => <p key={i} style={{ margin: '0 0 8px' }}>{line}</p>)}
+      <div 
+        style={{
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ marginTop: 12, color: 'var(--text-muted)', lineHeight: 1.8, fontSize: 15, opacity: open ? 1 : 0, transition: 'opacity 0.4s ease', transform: open ? 'translateY(0)' : 'translateY(-10px)' }}>
+            {faq.answer.split('\n').map((line, i) => <p key={i} style={{ margin: '0 0 8px' }}>{line}</p>)}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

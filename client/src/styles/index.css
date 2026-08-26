@@ -2052,3 +2052,48 @@ body::before {
   align-items: flex-start !important; /* aligns checkmarks to the right in RTL */
   text-align: right !important;
 }
+
+/* Modal Smooth Entrance Animations */
+.modal-backdrop {
+  animation: backdrop-fade-in 0.3s ease forwards;
+}
+.modal {
+  animation: modal-scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes backdrop-fade-in {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
+}
+@keyframes modal-scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Toast Smooth Entrance */
+.toast {
+  animation: toast-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes toast-slide-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Input & Select Focus Polish */
+.input, .select, .textarea {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease !important;
+}
+.input:focus, .select:focus, .textarea:focus {
+  background: var(--bg-card) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent) !important;
+  border-color: var(--accent) !important;
+  outline: none !important;
+}
+
+/* Button Click Feedback */
+.btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.96) !important;
+}
