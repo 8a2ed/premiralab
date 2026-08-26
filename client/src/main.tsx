@@ -8,6 +8,15 @@ import { api } from './lib/api.js';
 import { applyTheme, getInitialTheme } from './lib/utils.js';
 import type { PublicData } from './types.js';
 import './styles/index.css';
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister();
+    }
+  });
+}
+
 import { ClientPortal } from './pages/ClientPortal.js';
 
 // Lazy load secondary routes so initial homepage load is ultra-fast
