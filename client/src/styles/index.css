@@ -353,7 +353,7 @@ img {
   display: flex; 
   flex-direction: column; 
   position: relative; 
-  overflow: hidden; 
+   
   padding: 32px 26px;
   border: 1px solid var(--border);
   transition: all .25s ease;
@@ -378,9 +378,9 @@ img {
   align-items: center;
   gap: 4px;
 }
-.package-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.package-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; text-align: center; }
 .package-price { font-size: 32px; font-weight: 900; color: var(--accent); margin: 12px 0 16px; }
-.package-desc { margin-bottom: 24px; min-height: 44px; font-size: 14px; line-height: 1.6; }
+.package-desc { margin-bottom: 24px; min-height: 44px; font-size: 14px; line-height: 1.6; text-align: center; }
 .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 0 0 28px; color: var(--text); font-size: 14px; }
 .feature-list li { display: flex; align-items: flex-start; gap: 10px; }
 .feature-icon { color: var(--success); flex-shrink: 0; margin-top: 2px; }
@@ -1761,7 +1761,7 @@ body::before {
 /* Make package cards stand out slightly more */
 .package-card {
   position: relative;
-  overflow: hidden;
+  
 }
 .package-card::after {
   content: '';
@@ -1812,6 +1812,7 @@ body::before {
 
 /* ─── Premium Package Cards Overhaul ────────────────────────────────────── */
 
+
 /* Base Package Card */
 .package-card {
   padding: 40px 32px !important;
@@ -1820,11 +1821,14 @@ body::before {
   border: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
   position: relative;
   z-index: 1;
+  overflow: visible !important; /* Fixed clipping badge */
 }
+
 
 /* Base Price Typography */
 .package-price {
   font-size: 38px !important;
+  text-align: center;
   font-weight: 900 !important;
   color: var(--text) !important;
   margin: 16px 0 20px !important;
@@ -2039,4 +2043,12 @@ body::before {
   .pricing-grid {
     grid-template-columns: 1fr !important; /* Overrides the repeat(2) for packages */
   }
+}
+
+/* Feature List Centering/Alignment */
+.feature-list {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important; /* aligns checkmarks to the right in RTL */
+  text-align: right !important;
 }
