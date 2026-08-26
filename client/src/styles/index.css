@@ -306,7 +306,7 @@ img {
 /* ─── Sections ─────────────────────────────────────────────────────────────── */
 .section { padding: 80px 0; scroll-margin-top: 80px; }
 .section-header { text-align: center; margin-bottom: 44px; }
-.section h2 { font-size: 32px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.01em; }
+.section h2, .hero-heading { font-size: 32px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.01em; }
 .eyebrow { color: var(--accent-text); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: .06em }
 .muted { color: var(--text-muted) }
 .empty { padding: 40px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: var(--radius-sm) }
@@ -1202,7 +1202,7 @@ img {
     
   .card { padding: 20px !important; }
   .section { padding: 48px 0 !important; }
-  .section h2 { font-size: 24px !important; }
+  .section h2, .hero-heading { font-size: 24px !important; }
   .nav-actions {
     display: flex !important;
     align-items: center !important;
@@ -1659,4 +1659,152 @@ img {
 }
 .footer-legal button:hover {
   color: var(--text);
+}
+
+/* ─── Global Smoothness & Modern UI Polish ───────────────────────────────── */
+::selection { background: var(--accent); color: #fff; }
+
+/* Sleek Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--border) 80%, white); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Global Card Hover Effect */
+.card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), inset 0 2px 20px rgba(255, 255, 255, 0.03) !important;
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+/* Enhancing existing buttons */
+.btn {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, background 0.3s ease !important;
+}
+.btn:active {
+  transform: translateY(1px) scale(0.97) !important;
+}
+.btn--primary:hover {
+  box-shadow: 0 12px 28px var(--accent-glow) !important;
+}
+
+/* Input Fields Focus Glow */
+.input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease !important;
+}
+.input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 20px var(--accent-dim) !important;
+}
+
+/* Gradient Section Titles */
+.section h2, .hero-heading {
+  background: linear-gradient(135deg, #ffffff 30%, var(--accent-text) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Topbar glass effect (Admin/Client Portal) */
+.topbar {
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
+  backdrop-filter: blur(12px);
+  padding: 16px 20px !important;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 16px;
+  z-index: 50;
+}
+
+/* Hero Background subtle mesh float */
+@keyframes mesh-float {
+  0% { transform: translateY(0) scale(1); opacity: 0.5; }
+  50% { transform: translateY(-20px) scale(1.05); opacity: 0.7; }
+  100% { transform: translateY(0) scale(1); opacity: 0.5; }
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100vh;
+  background: radial-gradient(circle at 15% 50%, var(--accent-dim) 0%, transparent 40%),
+              radial-gradient(circle at 85% 30%, var(--accent-glow) 0%, transparent 40%);
+  z-index: -1;
+  pointer-events: none;
+  animation: mesh-float 15s infinite ease-in-out;
+}
+
+/* Smooth fade in for everything */
+.animation-fade-in {
+  animation: fadeInSoft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeInSoft {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+.stat-tile {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+.stat-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 2px 10px rgba(255, 255, 255, 0.03) !important;
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+
+/* Make package cards stand out slightly more */
+.package-card {
+  position: relative;
+  overflow: hidden;
+}
+.package-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.package-card:hover::after {
+  opacity: 1;
+}
+
+/* Services hover icon scale */
+.service-icon {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.4s ease;
+}
+.card:hover .service-icon {
+  transform: scale(1.1);
+  background: var(--accent) !important;
+  color: white !important;
+}
+
+/* Floating WA Button Pulsing Ring */
+.floating-wa-btn {
+  animation: wa-float 3s infinite ease-in-out;
+}
+@keyframes wa-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+
+
+/* Smooth Scroll Reveal */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(40px) scale(0.98);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }

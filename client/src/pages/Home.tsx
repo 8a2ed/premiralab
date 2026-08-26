@@ -68,7 +68,22 @@ const FaqItem = ({ faq }: { faq: FAQ }) => {
   );
 };
 
-export function Home({ data, onToast, onClientClick }: HomeProps) {
+export function Home({
+ data, onToast, onClientClick }: HomeProps) {
+  // Smooth Scroll Reveal Effect
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const [orderOpen,          setOrderOpen]          = useState(false);
   const [selected,           setSelected]           = useState<Package | null>(null);
   const [initialProjectType, setInitialProjectType] = useState<string | undefined>(undefined);
@@ -207,22 +222,22 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         <section className="hero">
           <div className="container hero-grid">
             <div className="animation-fade-in hero-text-col">
-              <div className="hero-badge">
+              <div className="hero-badge animation-fade-in" style={{ animationDelay: "0.1s" }}>
                 <Sparkles size={15} className="hero-badge-icon" />
                 <span>{data.site?.hero_badge || 'استوديو رقمي متكامل للتصميم والتطوير'}</span>
               </div>
               
-              <h1 className="hero-heading">
+              <h1 className="hero-heading animation-fade-in" style={{ animationDelay: "0.2s" }}>
                 {data.site?.hero_title ? data.site.hero_title.split(' ').map((word, i, arr) => 
                   i === arr.length - 1 ? <span key={i} className="highlight">{word}</span> : word + ' '
                 ) : <>نحوّل أفكارك إلى واقع رقمي <span className="highlight">استثنائي</span></>}
               </h1>
               
-              <p className="hero-subtitle">
+              <p className="hero-subtitle animation-fade-in" style={{ animationDelay: "0.3s" }}>
                 {data.site?.hero_subtitle ?? 'من الهوية البصرية وتصميم الواجهات إلى المنصات المتقدمة، نحن هنا لنبني لعلامتك التجارية حضورًا قويًا ينمو ويتفوق.'}
               </p>
               
-              <div className="actions hero-actions">
+              <div className="actions hero-actions animation-fade-in" style={{ animationDelay: "0.4s" }}>
                 <button className="btn btn--primary btn--lg hero-btn-main" onClick={() => openOrder()}>
                   {data.site?.hero_primary_btn ?? 'ابدأ مشروعك الآن'} <ArrowLeft size={18} aria-hidden />
                 </button>
@@ -232,7 +247,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
               </div>
 
               {/* Trust badges */}
-              <div className="hero-trust-row">
+              <div className="hero-trust-row animation-fade-in" style={{ animationDelay: "0.5s" }}>
                 <div className="hero-trust-item">
                   <Shield size={16} style={{ color: 'var(--success)' }} />
                   <span>{data.site?.hero_trust_1 || 'ضمان أعلى جودة'}</span>
@@ -316,7 +331,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
 
         {/* Testimonials (Social Proof) */}
         {data.testimonials && data.testimonials.length > 0 && (
-          <section className="section" id="testimonials" style={{ background: 'var(--bg-2)' }}>
+          <section className="section reveal-on-scroll" id="testimonials" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
               <div className="section-header">
                 <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.testimonials_eyebrow || 'آراء العملاء'}</div>
@@ -352,7 +367,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         )}
 
         {/* Services */}
-        <section className="section" id="services" aria-labelledby="services-title">
+        <section className="section reveal-on-scroll" id="services" aria-labelledby="services-title">
           <div className="container">
             <div className="section-header">
               <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.services_eyebrow || 'خدماتنا المتخصصة'}</div>
@@ -375,7 +390,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         </section>
 
         {/* Packages */}
-        <section className="section" id="packages" aria-labelledby="packages-title" style={{ background: 'var(--bg-2)' }}>
+        <section className="section reveal-on-scroll" id="packages" aria-labelledby="packages-title" style={{ background: 'var(--bg-2)' }}>
           <div className="container">
             <div className="section-header">
               <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.packages_eyebrow || 'باقات الأسعار'}</div>
@@ -420,7 +435,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
         </section>
 
         {/* Portfolio */}
-        <section className="section" id="portfolio" aria-labelledby="portfolio-title">
+        <section className="section reveal-on-scroll" id="portfolio" aria-labelledby="portfolio-title">
           <div className="container">
             <div className="section-header">
               <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.portfolio_eyebrow || 'معرض الأعمال'}</div>
@@ -484,7 +499,7 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
 
         {/* FAQs */}
         {data.faqs && data.faqs.length > 0 && (
-          <section className="section" id="faqs" aria-labelledby="faqs-title" style={{ background: 'var(--bg-2)' }}>
+          <section className="section reveal-on-scroll" id="faqs" aria-labelledby="faqs-title" style={{ background: 'var(--bg-2)' }}>
             <div className="container" style={{ maxWidth: 840 }}>
               <div className="section-header">
                 <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>{data.site?.faqs_eyebrow || 'الأسئلة الشائعة'}</div>
