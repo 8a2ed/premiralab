@@ -17,6 +17,8 @@ const siteSettingsSchema = z.object({
   seo_title: z.string().trim().optional(),
   seo_description: z.string().trim().optional(),
   seo_image: z.string().trim().optional(),
+  privacy_policy: z.string().trim().optional(),
+  terms_conditions: z.string().trim().optional(),
 }).passthrough();
 
 router.get('/', auth, admin, (_req, res, next) => {

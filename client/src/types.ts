@@ -33,6 +33,8 @@ export interface SiteSettings {
   paymob_hmac_secret?:         string;
   paymob_currency?:            string;
   paymob_test_mode?:           boolean;
+  privacy_policy?: string;
+  terms_conditions?: string;
   // --- Appearance & Hero Settings ---
   logo_url?:            string;
   favicon_url?:         string;

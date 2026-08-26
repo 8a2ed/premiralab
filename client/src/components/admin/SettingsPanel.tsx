@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers } from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers , FileText} from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -119,6 +119,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
         <TabBtn label="طرق الدفع والبنوك" icon={<CreditCard size={16} />} active={activeTab === 'payments'} onClick={() => setActiveTab('payments')} />
         <TabBtn label="الربط والإشعارات" icon={<Bot size={16} />} active={activeTab === 'integrations'} onClick={() => setActiveTab('integrations')} />
         <TabBtn label="الظهور والروابط (SEO)" icon={<Sparkles size={16} />} active={activeTab === 'seo'} onClick={() => setActiveTab('seo')} />
+        <TabBtn label="الصفحات القانونية" icon={<FileText size={16} />} active={activeTab === 'legal'} onClick={() => setActiveTab('legal')} />
       </div>
 
       {/* TAB 1: Hero & Appearance */}
@@ -623,6 +624,52 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
               <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                 <button className="btn btn--primary" onClick={save} disabled={saving}>
                   {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات الروابط'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'legal' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="animation-fade-in">
+          <div className="card" style={{ border: '1px solid var(--accent-dim)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <FileText size={22} style={{ color: 'var(--accent)' }} />
+              <h3 className="card-title" style={{ margin: 0 }}>سياسة الخصوصية والشروط والأحكام</h3>
+            </div>
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+              اكتب نصوص سياسة الخصوصية والشروط والأحكام لتظهر للعملاء في أسفل الموقع. يمكنك استخدام تنسيقات بسيطة عن طريق ترك مسافات (Enter) لتنسيق الفقرات.
+            </p>
+            
+            <div className="form-stack">
+              <div className="form-field">
+                <label className="form-label">سياسة الخصوصية (Privacy Policy)</label>
+                <textarea
+                  className="input"
+                  rows={8}
+                  value={s.privacy_policy ?? ''}
+                  onChange={e => setS(x => ({ ...x, privacy_policy: e.target.value }))}
+                  placeholder="نص سياسة الخصوصية..."
+                  style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">الشروط والأحكام (Terms & Conditions)</label>
+                <textarea
+                  className="input"
+                  rows={8}
+                  value={s.terms_conditions ?? ''}
+                  onChange={e => setS(x => ({ ...x, terms_conditions: e.target.value }))}
+                  placeholder="نص الشروط والأحكام..."
+                  style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button className="btn btn--primary" onClick={save} disabled={saving}>
+                  {saving ? 'جارٍ الحفظ...' : 'حفظ النصوص'}
                 </button>
               </div>
             </div>
