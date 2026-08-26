@@ -513,21 +513,20 @@ export function Home({ data, onToast, onClientClick }: HomeProps) {
                 <p className="cta-banner-desc">
                   {data.site?.cta_desc || 'دعنا نبتكر لك هوية وتجربة رقمية فريدة تُميّزك عن منافسيك وتحقق أهدافك بأعلى احترافية.'}
                 </p>
-                <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
-                  <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
-                    {data.site?.cta_btn_primary || 'ابدأ مشروعك الآن'} <ArrowLeft size={18} />
-                  </button>
+                <div className="cta-banner-actions">
                   {data.site?.whatsapp && (
                     <a 
                       href={waLink(data.site.whatsapp, `مرحباً ${data.site.brand || 'PREMIRALAB'}، أريد استشارة سريعة حول مشروعي.`)} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="btn btn--lg btn--outline"
-                      style={{ borderColor: '#25D366', color: '#25D366' }}
+                      className="btn btn--lg cta-btn-whatsapp"
                     >
-                      💬 {data.site?.cta_btn_wa || 'استشارة عبر واتساب'}
+                      التواصل عبر واتساب 💬
                     </a>
                   )}
+                  <button className="btn btn--primary btn--lg" onClick={() => openOrder()}>
+                    {data.site?.cta_btn_primary || 'ابدأ مشروعك الآن'} <ArrowLeft size={18} />
+                  </button>
                 </div>
               </div>
             </div>

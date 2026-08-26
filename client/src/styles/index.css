@@ -555,49 +555,87 @@ img {
 
 /* ─── High Converting CTA Banner ───────────────────────────────────────────── */
 .cta-banner-section {
-  padding: 80px 0;
+  padding: 100px 0;
   position: relative;
+  overflow: hidden;
 }
 .cta-banner {
   position: relative;
-  padding: 60px 40px;
+  padding: 70px 40px;
   text-align: center;
-  border-radius: 28px;
+  border-radius: 32px;
   overflow: hidden;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 85%, var(--accent) 15%), var(--bg-3));
-  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--accent) 30%);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 0 50px var(--accent-dim);
+  background: linear-gradient(145deg, var(--bg-card), var(--bg-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 2px 20px rgba(255,255,255,0.02);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
 }
-.cta-banner-glow {
+.cta-banner:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 2px 30px rgba(255,255,255,0.03);
+}
+
+/* Animated glowing orbs behind the content */
+.cta-banner::before, .cta-banner::after {
+  content: '';
   position: absolute;
-  top: -50%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 200%;
-  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
-  filter: blur(60px);
-  pointer-events: none;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(80px);
   z-index: 0;
+  opacity: 0.5;
+  animation: float-glow 8s ease-in-out infinite alternate;
 }
+.cta-banner::before {
+  background: var(--accent);
+  top: -100px;
+  left: -100px;
+}
+.cta-banner::after {
+  background: #25D366; /* WhatsApp Green hue to balance */
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -4s;
+  opacity: 0.15;
+}
+
+@keyframes float-glow {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 40px) scale(1.1); }
+}
+
+.cta-banner-glow {
+  display: none; /* Replaced by the pseudo-elements above */
+}
+
 .cta-banner-content {
   position: relative;
   z-index: 1;
   max-width: 680px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .cta-banner-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
+  gap: 8px;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 999px;
   color: var(--accent-text);
   font-size: 13px;
   font-weight: 800;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+  animation: pulse-badge 3s infinite ease-in-out;
+  backdrop-filter: blur(10px);
+}
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent); transform: translateY(0); }
+  50% { box-shadow: 0 0 20px 0 color-mix(in srgb, var(--accent) 20%, transparent); transform: translateY(-3px); }
 }
 .cta-banner-title {
   font-size: clamp(26px, 4vw, 40px);
@@ -1408,4 +1446,44 @@ img {
     overflow-y: auto;
     padding-right: 8px; /* Scrollbar breathing room */
   }
+}
+
+
+.cta-banner-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.cta-banner-actions .btn {
+  padding: 14px 28px;
+  font-size: 15px;
+  border-radius: 99px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  justify-content: center;
+}
+.cta-btn-whatsapp {
+  background: rgba(37, 211, 102, 0.08) !important;
+  border: 1px solid rgba(37, 211, 102, 0.3) !important;
+  color: #25D366 !important;
+  transition: all 0.3s ease !important;
+}
+.cta-btn-whatsapp:hover {
+  background: #25D366 !important;
+  border-color: #25D366 !important;
+  color: #fff !important;
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3) !important;
+  transform: translateY(-2px);
+}
+.cta-banner .btn--primary {
+  transition: all 0.3s ease;
+}
+.cta-banner .btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px var(--accent-glow);
 }
