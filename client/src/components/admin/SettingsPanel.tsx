@@ -569,6 +569,66 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
           </div>
         </div>
       )}
+
+      {activeTab === 'seo' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="animation-fade-in">
+          <div className="card" style={{ border: '1px solid var(--accent-dim)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <Sparkles size={22} style={{ color: 'var(--accent)' }} />
+              <h3 className="card-title" style={{ margin: 0 }}>إعدادات الظهور ومعاينة الروابط (SEO & Open Graph)</h3>
+            </div>
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+              تحكم في كيف يظهر موقعك عند مشاركة الرابط على الواتساب، فيسبوك، ماسنجر أو تيليجرام.
+            </p>
+            
+            <div className="form-stack">
+              <Field
+                label="عنوان معاينة الرابط (OG Title)"
+                value={s.seo_title ?? ''}
+                onChange={v => setS(x => ({ ...x, seo_title: v }))}
+                placeholder="مثال: PREMIRALAB | منصة تصميم احترافية"
+              />
+              
+              <div className="form-field">
+                <label className="form-label">وصف معاينة الرابط (OG Description)</label>
+                <textarea
+                  className="input"
+                  rows={3}
+                  value={s.seo_description ?? ''}
+                  onChange={e => setS(x => ({ ...x, seo_description: e.target.value }))}
+                  placeholder="وصف مختصر يظهر تحت العنوان عند مشاركة الرابط"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">صورة معاينة الرابط (OG Image URL)</label>
+                <input
+                  className="input"
+                  value={s.seo_image ?? ''}
+                  onChange={e => setS(x => ({ ...x, seo_image: e.target.value }))}
+                  placeholder="مسار أو رابط الصورة (مثال: /og-image.png أو رابط مباشر)"
+                  dir="ltr"
+                />
+                <span className="muted" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
+                  يُفضل أن تكون الصورة أفقية (نسبة 1.91:1) بحجم لا يقل عن 1200×630 بيكسل لضمان أفضل ظهور.
+                </span>
+                
+                {s.seo_image && (
+                  <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', maxWidth: 400 }}>
+                    <img src={s.seo_image} alt="OG Preview" style={{ width: '100%', display: 'block' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button className="btn btn--primary" onClick={save} disabled={saving}>
+                  {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات الروابط'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
