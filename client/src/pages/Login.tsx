@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff, Lock, User, LogIn, ShieldCheck } from 'lucide-react';
 import { api } from '../lib/api.js';
 
 interface LoginProps {
@@ -7,59 +8,114 @@ interface LoginProps {
 }
 
 export function Login({ onSuccess, onToast }: LoginProps) {
-  const [u,       setU]       = useState('');
-  const [p,       setP]       = useState('');
-  const [loading, setLoading] = useState(false);
+  const [u,        setU]        = useState('');
+  const [p,        setP]        = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [loading,  setLoading]  = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!u.trim() || !p.trim()) {
+      onToast('يرجى إدخال اسم المستخدم وكلمة المرور', 'error');
+      return;
+    }
     setLoading(true);
     try {
-      await api.login(u, p);
+      await api.login(u.trim(), p);
       onSuccess();
     } catch (err) {
-      onToast((err as Error).message, 'error');
+      onToast((err as Error).message || 'فشل تسجيل الدخول، تحقق من البيانات وأعد المحاولة', 'error');
     } finally { setLoading(false); }
   };
 
   return (
-    <div className="modal-backdrop" style={{ position: 'fixed', zIndex: 200 }}>
-      <form className="modal login-form" onSubmit={submit} aria-label="نموذج تسجيل دخول الإدارة">
-        <div className="login-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/logo.png" alt="PREMIRALAB" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12, objectFit: 'contain' }} />
-          <h2>تسجيل دخول الإدارة</h2>
-          <p className="muted">PREMIRALAB — المصادقة تتم على الخادم باستخدام جلسة آمنة.</p>
+    <div className="login-page-bg">
+      {/* Ambient Background Blobs */}
+      <div className="login-blob login-blob--1" />
+      <div className="login-blob login-blob--2" />
+
+      <form className="login-card" onSubmit={submit} aria-label="نموذج تسجيل دخول لوحة التحكم">
+
+        {/* Header */}
+        <div className="login-card__header">
+          <div className="login-logo-wrap">
+            <img src="/logo.png" alt="PREMIRALAB" className="login-logo" />
+          </div>
+          <h1 className="login-title">لوحة التحكم</h1>
+          <p className="login-subtitle">
+            مرحباً بك مجدداً، أدخل بياناتك للمتابعة
+          </p>
         </div>
-        <div className="form-stack">
-          <div className="form-field">
-            <label className="form-label" htmlFor="login-user">اسم المستخدم</label>
-            <input
-              id="login-user"
-              className="input"
-              placeholder="admin"
-              value={u}
-              onChange={e => setU(e.target.value)}
-              autoComplete="username"
-              required
-            />
+
+        {/* Fields */}
+        <div className="login-fields">
+
+          {/* Username */}
+          <div className="login-field">
+            <label className="login-label" htmlFor="login-user">
+              <User size={13} />
+              اسم المستخدم
+            </label>
+            <div className="login-input-wrap">
+              <input
+                id="login-user"
+                className="login-input"
+                placeholder="admin"
+                value={u}
+                onChange={e => setU(e.target.value)}
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                required
+              />
+            </div>
           </div>
-          <div className="form-field">
-            <label className="form-label" htmlFor="login-pass">كلمة المرور</label>
-            <input
-              id="login-pass"
-              className="input"
-              type="password"
-              placeholder="••••••••••••"
-              value={p}
-              onChange={e => setP(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
+
+          {/* Password */}
+          <div className="login-field">
+            <label className="login-label" htmlFor="login-pass">
+              <Lock size={13} />
+              كلمة المرور
+            </label>
+            <div className="login-input-wrap">
+              <input
+                id="login-pass"
+                className="login-input"
+                type={showPass ? 'text' : 'password'}
+                placeholder="••••••••••••"
+                value={p}
+                onChange={e => setP(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="login-eye-btn"
+                onClick={() => setShowPass(s => !s)}
+                aria-label={showPass ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                tabIndex={-1}
+              >
+                {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </div>
-          <button className="btn btn--primary" type="submit" disabled={loading}>
-            {loading ? 'جارٍ التحقق...' : 'دخول آمن'}
+
+          {/* Submit */}
+          <button className="login-btn" type="submit" disabled={loading}>
+            {loading
+              ? <><span className="login-spinner" />جاري التحقق...</>
+              : <><LogIn size={18} />دخول الآن</>
+            }
           </button>
+
         </div>
+
+        {/* Footer Note */}
+        <div className="login-card__footer">
+          <ShieldCheck size={14} />
+          <span>للوصول المصرّح به فقط — PREMIRALAB</span>
+        </div>
+
       </form>
     </div>
   );
