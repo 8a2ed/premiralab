@@ -97,7 +97,7 @@ export function Footer({ site }: FooterProps) {
           onClose={() => setLegalView(null)} 
           size="lg"
         >
-          <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'var(--text-muted)' }}>
+          <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.9, color: 'var(--text-muted)', textAlign: 'start' }}>
             {legalView === 'privacy' ? site.privacy_policy : site.terms_conditions}
           </div>
         </Modal>

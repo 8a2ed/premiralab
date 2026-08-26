@@ -693,12 +693,12 @@ img {
 
 /* ─── Modal ────────────────────────────────────────────────────────────────── */
 .modal-backdrop { position: fixed; inset: 0; background: #000b; display: grid; place-items: center; z-index: 100; padding: 20px }
-.modal { width: min(640px, 100%); background: color-mix(in srgb, var(--bg) 97%, white); border: 1px solid var(--border); border-radius: var(--radius); max-height: 90vh; overflow-y: auto }
+.modal { width: min(640px, 100%); background: color-mix(in srgb, var(--bg) 97%, white); border: 1px solid var(--border); border-radius: var(--radius); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
 .modal--sm { width: min(420px, 100%) }
 .modal--lg { width: min(760px, 100%) }
-.modal__header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border-2) }
+.modal__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--border-2); flex-shrink: 0; }
 .modal__title { font-size: 18px; font-weight: 800 }
-.modal__body { padding: 24px }
+.modal__body { padding: 24px; overflow-y: auto; flex: 1; text-align: start; }
 
 /* ─── Toast ────────────────────────────────────────────────────────────────── */
 .toast { position: fixed; bottom: 24px; left: 24px; z-index: 300; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); min-width: 260px; animation: toast-in .25s ease }
@@ -1370,12 +1370,15 @@ img {
     align-items: flex-end !important;
   }
   .modal {
-    border-radius: 22px 22px 14px 14px !important;
+    border-radius: 22px 22px 0 0 !important; /* Flat bottom for mobile bottom sheet */
     max-height: 92vh !important;
     width: 100% !important;
     margin-bottom: 0 !important;
     border: 1px solid rgba(192, 132, 252, 0.25) !important;
     box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.7) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
   .modal__header {
     padding: 14px 18px !important;
