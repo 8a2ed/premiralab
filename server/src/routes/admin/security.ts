@@ -36,4 +36,16 @@ router.patch('/password', auth, admin, async (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+router.post('/backup-now', auth, admin, async (req: AuthRequest, res, next) => {
+  try {
+    const { runBackup } = await import('../../services/backup.js');
+    await runBackup();
+    audit(req, 'manual_backup', 'system', null);
+    res.json({ ok: true, message: 'تم إرسال النسخة الاحتياطية إلى تيليجرام بنجاح.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

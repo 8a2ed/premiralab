@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers , FileText} from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers, FileText, ShieldAlert, Database, Lock } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -58,7 +58,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
   const [saving,    setSaving]    = useState(false);
   const [testingTg, setTestingTg] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'metrics' | 'sections' | 'general' | 'payments' | 'integrations'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'metrics' | 'sections' | 'general' | 'payments' | 'integrations' | 'seo' | 'legal' | 'security'>('content');
 
   useEffect(() => {
     api.admin.settings().then(data => {
@@ -120,6 +120,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
         <TabBtn label="الربط والإشعارات" icon={<Bot size={16} />} active={activeTab === 'integrations'} onClick={() => setActiveTab('integrations')} />
         <TabBtn label="الظهور والروابط (SEO)" icon={<Sparkles size={16} />} active={activeTab === 'seo'} onClick={() => setActiveTab('seo')} />
         <TabBtn label="الصفحات القانونية" icon={<FileText size={16} />} active={activeTab === 'legal'} onClick={() => setActiveTab('legal')} />
+        <TabBtn label="الأمان والنسخ الاحتياطي" icon={<ShieldAlert size={16} />} active={activeTab === 'security'} onClick={() => setActiveTab('security')} />
       </div>
 
       {/* TAB 1: Hero & Appearance */}
@@ -672,6 +673,84 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
                   {saving ? 'جارٍ الحفظ...' : 'حفظ النصوص'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 9: Security & Backups */}
+      {activeTab === 'security' && (
+        <div className="animation-fade-in" style={{ display: 'grid', gap: 24 }}>
+          <div className="card">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 0 }}>
+              <Database size={18} style={{ color: 'var(--primary)' }} /> النسخ الاحتياطي (النسخ السحابي لتيليجرام)
+            </h3>
+            <p className="muted" style={{ fontSize: 13, lineHeight: 1.6 }}>
+              يقوم النظام تلقائياً بأخذ نسخة احتياطية من قاعدة البيانات كل 12 ساعة وإرسالها إلى حساب تيليجرام المرتبط.
+              يمكنك أيضاً طلب نسخة احتياطية فورية الآن. هذه الميزة تحمي بياناتك من الضياع في حال حدوث أي خطأ في الخوادم.
+            </p>
+            <div style={{ marginTop: 20 }}>
+              <button
+                className="btn btn--outline"
+                style={{ borderColor: 'var(--primary)', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/admin/security/backup-now', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'فشل النسخ الاحتياطي');
+                    onToast('تم إرسال النسخة الاحتياطية بنجاح إلى تيليجرام 📦', 'success');
+                  } catch (err: any) {
+                    onToast(err.message, 'error');
+                  }
+                }}
+              >
+                <Database size={16} /> أخذ نسخة احتياطية الآن (Backup Now)
+              </button>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 0 }}>
+              <Lock size={18} style={{ color: '#ef4444' }} /> تغيير كلمة مرور الأدمن
+            </h3>
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>
+              تغيير كلمة المرور الخاصة بحساب الإدارة الحالي. يرجى اختيار كلمة مرور قوية (12 حرفاً على الأقل).
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 400 }}>
+              <div className="form-field">
+                <label className="form-label">كلمة المرور الحالية</label>
+                <input type="password" id="sec-curr" className="input" placeholder="••••••••••••" />
+              </div>
+              <div className="form-field">
+                <label className="form-label">كلمة المرور الجديدة</label>
+                <input type="password" id="sec-new" className="input" placeholder="••••••••••••" />
+              </div>
+              <button
+                className="btn btn--primary"
+                style={{ background: '#ef4444', borderColor: '#ef4444', marginTop: 8 }}
+                onClick={async () => {
+                  const curr = (document.getElementById('sec-curr') as HTMLInputElement).value;
+                  const newP = (document.getElementById('sec-new') as HTMLInputElement).value;
+                  if (!curr || !newP) return onToast('يرجى ملء الحقول', 'error');
+                  if (newP.length < 12) return onToast('كلمة المرور يجب أن تكون 12 حرفاً على الأقل', 'error');
+                  try {
+                    const res = await fetch('/api/admin/security/password', {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ currentPassword: curr, newPassword: newP })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    onToast('تم تغيير كلمة المرور بنجاح!', 'success');
+                    (document.getElementById('sec-curr') as HTMLInputElement).value = '';
+                    (document.getElementById('sec-new') as HTMLInputElement).value = '';
+                  } catch (err: any) {
+                    onToast(err.message, 'error');
+                  }
+                }}
+              >
+                تحديث كلمة المرور
+              </button>
             </div>
           </div>
         </div>

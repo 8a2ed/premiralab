@@ -3,42 +3,45 @@ import path from 'node:path';
 import { db, DATA_DIR } from '../db.js';
 
 export function startBackupJob() {
+  // Backup immediately on startup (just in case), then every 12 hours
+  setTimeout(runBackup, 10000);
+  setInterval(runBackup, 12 * 60 * 60 * 1000);
+}
+
+export async function runBackup() {
   const BACKUP_DIR = path.join(DATA_DIR, 'backups');
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
 
-  // Backup immediately on startup (just in case), then every 12 hours
-  setTimeout(runBackup, 10000);
-  setInterval(runBackup, 12 * 60 * 60 * 1000);
-
-  function runBackup() {
+  return new Promise<void>((resolve, reject) => {
     try {
       const date = new Date().toISOString().replace(/[:.]/g, '-');
       const backupPath = path.join(BACKUP_DIR, `studio-${date}.db`);
       
       console.log(`[Backup] Starting hot database backup...`);
       
-      // SQLite Backup API allows safe hot backups without locking the DB
       db.backup(backupPath)
         .then(async () => {
           console.log(`[Backup] Successfully created backup: ${backupPath}`);
           cleanOldBackups(BACKUP_DIR);
           
-          // Send to Telegram as an off-site cloud backup!
           const { sendTelegramDocument } = await import('./telegram.js');
           await sendTelegramDocument(
             backupPath, 
             `💾 <b>نسخة احتياطية لقاعدة البيانات</b>\n<b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}\nتم إنشاء النسخة بنجاح.`
           ).catch(console.error);
+          resolve();
         })
         .catch((err: any) => {
           console.error('[Backup] Failed to create backup:', err);
+          reject(err);
         });
     } catch (error) {
       console.error('[Backup] Critical error during backup routine:', error);
+      reject(error);
     }
-  }
+  });
 }
 
 function cleanOldBackups(backupDir: string) {
