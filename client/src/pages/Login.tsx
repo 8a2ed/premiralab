@@ -98,6 +98,28 @@ export function Login({ onSuccess, onToast }: LoginProps) {
                 {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            
+            {/* Forgot Password Link (WhatsApp Reset) */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+              <a 
+                href="https://wa.me/201069572748?text=مرحباً، أواجه مشكلة في تسجيل الدخول وأحتاج إلى استعادة كلمة المرور الخاصة بي."
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: 12,
+                  color: 'var(--primary)',
+                  textDecoration: 'none',
+                  fontWeight: 500,
+                  transition: 'color 0.2s',
+                  padding: '2px 4px',
+                  borderRadius: 4
+                }}
+                onMouseOver={e => e.currentTarget.style.color = 'var(--primary-hover)'}
+                onMouseOut={e => e.currentTarget.style.color = 'var(--primary)'}
+              >
+                نسيت كلمة المرور؟
+              </a>
+            </div>
           </div>
 
           {/* Submit */}
