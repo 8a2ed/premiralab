@@ -27,7 +27,9 @@ function isExpired(expires_at: string | null): boolean {
 }
 
 function isExhausted(c: PromoCode): boolean {
-  return c.max_uses != null && c.current_uses >= c.max_uses;
+  // Guard: max_uses must be a positive number (> 0).
+  // If the field was cleared and saved as 0, treat it as unlimited (not exhausted).
+  return c.max_uses != null && c.max_uses > 0 && c.current_uses >= c.max_uses;
 }
 
 function getCodeStatus(c: PromoCode): 'active' | 'inactive' | 'expired' | 'exhausted' {
@@ -149,6 +151,8 @@ export function PromoCodes({ onToast }: PromoCodesProps) {
       const payload = {
         ...editing,
         code: editing.code.trim().toUpperCase().replace(/\s+/g, ''),
+        // Normalize: if max_uses was cleared to 0 or empty, send null (truly unlimited)
+        max_uses: editing.max_uses && editing.max_uses > 0 ? editing.max_uses : null,
       };
       if (editing.id) {
         const updated = await api.admin.promo.update(editing.id, payload);
