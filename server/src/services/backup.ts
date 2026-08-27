@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+// @ts-ignore
 import archiver from 'archiver';
 import { db, DATA_DIR, UPLOAD_DIR } from '../db.js';
 
