@@ -46,7 +46,7 @@ export async function runBackup() {
             resolve();
           });
 
-          archive.on('error', (err) => {
+          archive.on('error', (err: any) => {
             console.error('[Backup] Archive Error:', err);
             reject(err);
           });
