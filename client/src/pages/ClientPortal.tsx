@@ -802,7 +802,15 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                   <div className="form-field">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                       <label className="form-label" style={{ fontSize: 12, fontWeight: 700, margin: 0 }}>كلمة المرور</label>
-                      <button type="button" className="link" onClick={() => setView('forgot')} style={{ fontSize: 12 }}>نسيت كلمة المرور؟</button>
+                      <a 
+                        href="https://wa.me/201069572748?text=مرحباً، أواجه مشكلة في تسجيل الدخول لبوابة العملاء وأحتاج إلى استعادة كلمة المرور الخاصة بي."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="link" 
+                        style={{ fontSize: 12, textDecoration: 'none' }}
+                      >
+                        نسيت كلمة المرور؟
+                      </a>
                     </div>
                     <div style={{ position: 'relative' }}>
                       <Lock size={17} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
