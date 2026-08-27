@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-// @ts-ignore
-import archiver from 'archiver';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const archiver = require('archiver');
 import { db, DATA_DIR, UPLOAD_DIR } from '../db.js';
 
 export function startBackupJob() {
