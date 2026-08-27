@@ -1,8 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const archiver = require('archiver');
+import { ZipArchive } from 'archiver';
 import { db, DATA_DIR, UPLOAD_DIR } from '../db.js';
 
 export function startBackupJob() {
@@ -31,7 +29,7 @@ export async function runBackup() {
           console.log(`[Backup] Zipping database and uploads directory...`);
           
           const output = fs.createWriteStream(zipBackupPath);
-          const archive = archiver('zip', { zlib: { level: 9 } });
+          const archive = new ZipArchive({ zlib: { level: 9 } });
 
           output.on('close', async () => {
             console.log(`[Backup] Zip archive created: ${archive.pointer()} bytes`);
