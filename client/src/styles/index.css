@@ -2126,12 +2126,13 @@ body::before {
 
 /* ─── Premium Login Page ──────────────────────────────────────────────────── */
 .login-page-bg {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  position: relative;
   overflow: hidden;
   padding: 24px 16px;
 }

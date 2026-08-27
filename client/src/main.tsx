@@ -148,7 +148,8 @@ function App() {
 
   const enterAdmin = async () => {
     try {
-      await api.me();
+      // Use retries=1 so we don't wait 9s before showing login
+      await api.me(1);
       setLoginOpen(false);
       setView('admin');
     } catch {

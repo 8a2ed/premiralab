@@ -57,7 +57,7 @@ async function request<T>(url: string, options: RequestInit = {}, retries = 3): 
 
 export const api = {
   public: () => request<PublicData>('/api/public'),
-  me:     () => request<{ user: { id: number; username: string; role: string } }>('/api/auth/me'),
+  me:     (retries = 1) => request<{ user: { id: number; username: string; role: string } }>('/api/auth/me', {}, retries),
 
   login: (username: string, password: string) =>
     request<{ user: { id: number; username: string; role: string } }>(
