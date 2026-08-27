@@ -112,8 +112,22 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
+    // Generate correct tracker URL, not the admin URL
+    const trackerUrl = `${window.location.origin}/?track=${encodeURIComponent(orderNo)}`;
+    navigator.clipboard.writeText(trackerUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }).catch(() => {
+      // Fallback for browsers that block clipboard in non-HTTPS
+      const ta = document.createElement('textarea');
+      ta.value = trackerUrl;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });

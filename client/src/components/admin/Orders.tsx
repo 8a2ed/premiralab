@@ -584,15 +584,20 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
   const [budget,  setBudget]  = useState(String(order.budget || 0));
   const [paid,    setPaid]    = useState(String(order.paid_amount || 0));
   const [loading, setLoading] = useState(false);
+  const [err,     setErr]     = useState('');
 
   const budgetNum  = Math.max(0, Number(budget) || 0);
   const paidNum    = Math.max(0, Number(paid) || 0);
   const remaining  = Math.max(0, budgetNum - paidNum);
+  const paidPct    = budgetNum > 0 ? Math.min(100, Math.round((paidNum / budgetNum) * 100)) : 0;
   const isOverpaid = paidNum > budgetNum && budgetNum > 0;
+  const isFullyPaid = budgetNum > 0 && paidNum >= budgetNum;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isOverpaid) { alert('المبلغ المسدد لا يمكن أن يتجاوز الميزانية الإجمالية'); return; }
+    setErr('');
+    if (isOverpaid) { setErr('المبلغ المسدد لا يمكن أن يتجاوز الميزانية الإجمالية'); return; }
+    if (budgetNum <= 0) { setErr('يرجى إدخال قيمة صحيحة للميزانية'); return; }
     setLoading(true);
     try {
       const b = budgetNum;
@@ -601,7 +606,7 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
       onSaved(order.id, b, p);
       onClose();
     } catch (e) {
-      alert((e as Error).message);
+      setErr((e as Error).message || 'حدث خطأ، أعد المحاولة');
     } finally {
       setLoading(false);
     }
@@ -633,11 +638,29 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
           />
         </div>
 
-        <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span className="muted">المتبقي للسداد:</span>
-          <strong style={{ color: remaining > 0 ? 'var(--accent)' : '#22c55e', fontSize: 15 }}>
-            {remaining > 0 ? money(remaining) : '0 ج.م ✔ مكتمل'}
-          </strong>
+        {err && (
+          <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '10px 14px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(239,68,68,0.2)' }}>
+            {err}
+          </div>
+        )}
+
+        <div style={{ background: 'var(--bg-3)', padding: 14, borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="muted" style={{ fontSize: 13 }}>المتبقي للسداد:</span>
+            <strong style={{ color: remaining > 0 ? 'var(--danger)' : '#22c55e', fontSize: 15 }}>
+              {remaining > 0 ? money(remaining) : '✔ مكتمل السداد'}
+            </strong>
+          </div>
+          {budgetNum > 0 && (
+            <div>
+              <div style={{ height: 6, background: 'var(--border)', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${paidPct}%`, background: isFullyPaid ? '#22c55e' : 'var(--accent)', borderRadius: 999, transition: 'width 0.4s ease' }} />
+              </div>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block', textAlign: 'left' }}>
+                {paidPct}% مدفوع
+              </span>
+            </div>
+          )}
         </div>
 
         {order.payment_receipt && (

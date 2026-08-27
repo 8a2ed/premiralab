@@ -647,6 +647,17 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
     setF(prev => ({ ...prev, ...updates }));
   };
 
+  // Computed price summary for Step 4
+  const selectedPackage = packages.find(p => p.id === Number(f.packageId));
+  const selectedService  = services.find(s => s.id === Number(f.serviceId));
+  const basePrice = selectedPackage?.price || 0;
+  const discountVal = promoResult?.success && promoResult.discount
+    ? (promoResult.type === 'percentage'
+        ? Math.round(basePrice * promoResult.discount / 100)
+        : promoResult.discount)
+    : 0;
+  const finalPrice = Math.max(0, basePrice - discountVal);
+
   const handleCheckPromo = async () => {
     if (!f.promoCode) return;
     setCheckingPromo(true);
@@ -684,12 +695,13 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       
       // Fire Analytics Conversion Events
       try {
-        const val = f.budget ? Number(f.budget) : 0;
+        const val = finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0);
         if (typeof (window as any).gtag === 'function') {
-          (window as any).gtag('event', 'generate_lead', { value: val, currency: 'EGP' });
+          (window as any).gtag('event', 'generate_lead', { value: val, currency: 'EGP', send_to: 'default' });
+          (window as any).gtag('event', 'purchase', { value: val, currency: 'EGP', transaction_id: res.orderNo });
         }
         if (typeof (window as any).fbq === 'function') {
-          (window as any).fbq('track', 'Lead', { value: val, currency: 'EGP' });
+          (window as any).fbq('track', 'Lead', { value: val, currency: 'EGP', order_no: res.orderNo });
         }
       } catch (e) { /* ignore tracking errors */ }
       
@@ -749,9 +761,10 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         return;
       }
       
-      const phoneRegex = /^01\d{9}$/;
-      if (!phoneRegex.test(f.phone.trim())) {
-        setError('يرجى إدخال رقم هاتف صحيح مكون من 11 رقم (مثال: 01012345678)');
+      const cleanPhone = f.phone.trim().replace(/\s+/g, '');
+      const phoneRegex = /^(\+?\d{7,15}|01\d{9})$/;
+      if (!phoneRegex.test(cleanPhone)) {
+        setError('يرجى إدخال رقم هاتف صحيح (مصري: 01012345678 أو دولي: +966...)');
         return;
       }
       
@@ -917,14 +930,71 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                 <label className="form-label">لديك كود خصم؟ (اختياري)</label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <input className="input" style={{ flex: 1, padding: '10px 14px' }} placeholder="أدخل الكود هنا" value={f.promoCode} onChange={e => { updateF({ promoCode: e.target.value }); setPromoResult(null); }} />
-                  <button type="button" className="btn btn--outline" onClick={handleCheckPromo} disabled={!f.promoCode || checkingPromo}>
-                    {checkingPromo ? 'جاري التحقق...' : 'تطبيق'}
+                  <input
+                    className="input"
+                    style={{ flex: 1, padding: '10px 14px' }}
+                    placeholder="أدخل الكود هنا"
+                    value={f.promoCode}
+                    onChange={e => { updateF({ promoCode: e.target.value.toUpperCase() }); setPromoResult(null); }}
+                    onKeyDown={e => e.key === 'Enter' && handleCheckPromo()}
+                    disabled={checkingPromo}
+                  />
+                  <button
+                    type="button"
+                    className={`btn ${promoResult?.success ? 'btn--success' : 'btn--outline'}`}
+                    onClick={handleCheckPromo}
+                    disabled={!f.promoCode || checkingPromo}
+                  >
+                    {checkingPromo ? '...' : promoResult?.success ? '✔ مطبّق' : 'تطبيق'}
                   </button>
                 </div>
-                {promoResult?.success && <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>✔️ {promoResult.success}</div>}
-                {promoResult?.error && <div style={{ color: 'var(--danger)', fontSize: 13, marginTop: 8, fontWeight: 500 }}>❌ {promoResult.error}</div>}
+                {promoResult?.success && (
+                  <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 600, display:'flex', alignItems:'center', gap:6 }}>
+                    <CheckCircle2 size={14} /> {promoResult.success}
+                  </div>
+                )}
+                {promoResult?.error && (
+                  <div style={{ color: 'var(--danger)', fontSize: 13, marginTop: 8, fontWeight: 600, display:'flex', alignItems:'center', gap:6 }}>
+                    <AlertCircle size={14} /> {promoResult.error}
+                  </div>
+                )}
               </div>
+
+              {/* Price Summary */}
+              {(basePrice > 0 || (f.budget && !f.packageId)) && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  <strong style={{ fontSize: 13, display: 'block', marginBottom: 10 }}>ملخص التسعير</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {basePrice > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                        <span className="muted">سعر الباقة</span>
+                        <span>{money(basePrice)}</span>
+                      </div>
+                    )}
+                    {discountVal > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--success)' }}>
+                        <span>خصم الكوبون ({f.promoCode})</span>
+                        <strong>-{money(discountVal)}</strong>
+                      </div>
+                    )}
+                    {f.budget && !f.packageId && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                        <span className="muted">الميزانية المقترحة</span>
+                        <span>{money(Number(f.budget))}</span>
+                      </div>
+                    )}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      paddingTop: 8, borderTop: '1px solid var(--border)',
+                      fontWeight: 800, fontSize: 16,
+                      color: 'var(--accent)'
+                    }}>
+                      <span>الإجمالي المتوقع</span>
+                      <span>{basePrice > 0 ? money(finalPrice) : (f.budget ? money(Number(f.budget)) : 'يُحدد لاحقاً')}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div style={{ marginTop: 24, padding: '16px', background: 'var(--accent-dim)', borderRadius: 12, border: '1px dashed var(--accent)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
