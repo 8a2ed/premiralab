@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { db, DATA_DIR } from '../db.js';
+import archiver from 'archiver';
+import { db, DATA_DIR, UPLOAD_DIR } from '../db.js';
 
 export function startBackupJob() {
   // Backup immediately on startup (just in case), then every 12 hours
@@ -17,24 +18,53 @@ export async function runBackup() {
   return new Promise<void>((resolve, reject) => {
     try {
       const date = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupPath = path.join(BACKUP_DIR, `studio-${date}.db`);
+      const dbBackupPath = path.join(BACKUP_DIR, `studio-${date}.db`);
+      const zipBackupPath = path.join(BACKUP_DIR, `studio-full-${date}.zip`);
       
       console.log(`[Backup] Starting hot database backup...`);
       
-      db.backup(backupPath)
-        .then(async () => {
-          console.log(`[Backup] Successfully created backup: ${backupPath}`);
-          cleanOldBackups(BACKUP_DIR);
+      db.backup(dbBackupPath)
+        .then(() => {
+          console.log(`[Backup] Database backed up to: ${dbBackupPath}`);
+          console.log(`[Backup] Zipping database and uploads directory...`);
           
-          const { sendTelegramDocument } = await import('./telegram.js');
-          await sendTelegramDocument(
-            backupPath, 
-            `💾 <b>نسخة احتياطية لقاعدة البيانات</b>\n<b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}\nتم إنشاء النسخة بنجاح.`
-          ).catch(console.error);
-          resolve();
+          const output = fs.createWriteStream(zipBackupPath);
+          const archive = archiver('zip', { zlib: { level: 9 } });
+
+          output.on('close', async () => {
+            console.log(`[Backup] Zip archive created: ${archive.pointer()} bytes`);
+            cleanOldBackups(BACKUP_DIR);
+            
+            const { sendTelegramDocument } = await import('./telegram.js');
+            await sendTelegramDocument(
+              zipBackupPath, 
+              `📦 <b>نسخة احتياطية شاملة (قاعدة بيانات + ملفات)</b>\n<b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}\n<b>الحجم:</b> ${(archive.pointer() / 1024 / 1024).toFixed(2)} MB`
+            ).catch(console.error);
+
+            // Cleanup the temporary .db file as it's inside the zip now
+            try { fs.unlinkSync(dbBackupPath); } catch (e) {}
+            resolve();
+          });
+
+          archive.on('error', (err) => {
+            console.error('[Backup] Archive Error:', err);
+            reject(err);
+          });
+          
+          archive.pipe(output);
+          
+          // Append the DB file
+          archive.file(dbBackupPath, { name: 'studio.db' });
+          
+          // Append the Uploads folder
+          if (fs.existsSync(UPLOAD_DIR)) {
+            archive.directory(UPLOAD_DIR, 'uploads');
+          }
+
+          archive.finalize();
         })
         .catch((err: any) => {
-          console.error('[Backup] Failed to create backup:', err);
+          console.error('[Backup] Failed to create database backup:', err);
           reject(err);
         });
     } catch (error) {
@@ -45,10 +75,9 @@ export async function runBackup() {
 }
 
 function cleanOldBackups(backupDir: string) {
-  // Keep only the last 14 backups (7 days worth if running twice a day)
   try {
     const files = fs.readdirSync(backupDir)
-      .filter(f => f.startsWith('studio-') && f.endsWith('.db'))
+      .filter(f => f.startsWith('studio-') && (f.endsWith('.db') || f.endsWith('.zip')))
       .map(f => ({ name: f, time: fs.statSync(path.join(backupDir, f)).mtime.getTime() }))
       .sort((a, b) => b.time - a.time);
 
