@@ -1,3 +1,4 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'node:path';
@@ -44,6 +45,21 @@ const storage = multer({
   },
 });
 
+
+router.get('/:projectId/files', auth, admin, (req: AuthRequest, res, next) => {
+  try {
+    const projectId = Number(req.params.projectId);
+    const files = db.prepare('SELECT id, original_name as originalName, stored_name as storedName, mime_type as mimeType, size, created_at FROM files WHERE project_id=? ORDER BY id DESC').all(projectId) as any[];
+    
+    const mapped = files.map(f => ({
+      ...f,
+      url: f.storedName.startsWith('http') ? f.storedName : `/uploads/${f.storedName}`
+    }));
+    
+    res.json(mapped);
+  } catch (err) { next(err); }
+});
+
 router.post('/:projectId/files', auth, admin, storage.single('file'), async (req: AuthRequest, res, next) => {
   try {
     if (!req.file) {
@@ -67,12 +83,28 @@ router.post('/:projectId/files', auth, admin, storage.single('file'), async (req
     let finalFilename = req.file.filename;
     let finalSize = req.file.size;
     let finalMime = req.file.mimetype;
+    let fileUrl = `/uploads/${finalFilename}`;
 
     const opt = await optimizeImage(req.file.path);
+    let pathForCloudinary = req.file.path;
     if (opt) {
       finalFilename = opt.newFilename;
       finalSize = opt.size;
       finalMime = 'image/webp';
+      fileUrl = `/uploads/${finalFilename}`;
+      pathForCloudinary = path.join(UPLOAD_DIR, finalFilename);
+    }
+
+    if (process.env.CLOUDINARY_URL) {
+      try {
+        const result = await cloudinary.uploader.upload(pathForCloudinary, { folder: 'premiralab' });
+        fileUrl = result.secure_url;
+        // delete local file to save space
+        try { await fs.unlink(pathForCloudinary); } catch {}
+        try { await fs.unlink(req.file.path); } catch {}
+      } catch (err) {
+        console.error('Cloudinary upload failed, falling back to local storage', err);
+      }
     }
 
     const r = db.prepare(
@@ -87,7 +119,7 @@ router.post('/:projectId/files', auth, admin, storage.single('file'), async (req
       storedName:   finalFilename,
       mimeType:     finalMime,
       size:         finalSize,
-      url:          `/uploads/${finalFilename}`,
+      url:          fileUrl,
     });
   } catch (err) { next(err); }
 });

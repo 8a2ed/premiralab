@@ -290,7 +290,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
                           <div className="muted" style={{ fontSize: 11 }}>{Math.round(f.size / 1024)} KB • {formatDate(f.created_at)}</div>
                         </div>
                       </div>
-                      <a href={`/uploads/${f.stored_name}`} target="_blank" rel="noreferrer" download={f.original_name} className="btn btn--primary btn--sm" style={{ padding: '6px 12px', fontSize: 12 }}>
+                      <a href={f.stored_name.startsWith('http') ? f.stored_name : `/uploads/${f.stored_name}`} target="_blank" rel="noreferrer" download={f.original_name} className="btn btn--primary btn--sm" style={{ padding: '6px 12px', fontSize: 12 }}>
                         <Download size={14} /> تحميل
                       </a>
                     </div>

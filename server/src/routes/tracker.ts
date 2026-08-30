@@ -90,7 +90,7 @@ router.get('/:orderNo', (req, res, next) => {
       files: (files as any[]).map(f => ({
         id: f.id,
         name: f.original_name,
-        url: `/uploads/${f.stored_name}`,
+        url: f.stored_name.startsWith('http') ? f.stored_name : `/uploads/${f.stored_name}`,
         mime: f.mime_type,
         size: f.size,
         createdAt: f.created_at,
