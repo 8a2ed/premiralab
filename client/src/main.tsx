@@ -9,12 +9,10 @@ import { applyTheme, getInitialTheme } from './lib/utils.js';
 import type { PublicData } from './types.js';
 import './styles/index.css';
 
+import { registerSW } from 'virtual:pwa-register';
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister();
-    }
-  });
+  registerSW({ immediate: true });
 }
 
 import { ClientPortal } from './pages/ClientPortal.js';
