@@ -1,3 +1,4 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { Router } from 'express';
 import { db, UPLOAD_DIR } from '../db.js';
 import type { Order, Package } from '../types.js';
@@ -139,9 +140,24 @@ router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next
 
     // Optimize image (compress & convert to WebP)
     let finalFilename = req.file.filename;
+    let pathForCloudinary = req.file.path;
     const opt = await optimizeImage(req.file.path);
     if (opt) {
       finalFilename = opt.newFilename;
+      pathForCloudinary = path.join(UPLOAD_DIR, finalFilename);
+    }
+    
+    if (process.env.CLOUDINARY_URL) {
+      try {
+        const result = await cloudinary.uploader.upload(pathForCloudinary, { folder: 'premiralab_receipts' });
+        finalFilename = result.secure_url;
+        // cleanup local
+        const fs = await import('node:fs/promises');
+        try { await fs.unlink(pathForCloudinary); } catch {}
+        if (opt) { try { await fs.unlink(req.file.path); } catch {} }
+      } catch (err) {
+        console.error('Cloudinary upload failed for receipt', err);
+      }
     }
 
     db.prepare('UPDATE orders SET payment_receipt = ?, payment_method = COALESCE(NULLIF(payment_method, ""), "تحويل بنكي / محفظة") WHERE id = ?').run(finalFilename, order.id);

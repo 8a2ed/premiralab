@@ -232,7 +232,7 @@ export function Orders({ onToast }: OrdersProps) {
                             </button>
                             {o.payment_receipt && (
                               <a
-                                href={`/uploads/${o.payment_receipt}`}
+                                href={o.payment_receipt.startsWith('http') ? o.payment_receipt : `/uploads/${o.payment_receipt}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn--icon btn--sm"
@@ -666,7 +666,7 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
         {order.payment_receipt && (
           <div style={{ marginTop: 8 }}>
             <a
-              href={`/uploads/${order.payment_receipt}`}
+              href={order.payment_receipt.startsWith('http') ? order.payment_receipt : `/uploads/${order.payment_receipt}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--sm"
