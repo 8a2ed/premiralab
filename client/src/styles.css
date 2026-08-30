@@ -144,3 +144,7 @@ html, body {
     min-width: 0 !important;
   }
 }
+
+@media(max-width:600px){
+  .modal{padding:20px;}
+}

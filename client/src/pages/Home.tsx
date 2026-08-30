@@ -1292,36 +1292,36 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
         {/* ── Footer Actions ────────────────────────────────── */}
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)', gap: 12
+          display: 'flex', flexWrap: 'wrap-reverse', gap: 12,
+          marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)'
         }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, flex: '1 1 200px' }}>
             {step > 1 ? (
               <button type="button" className="btn" onClick={goPrev} disabled={loading}
-                style={{ minHeight: 48, minWidth: 100 }}>
+                style={{ flex: 1, minHeight: 48, justifyContent: 'center' }}>
                 ← السابق
               </button>
             ) : (
               <button type="button" className="btn" onClick={onClose}
-                style={{ minHeight: 48, color: 'var(--text-muted)', background: 'transparent', border: 'none' }}>
+                style={{ flex: 1, minHeight: 48, color: 'var(--text-muted)', background: 'transparent', border: 'none', justifyContent: 'center' }}>
                 إلغاء
               </button>
             )}
             <a href="https://wa.me/201069572748?text=مرحباً، أواجه صعوبة في استكمال الطلب، هل يمكنكم مساعدتي؟" target="_blank" rel="noreferrer" 
-               style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', background: 'var(--bg-3)', padding: '6px 12px', borderRadius: 8 }}>
+               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', background: 'var(--bg-3)', padding: '6px 12px', borderRadius: 8 }}>
                <MessageCircle size={14} /> مساعدة؟
             </a>
           </div>
 
           {step < 4 ? (
             <button type="button" className="btn btn--primary" onClick={goNext}
-              style={{ minHeight: 48, minWidth: 130, fontWeight: 700, fontSize: 15 }}>
+              style={{ flex: '1 1 140px', minHeight: 48, fontWeight: 700, fontSize: 15, justifyContent: 'center' }}>
               التالي →
             </button>
           ) : (
             <button type="button" className="btn btn--primary btn--glow" onClick={submit}
               disabled={loading}
-              style={{ minHeight: 48, minWidth: 150, fontWeight: 800, fontSize: 15 }}>
+              style={{ flex: '1 1 140px', minHeight: 48, fontWeight: 800, fontSize: 15, justifyContent: 'center' }}>
               {loading
                 ? <><span className="spinner-sm" /> جارٍ الإرسال...</>
                 : '✅ تأكيد الطلب'
