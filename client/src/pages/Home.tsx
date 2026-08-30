@@ -618,14 +618,24 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState('');
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward');
-  const [f, setF] = useState({
-    name: '', phone: '', email: '',
-    packageId: defaultPackage ? String(defaultPackage.id) : '',
-    serviceId: '',
-    projectType: initialProjectType || '',
-    budget: '', deadline: '', notes: '',
-    promoCode: '',
+  const [f, setF] = useState(() => {
+    let saved: any = {};
+    try {
+      const draft = localStorage.getItem('orderFormDraft');
+      if (draft) saved = JSON.parse(draft);
+    } catch (e) {}
+    return {
+      name: '', phone: '', email: '',
+      serviceId: '', budget: '', deadline: '', notes: '', promoCode: '',
+      ...saved,
+      packageId: defaultPackage ? String(defaultPackage.id) : (saved.packageId || ''),
+      projectType: initialProjectType || saved.projectType || ''
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('orderFormDraft', JSON.stringify(f));
+  }, [f]);
 
   useEffect(() => {
     api.client.me().then(res => {
@@ -689,6 +699,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         promoCode:   f.promoCode && promoResult?.success ? f.promoCode : undefined,
       });
       setSubmitted({ orderNo: res.orderNo });
+      localStorage.removeItem('orderFormDraft');
       try {
         const val = finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0);
         if (typeof (window as any).gtag === 'function') {
@@ -1259,14 +1270,21 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                 </div>
               )}
 
-              {/* Payment note */}
+              {/* Trust Note - No payment required yet */}
               <div style={{
-                padding: '14px 16px', borderRadius: 12,
-                background: 'var(--accent-dim)', border: '1px dashed var(--accent)',
-                fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7
+                padding: '16px', borderRadius: 12,
+                background: 'rgba(34, 197, 94, 0.05)', border: '1px solid rgba(34, 197, 94, 0.2)',
+                display: 'flex', gap: 12, alignItems: 'flex-start'
               }}>
-                💳 بعد تأكيد الطلب ستتلقى فاتورة رقمية، يمكن سدادها عبر{' '}
-                <strong style={{ color: 'var(--text)' }}>InstaPay، فودافون كاش، أو التحويل البنكي</strong>
+                <div style={{ flexShrink: 0, color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: 8, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 6px', fontSize: 14, color: '#22c55e' }}>لا يوجد دفع مطلوب الآن</h4>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                    سيتم مراجعة طلبك أولاً من قبل الإدارة لضمان فهمنا لمتطلباتك وتحديد الموعد المناسب. بعد الموافقة وتأكيد الطلب، سيتم فتح طرق الدفع الآمنة (فيزا، انستاباي، محافظ، أو فوري).
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -1277,17 +1295,23 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)', gap: 12
         }}>
-          {step > 1 ? (
-            <button type="button" className="btn" onClick={goPrev} disabled={loading}
-              style={{ minHeight: 48, minWidth: 100 }}>
-              ← السابق
-            </button>
-          ) : (
-            <button type="button" className="btn" onClick={onClose}
-              style={{ minHeight: 48, color: 'var(--text-muted)', background: 'transparent', border: 'none' }}>
-              إلغاء
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {step > 1 ? (
+              <button type="button" className="btn" onClick={goPrev} disabled={loading}
+                style={{ minHeight: 48, minWidth: 100 }}>
+                ← السابق
+              </button>
+            ) : (
+              <button type="button" className="btn" onClick={onClose}
+                style={{ minHeight: 48, color: 'var(--text-muted)', background: 'transparent', border: 'none' }}>
+                إلغاء
+              </button>
+            )}
+            <a href="https://wa.me/201069572748?text=مرحباً، أواجه صعوبة في استكمال الطلب، هل يمكنكم مساعدتي؟" target="_blank" rel="noreferrer" 
+               style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', background: 'var(--bg-3)', padding: '6px 12px', borderRadius: 8 }}>
+               <MessageCircle size={14} /> مساعدة؟
+            </a>
+          </div>
 
           {step < 4 ? (
             <button type="button" className="btn btn--primary" onClick={goNext}
