@@ -603,6 +603,7 @@ export function Home({
 
 // ─── Order Modal ──────────────────────────────────────────────────────────────
 
+
 interface OrderModalProps {
   packages:           Package[];
   services:           Array<{ id: number; title: string }>;
@@ -614,7 +615,9 @@ interface OrderModalProps {
 
 function OrderModal({ packages, services, defaultPackage, initialProjectType, onClose, onDone }: OrderModalProps) {
   const [step, setStep] = useState(1);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [globalError, setGlobalError] = useState('');
+  const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward');
   const [f, setF] = useState({
     name: '', phone: '', email: '',
     packageId: defaultPackage ? String(defaultPackage.id) : '',
@@ -625,7 +628,6 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   });
 
   useEffect(() => {
-    // Auto-fill client details if logged in
     api.client.me().then(res => {
       setF(prev => ({
         ...prev,
@@ -638,16 +640,11 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
   const [loading,   setLoading]   = useState(false);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
-
-  // Promo states
   const [checkingPromo, setCheckingPromo] = useState(false);
   const [promoResult, setPromoResult] = useState<{ success?: string; error?: string; discount?: number; type?: string } | null>(null);
 
-  const updateF = (updates: Partial<typeof f>) => {
-    setF(prev => ({ ...prev, ...updates }));
-  };
+  const updateF = (updates: Partial<typeof f>) => setF(prev => ({ ...prev, ...updates }));
 
-  // Computed price summary for Step 4
   const selectedPackage = packages.find(p => p.id === Number(f.packageId));
   const selectedService  = services.find(s => s.id === Number(f.serviceId));
   const basePrice = selectedPackage?.price || 0;
@@ -679,7 +676,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
   const submit = async () => {
     setLoading(true);
-    setError('');
+    setGlobalError('');
     try {
       const res = await api.order({
         name: f.name, phone: f.phone, email: f.email || undefined,
@@ -692,8 +689,6 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         promoCode:   f.promoCode && promoResult?.success ? f.promoCode : undefined,
       });
       setSubmitted({ orderNo: res.orderNo });
-      
-      // Fire Analytics Conversion Events
       try {
         const val = finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0);
         if (typeof (window as any).gtag === 'function') {
@@ -703,10 +698,9 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         if (typeof (window as any).fbq === 'function') {
           (window as any).fbq('track', 'Lead', { value: val, currency: 'EGP', order_no: res.orderNo });
         }
-      } catch (e) { /* ignore tracking errors */ }
-      
+      } catch (e) { /* ignore */ }
     } catch (err) {
-      setError((err as Error).message);
+      setGlobalError((err as Error).message);
     } finally { setLoading(false); }
   };
 
@@ -718,243 +712,516 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
     }).catch(() => {});
   };
 
+  const goNext = () => {
+    const errs: Record<string, string> = {};
+    setGlobalError('');
+
+    if (step === 1) {
+      if (!f.packageId && !f.serviceId && !f.projectType.trim()) {
+        errs.service = 'يرجى اختيار باقة أو خدمة أو كتابة نوع مشروعك';
+      }
+    }
+    if (step === 3) {
+      if (!f.name.trim()) errs.name = 'الاسم الكامل مطلوب';
+      if (!f.phone.trim()) {
+        errs.phone = 'رقم الهاتف مطلوب';
+      } else {
+        const clean = f.phone.trim().replace(/\s+/g, '');
+        if (!/^(\+?\d{7,15}|01\d{9})$/.test(clean)) errs.phone = 'رقم هاتف غير صحيح';
+      }
+      if (f.email) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) errs.email = 'بريد إلكتروني غير صحيح';
+      }
+    }
+
+    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+    setFieldErrors({});
+    setAnimDir('forward');
+    setStep(s => s + 1);
+  };
+
+  const goPrev = () => {
+    setFieldErrors({});
+    setGlobalError('');
+    setAnimDir('back');
+    setStep(s => s - 1);
+  };
+
+  const STEPS = ['الخدمة', 'التفاصيل', 'التواصل', 'التأكيد'];
+  const PROGRESS = ((step - 1) / (STEPS.length - 1)) * 100;
+
+  // ── Success Screen ─────────────────────────────────────────
   if (submitted) {
     const trackerUrl = `${window.location.origin}/?track=${submitted.orderNo}`;
     return (
-      <Modal title="تم استلام طلبك بنجاح ✨" onClose={onClose}>
-        <div className="order-success" style={{ textAlign: 'center', padding: '20px 0' }}>
-          <CheckCircle2 size={56} className="icon--success" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ fontSize: 24, marginBottom: 8 }}>شكرًا لثقتك بنا!</h3>
-          <p style={{ fontSize: 16 }}>رقم طلبك: <strong style={{ color: 'var(--primary)', fontSize: 18, background: 'var(--primary-dim)', padding: '4px 10px', borderRadius: 8 }}>{submitted.orderNo}</strong></p>
-          <p className="muted" style={{ maxWidth: 400, margin: '16px auto' }}>تم حفظ طلبك وسيتم مراجعته والتواصل معك قريبًا. يمكنك متابعة حالة الطلب في أي وقت.</p>
-          
-          <div style={{ background: 'var(--bg-2)', padding: 20, borderRadius: 16, border: '1px solid var(--border)', marginTop: 24 }}>
-            <p className="muted" style={{ margin: '0 0 12px', fontSize: 13 }}>رابط المتابعة الخاص بك (احتفظ به):</p>
-            <a href={trackerUrl} style={{ color: 'var(--text)', display: 'block', marginBottom: 16, wordBreak: 'break-all', fontWeight: 600 }} target="_blank" rel="noopener">{trackerUrl}</a>
-            <button className="btn btn--sm" onClick={() => copyTrackerUrl(trackerUrl)} style={{ width: '100%', justifyContent: 'center' }} type="button">
-              {copied ? <><Check size={16} className="icon--success" /> تم النسخ</> : <><Copy size={16} /> نسخ رابط المتابعة</>}
+      <Modal title="" onClose={onClose}>
+        <div style={{ textAlign: 'center', padding: '12px 8px 24px' }}>
+          {/* Animated check */}
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+            boxShadow: '0 0 0 12px rgba(34,197,94,0.12), 0 8px 32px rgba(34,197,94,0.3)',
+            animation: 'pulse 2s infinite'
+          }}>
+            <CheckCircle2 size={42} color="#fff" />
+          </div>
+
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 8px' }}>تم استلام طلبك! 🎉</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 24px' }}>
+            شكراً لثقتك بنا، سنتواصل معك في أقرب وقت ممكن
+          </p>
+
+          <div style={{
+            background: 'var(--bg-2)', borderRadius: 16,
+            border: '1px solid var(--border)', padding: '20px',
+            marginBottom: 20
+          }}>
+            <p style={{ margin: '0 0 4px', fontSize: 12, color: 'var(--text-muted)' }}>رقم طلبك</p>
+            <p style={{
+              margin: '0 0 20px', fontSize: 28, fontWeight: 900,
+              color: 'var(--accent)', letterSpacing: 2,
+              fontFamily: 'monospace'
+            }}>{submitted.orderNo}</p>
+
+            <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--text-muted)' }}>
+              رابط متابعة طلبك (احفظه):
+            </p>
+            <div style={{
+              background: 'var(--bg-3)', borderRadius: 10,
+              padding: '10px 14px', marginBottom: 12,
+              fontFamily: 'monospace', fontSize: 12,
+              wordBreak: 'break-all', textAlign: 'left',
+              border: '1px solid var(--border)', color: 'var(--text-muted)'
+            }}>{trackerUrl}</div>
+
+            <button
+              type="button"
+              className={`btn ${copied ? 'btn--success' : 'btn--outline'}`}
+              style={{ width: '100%', justifyContent: 'center', minHeight: 44 }}
+              onClick={() => copyTrackerUrl(trackerUrl)}
+            >
+              {copied
+                ? <><Check size={16} /> تم النسخ بنجاح</>
+                : <><Copy size={16} /> نسخ رابط المتابعة</>
+              }
             </button>
           </div>
-          <button className="btn btn--primary" onClick={onClose} style={{ marginTop: 20, width: '100%' }}>إغلاق</button>
+
+          <button type="button" className="btn btn--primary" onClick={onClose}
+            style={{ width: '100%', justifyContent: 'center', minHeight: 48, fontSize: 15, fontWeight: 700 }}>
+            إغلاق
+          </button>
         </div>
       </Modal>
     );
   }
 
-  const nextStep = () => {
-    setError('');
-    
-    if (step === 1) {
-      if (!f.packageId && !f.serviceId && !f.projectType) {
-        setError('يرجى اختيار باقة أو خدمة أو كتابة نوع المشروع المخصص للمتابعة');
-        return;
-      }
-    }
-    
-    if (step === 2) {
-      // notes/budget are optional
-    }
-    
-    if (step === 3) {
-      if (!f.name || !f.phone) {
-        setError('الاسم ورقم الهاتف مطلوبان للتواصل');
-        return;
-      }
-      
-      const cleanPhone = f.phone.trim().replace(/\s+/g, '');
-      const phoneRegex = /^(\+?\d{7,15}|01\d{9})$/;
-      if (!phoneRegex.test(cleanPhone)) {
-        setError('يرجى إدخال رقم هاتف صحيح (مصري: 01012345678 أو دولي: +966...)');
-        return;
-      }
-      
-      if (f.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(f.email.trim())) {
-          setError('يرجى إدخال بريد إلكتروني صحيح');
-          return;
-        }
-      }
-    }
-    
-    setStep(s => s + 1);
-  };
-
-  const steps = [
-    { num: 1, title: 'الخدمة المطلوبة' },
-    { num: 2, title: 'التفاصيل' },
-    { num: 3, title: 'التواصل' },
-    { num: 4, title: 'التأكيد' }
-  ];
-
+  // ── Main Modal ────────────────────────────────────────────
   return (
-    <Modal title="ابدأ مشروعك الآن" onClose={onClose} size="lg">
-      <div style={{ marginBottom: 30 }}>
-        {/* Stepper Header */}
-        <div className="stepper-header-wrap" style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', maxWidth: 500, margin: '0 auto', padding: '0 10px' }}>
-          <div style={{ position: 'absolute', top: 16, left: 10, right: 10, height: 2, background: 'var(--border)', zIndex: 0 }} />
-          <div style={{ position: 'absolute', top: 16, right: 10, height: 2, background: 'var(--primary)', zIndex: 1, transition: '0.3s', width: `calc(${((step - 1) / (steps.length - 1)) * 100}% - 20px)` }} />
-          
-          {steps.map(s => (
-            <div key={s.num} style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <div style={{ 
-                width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, transition: '0.3s',
-                background: step >= s.num ? 'var(--primary)' : 'var(--bg-3)', 
-                color: step >= s.num ? '#fff' : 'var(--muted)',
-                border: `2px solid ${step >= s.num ? 'var(--primary)' : 'var(--border)'}`,
-                boxShadow: step === s.num ? '0 0 0 4px var(--primary-dim)' : 'none'
-              }}>
-                {step > s.num ? <Check size={16} /> : s.num}
-              </div>
-              <span style={{ fontSize: 11, fontWeight: step === s.num ? 700 : 500, color: step >= s.num ? 'var(--text)' : 'var(--muted)' }}>{s.title}</span>
-            </div>
-          ))}
+    <Modal title="ابدأ مشروعك الآن 🚀" onClose={onClose} size="lg">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+        {/* ── Stepper ─────────────────────────────────────── */}
+        <div style={{ marginBottom: 28, padding: '0 4px' }}>
+          {/* Progress bar */}
+          <div style={{ position: 'relative', height: 4, background: 'var(--bg-3)', borderRadius: 99, marginBottom: 16, overflow: 'hidden' }}>
+            <div style={{
+              position: 'absolute', top: 0, right: 0, height: '100%',
+              background: 'linear-gradient(90deg, var(--primary), var(--accent))',
+              borderRadius: 99,
+              width: `${PROGRESS}%`,
+              transition: 'width 0.4s cubic-bezier(0.4,0,0.2,1)'
+            }} />
+          </div>
+          {/* Step labels */}
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {STEPS.map((label, idx) => {
+              const n = idx + 1;
+              const done = step > n;
+              const active = step === n;
+              return (
+                <div key={n} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 800,
+                    transition: 'all 0.3s',
+                    background: done ? 'var(--primary)' : active ? 'var(--accent)' : 'var(--bg-3)',
+                    color: (done || active) ? '#fff' : 'var(--text-muted)',
+                    boxShadow: active ? '0 0 0 5px var(--accent-dim)' : 'none',
+                    border: `2px solid ${done ? 'var(--primary)' : active ? 'var(--accent)' : 'var(--border)'}`
+                  }}>
+                    {done ? <Check size={15} /> : n}
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, color: active ? 'var(--text)' : 'var(--text-muted)' }}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div style={{ minHeight: 280, position: 'relative' }}>
-        {error && (
-          <div className="animation-fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px 16px', borderRadius: 8, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-            <AlertCircle size={18} />
-            <span>{error}</span>
+        {/* ── Global Error ─────────────────────────────────── */}
+        {globalError && (
+          <div style={{
+            background: 'rgba(239,68,68,0.08)', color: '#ef4444',
+            padding: '12px 16px', borderRadius: 10, marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 10,
+            fontSize: 13, border: '1px solid rgba(239,68,68,0.2)'
+          }}>
+            <AlertCircle size={16} /> {globalError}
           </div>
         )}
 
-        {step === 1 && (
-          <div className="animation-fade-in">
-            <h3 style={{ marginBottom: 20, fontSize: 18 }}>ما هو نوع الخدمة التي تبحث عنها؟</h3>
-            <div className="grid grid-2" style={{ gap: 20 }}>
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-pkg">الباقات الجاهزة</label>
-                <select id="order-pkg" className="select" style={{ padding: 14, fontSize: 15, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} value={f.packageId} onChange={e => updateF({ packageId: e.target.value, serviceId: e.target.value ? '' : f.serviceId })}>
-                  <option value="">اختر باقة (اختياري)</option>
-                  {packages.map(p => <option key={p.id} value={p.id}>{p.title} — {money(p.price)}</option>)}
-                </select>
-              </div>
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-svc">الخدمات الفردية</label>
-                <select id="order-svc" className="select" style={{ padding: 14, fontSize: 15, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} value={f.serviceId} onChange={e => updateF({ serviceId: e.target.value, packageId: e.target.value ? '' : f.packageId })}>
-                  <option value="">اختر خدمة (اختياري)</option>
-                  {services.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-                </select>
-              </div>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              <div className="muted" style={{ fontSize: 12 }}>أو تخصيص مشروعك</div>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            </div>
+        {/* ── Step Content ─────────────────────────────────── */}
+        <div style={{ minHeight: 300 }} className="animation-fade-in" key={step}>
 
-            <div className="form-field">
-              <label className="form-label" htmlFor="order-type">نوع المشروع المخصص</label>
-              <input id="order-type" className="input" style={{ padding: 14, borderColor: error && !f.packageId && !f.serviceId && !f.projectType ? '#ef4444' : undefined }} placeholder="مثال: هوية بصرية كاملة + تصميم موقع..." value={f.projectType} onChange={e => updateF({ projectType: e.target.value })} />
-            </div>
-          </div>
-        )}
+          {/* STEP 1 ─ Choose Service */}
+          {step === 1 && (
+            <div>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20 }}>
+                اختر الباقة المناسبة أو خدمة محددة أو صِف مشروعك بنفسك
+              </p>
 
-        {step === 2 && (
-          <div className="animation-fade-in">
-            <h3 style={{ marginBottom: 20, fontSize: 18 }}>تفاصيل {f.packageId ? 'الباقة الإضافية' : 'المشروع'}</h3>
-            
-            <div className="form-grid">
-              {!f.packageId && (
-                <div className="form-field">
-                  <label className="form-label" htmlFor="order-budget">الميزانية المتوقعة (اختياري)</label>
-                  <div style={{ position: 'relative' }}>
-                    <input id="order-budget" className="input" style={{ padding: 14, paddingRight: 45 }} type="number" min="0" placeholder="مثال: 5000" value={f.budget} onChange={e => updateF({ budget: e.target.value })} />
-                    <span style={{ position: 'absolute', right: 14, top: 14, color: 'var(--muted)', fontSize: 14 }}>ج.م</span>
+              {/* Package Cards */}
+              {packages.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    الباقات الجاهزة
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {packages.map(pkg => {
+                      const active = f.packageId === String(pkg.id);
+                      return (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={() => updateF({ packageId: active ? '' : String(pkg.id), serviceId: '', projectType: active ? f.projectType : '' })}
+                          style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '14px 18px', borderRadius: 14, textAlign: 'right',
+                            border: `2px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                            background: active ? 'var(--accent-dim)' : 'var(--bg-2)',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            boxShadow: active ? '0 0 0 4px var(--accent-dim)' : 'none',
+                            width: '100%'
+                          }}
+                        >
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{pkg.title}</div>
+                            {pkg.description && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{pkg.description}</div>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                            <span style={{ fontWeight: 800, fontSize: 15, color: active ? 'var(--accent)' : 'var(--text)' }}>
+                              {money(pkg.price)}
+                            </span>
+                            <div style={{
+                              width: 22, height: 22, borderRadius: '50%',
+                              border: `2px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                              background: active ? 'var(--accent)' : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              transition: 'all 0.2s', flexShrink: 0
+                            }}>
+                              {active && <Check size={13} color="#fff" />}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-              
-              <div className="form-field" style={{ gridColumn: f.packageId ? '1 / -1' : undefined }}>
-                <label className="form-label" htmlFor="order-deadline">الموعد النهائي لتسليم المشروع (اختياري)</label>
-                <input id="order-deadline" className="input" style={{ padding: 14 }} type="date" value={f.deadline} onChange={e => updateF({ deadline: e.target.value })} />
-              </div>
-            </div>
 
-            <div className="form-field" style={{ marginTop: 20 }}>
-              <label className="form-label" htmlFor="order-notes">نبذة عن المشروع وأهدافه</label>
-              <textarea id="order-notes" className="textarea" rows={4} maxLength={2000} style={{ padding: 14 }}
-                placeholder="صف لنا فكرتك، متطلباتك الخاصة، الروابط المرجعية، أو أي تفاصيل أخرى ترغب بإضافتها..."
-                value={f.notes} onChange={e => updateF({ notes: e.target.value })}
-              />
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="animation-fade-in">
-            <h3 style={{ marginBottom: 20, fontSize: 18 }}>كيف يمكننا التواصل معك؟</h3>
-            <div className="form-field" style={{ marginBottom: 16 }}>
-              <label className="form-label" htmlFor="order-name">الاسم الكامل *</label>
-              <input id="order-name" className="input" style={{ padding: 14, borderColor: error && !f.name ? '#ef4444' : undefined }} required placeholder="محمد أحمد" value={f.name} onChange={e => updateF({ name: e.target.value })} />
-            </div>
-            <div className="form-grid">
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-phone">رقم الهاتف / الواتساب *</label>
-                <input id="order-phone" className="input" style={{ padding: 14, direction: 'ltr', textAlign: 'right', borderColor: error && !f.phone ? '#ef4444' : undefined }} required placeholder="01xxxxxxxxx" value={f.phone} onChange={e => updateF({ phone: e.target.value })} />
-              </div>
-              <div className="form-field">
-                <label className="form-label" htmlFor="order-email">البريد الإلكتروني (اختياري)</label>
-                <input id="order-email" className="input" style={{ padding: 14 }} type="email" placeholder="email@example.com" value={f.email} onChange={e => updateF({ email: e.target.value })} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="animation-fade-in">
-            <h3 style={{ marginBottom: 20, fontSize: 18, textAlign: 'center' }}>مراجعة الطلب</h3>
-            <div style={{ background: 'var(--bg-2)', borderRadius: 16, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 24px' }}>
-                <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الاسم</span><strong>{f.name}</strong></div>
-                <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>رقم التواصل</span><strong style={{ direction: 'ltr', display: 'inline-block' }}>{f.phone}</strong></div>
-                
-                {f.packageId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الباقة المختارة</span><strong style={{ color: 'var(--primary)' }}>{packages.find(p => p.id === Number(f.packageId))?.title}</strong></div>}
-                {f.serviceId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الخدمة المختارة</span><strong style={{ color: 'var(--primary)' }}>{services.find(s => s.id === Number(f.serviceId))?.title}</strong></div>}
-                {f.projectType && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>نوع المشروع</span><strong>{f.projectType}</strong></div>}
-                
-                {f.budget && !f.packageId && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الميزانية المقترحة</span><strong>{money(Number(f.budget))}</strong></div>}
-                {f.deadline && <div><span className="muted" style={{ fontSize: 12, display: 'block' }}>الموعد النهائي</span><strong>{f.deadline}</strong></div>}
-              </div>
-              {f.notes && (
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-                  <span className="muted" style={{ fontSize: 12, display: 'block' }}>ملاحظات</span>
-                  <p style={{ margin: '4px 0 0', fontSize: 14, whiteSpace: 'pre-wrap' }}>{f.notes}</p>
+              {/* Services */}
+              {services.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    أو اختر خدمة فردية
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {services.map(svc => {
+                      const active = f.serviceId === String(svc.id);
+                      return (
+                        <button
+                          key={svc.id}
+                          type="button"
+                          onClick={() => updateF({ serviceId: active ? '' : String(svc.id), packageId: '' })}
+                          style={{
+                            padding: '8px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,
+                            border: `2px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                            background: active ? 'var(--primary)' : 'var(--bg-2)',
+                            color: active ? '#fff' : 'var(--text)',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                          }}
+                        >
+                          {svc.title}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* Promo Code Section */}
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-                <label className="form-label">لديك كود خصم؟ (اختياري)</label>
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>أو صِف مشروعك بنفسك</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              </div>
+
+              <div className="form-field">
+                <input
+                  className="input"
+                  style={{
+                    padding: '14px 16px', fontSize: 14,
+                    borderColor: fieldErrors.service ? '#ef4444' : undefined,
+                    borderRadius: 12
+                  }}
+                  placeholder="مثال: تصميم هوية بصرية + موقع إلكتروني..."
+                  value={f.projectType}
+                  onChange={e => updateF({ projectType: e.target.value })}
+                />
+                {fieldErrors.service && (
+                  <p style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={13} /> {fieldErrors.service}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2 ─ Project Details */}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
+                أضف أي تفاصيل تساعدنا على تقديم أفضل عرض لك (كلها اختيارية)
+              </p>
+
+              {/* Selected service summary */}
+              {(selectedPackage || selectedService || f.projectType) && (
+                <div style={{
+                  padding: '12px 16px', borderRadius: 12,
+                  background: 'var(--accent-dim)', border: '1px solid var(--accent)',
+                  display: 'flex', alignItems: 'center', gap: 10
+                }}>
+                  <CheckCircle2 size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>
+                    {selectedPackage?.title || selectedService?.title || f.projectType}
+                  </span>
+                  {selectedPackage && (
+                    <span style={{ marginRight: 'auto', fontWeight: 800, color: 'var(--accent)' }}>
+                      {money(selectedPackage.price)}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {!f.packageId && (
+                <div className="form-field">
+                  <label className="form-label">الميزانية المتوقعة</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      className="input"
+                      style={{ padding: '13px 16px', paddingLeft: 50, borderRadius: 12 }}
+                      type="number" min="0" placeholder="0"
+                      value={f.budget}
+                      onChange={e => updateF({ budget: e.target.value })}
+                    />
+                    <span style={{
+                      position: 'absolute', left: 16, top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'var(--text-muted)', fontSize: 13, fontWeight: 600
+                    }}>ج.م</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="form-field">
+                <label className="form-label">الموعد النهائي المطلوب</label>
+                <input
+                  className="input"
+                  style={{ padding: '13px 16px', borderRadius: 12 }}
+                  type="date"
+                  value={f.deadline}
+                  onChange={e => updateF({ deadline: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div className="form-field">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <label className="form-label" style={{ margin: 0 }}>نبذة عن المشروع وأهدافه</label>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{f.notes.length} / 2000</span>
+                </div>
+                <textarea
+                  className="textarea"
+                  rows={5}
+                  maxLength={2000}
+                  style={{ padding: '13px 16px', borderRadius: 12, resize: 'vertical' }}
+                  placeholder="صِف فكرتك، الجمهور المستهدف، المرجعيات التصميمية، أو أي تفاصيل تساعدنا على فهم رؤيتك..."
+                  value={f.notes}
+                  onChange={e => updateF({ notes: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 ─ Contact Info */}
+          {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
+                كيف يمكننا التواصل معك لمناقشة طلبك؟
+              </p>
+
+              <div className="form-field">
+                <label className="form-label">الاسم الكامل *</label>
+                <input
+                  className="input"
+                  style={{
+                    padding: '13px 16px', borderRadius: 12,
+                    borderColor: fieldErrors.name ? '#ef4444' : undefined
+                  }}
+                  placeholder="محمد أحمد"
+                  value={f.name}
+                  onChange={e => { updateF({ name: e.target.value }); setFieldErrors(p => ({ ...p, name: '' })); }}
+                  autoComplete="name"
+                />
+                {fieldErrors.name && (
+                  <p style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={13} /> {fieldErrors.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">رقم الهاتف / الواتساب *</label>
+                <input
+                  className="input"
+                  style={{
+                    padding: '13px 16px', borderRadius: 12, direction: 'ltr', textAlign: 'right',
+                    borderColor: fieldErrors.phone ? '#ef4444' : undefined
+                  }}
+                  placeholder="01xxxxxxxxx"
+                  value={f.phone}
+                  type="tel"
+                  onChange={e => { updateF({ phone: e.target.value }); setFieldErrors(p => ({ ...p, phone: '' })); }}
+                  autoComplete="tel"
+                />
+                {fieldErrors.phone && (
+                  <p style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={13} /> {fieldErrors.phone}
+                  </p>
+                )}
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">البريد الإلكتروني <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(اختياري)</span></label>
+                <input
+                  className="input"
+                  style={{
+                    padding: '13px 16px', borderRadius: 12, direction: 'ltr',
+                    borderColor: fieldErrors.email ? '#ef4444' : undefined
+                  }}
+                  type="email"
+                  placeholder="example@email.com"
+                  value={f.email}
+                  onChange={e => { updateF({ email: e.target.value }); setFieldErrors(p => ({ ...p, email: '' })); }}
+                  autoComplete="email"
+                />
+                {fieldErrors.email && (
+                  <p style={{ color: '#ef4444', fontSize: 12, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={13} /> {fieldErrors.email}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4 ─ Review & Confirm */}
+          {step === 4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
+                راجع تفاصيل طلبك قبل الإرسال
+              </p>
+
+              {/* Order Summary Card */}
+              <div style={{ background: 'var(--bg-2)', borderRadius: 16, border: '1px solid var(--border)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', background: 'var(--bg-3)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <CheckCircle2 size={16} style={{ color: 'var(--accent)' }} />
+                  <span style={{ fontWeight: 700, fontSize: 14 }}>ملخص الطلب</span>
+                </div>
+
+                <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Contact row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+                    <div>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>الاسم</span>
+                      <strong style={{ fontSize: 14 }}>{f.name}</strong>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>رقم التواصل</span>
+                      <strong style={{ fontSize: 14, direction: 'ltr', display: 'inline-block' }}>{f.phone}</strong>
+                    </div>
+                  </div>
+
+                  {/* Service row */}
+                  <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>الخدمة المطلوبة</span>
+                    <strong style={{ fontSize: 14, color: 'var(--accent)' }}>
+                      {selectedPackage?.title || selectedService?.title || f.projectType || '—'}
+                    </strong>
+                  </div>
+
+                  {f.deadline && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>الموعد النهائي</span>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{f.deadline}</span>
+                    </div>
+                  )}
+
+                  {f.notes && (
+                    <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>ملاحظات</span>
+                      <p style={{ fontSize: 13, margin: 0, color: 'var(--text)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{f.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Promo Code */}
+              <div style={{ background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--border)', padding: '16px 18px' }}>
+                <label className="form-label" style={{ marginBottom: 10 }}>🏷️ كود الخصم <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(اختياري)</span></label>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <input
                     className="input"
-                    style={{ flex: 1, padding: '10px 14px' }}
-                    placeholder="أدخل الكود هنا"
+                    style={{ flex: 1, padding: '11px 14px', borderRadius: 10, fontFamily: 'monospace', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' }}
+                    placeholder="PROMO2025"
                     value={f.promoCode}
                     onChange={e => { updateF({ promoCode: e.target.value.toUpperCase() }); setPromoResult(null); }}
                     onKeyDown={e => e.key === 'Enter' && handleCheckPromo()}
-                    disabled={checkingPromo}
+                    disabled={checkingPromo || !!promoResult?.success}
                   />
                   <button
                     type="button"
                     className={`btn ${promoResult?.success ? 'btn--success' : 'btn--outline'}`}
                     onClick={handleCheckPromo}
-                    disabled={!f.promoCode || checkingPromo}
+                    disabled={!f.promoCode || checkingPromo || !!promoResult?.success}
+                    style={{ minWidth: 80, borderRadius: 10 }}
                   >
-                    {checkingPromo ? '...' : promoResult?.success ? '✔ مطبّق' : 'تطبيق'}
+                    {checkingPromo ? '...' : promoResult?.success ? <><Check size={15} /> مطبّق</> : 'تطبيق'}
                   </button>
                 </div>
                 {promoResult?.success && (
-                  <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 600, display:'flex', alignItems:'center', gap:6 }}>
+                  <div style={{ color: 'var(--success)', fontSize: 13, marginTop: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <CheckCircle2 size={14} /> {promoResult.success}
                   </div>
                 )}
                 {promoResult?.error && (
-                  <div style={{ color: 'var(--danger)', fontSize: 13, marginTop: 8, fontWeight: 600, display:'flex', alignItems:'center', gap:6 }}>
+                  <div style={{ color: '#ef4444', fontSize: 13, marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <AlertCircle size={14} /> {promoResult.error}
                   </div>
                 )}
@@ -962,75 +1229,87 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
               {/* Price Summary */}
               {(basePrice > 0 || (f.budget && !f.packageId)) && (
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-                  <strong style={{ fontSize: 13, display: 'block', marginBottom: 10 }}>ملخص التسعير</strong>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {basePrice > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                        <span className="muted">سعر الباقة</span>
-                        <span>{money(basePrice)}</span>
-                      </div>
-                    )}
-                    {discountVal > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--success)' }}>
-                        <span>خصم الكوبون ({f.promoCode})</span>
-                        <strong>-{money(discountVal)}</strong>
-                      </div>
-                    )}
-                    {f.budget && !f.packageId && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                        <span className="muted">الميزانية المقترحة</span>
-                        <span>{money(Number(f.budget))}</span>
-                      </div>
-                    )}
-                    <div style={{
-                      display: 'flex', justifyContent: 'space-between',
-                      paddingTop: 8, borderTop: '1px solid var(--border)',
-                      fontWeight: 800, fontSize: 16,
-                      color: 'var(--accent)'
-                    }}>
-                      <span>الإجمالي المتوقع</span>
-                      <span>{basePrice > 0 ? money(finalPrice) : (f.budget ? money(Number(f.budget)) : 'يُحدد لاحقاً')}</span>
+                <div style={{ background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {basePrice > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>سعر الباقة</span>
+                      <span>{money(basePrice)}</span>
                     </div>
+                  )}
+                  {discountVal > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--success)' }}>
+                      <span>خصم ({f.promoCode})</span>
+                      <strong>— {money(discountVal)}</strong>
+                    </div>
+                  )}
+                  {f.budget && !f.packageId && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>الميزانية المقترحة</span>
+                      <span>{money(Number(f.budget))}</span>
+                    </div>
+                  )}
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingTop: 12, borderTop: '1px solid var(--border)',
+                    fontWeight: 900, fontSize: 18, color: 'var(--accent)'
+                  }}>
+                    <span>الإجمالي</span>
+                    <span>{basePrice > 0 ? money(finalPrice) : (f.budget ? money(Number(f.budget)) : 'يُحدد لاحقاً')}</span>
                   </div>
                 </div>
               )}
-              
-              <div style={{ marginTop: 24, padding: '16px', background: 'var(--accent-dim)', borderRadius: 12, border: '1px dashed var(--accent)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <CheckCircle2 size={18} style={{ color: 'var(--accent)' }} />
-                  <strong style={{ fontSize: 14 }}>طرق الدفع المتاحة</strong>
-                </div>
-                <p className="muted" style={{ fontSize: 13, margin: 0, lineHeight: 1.6 }}>
-                  بعد تأكيد الطلب، سيتم إصدار فاتورة رقمية يمكنك دفعها بسهولة عبر:
-                  <br />
-                  <span style={{ color: 'var(--text)', fontWeight: 600 }}>InstaPay، فودافون كاش، أو التحويل البنكي</span>.
-                </p>
+
+              {/* Payment note */}
+              <div style={{
+                padding: '14px 16px', borderRadius: 12,
+                background: 'var(--accent-dim)', border: '1px dashed var(--accent)',
+                fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7
+              }}>
+                💳 بعد تأكيد الطلب ستتلقى فاتورة رقمية، يمكن سدادها عبر{' '}
+                <strong style={{ color: 'var(--text)' }}>InstaPay، فودافون كاش، أو التحويل البنكي</strong>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Stepper Footer Actions */}
-      <div className="stepper-footer-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', gap: 16 }}>
-        {step > 1 ? (
-          <button type="button" className="btn" onClick={() => setStep(s => s - 1)} disabled={loading}>السابق</button>
-        ) : (
-          <button type="button" className="btn" onClick={onClose} style={{ color: 'var(--text-muted)', background: 'transparent', borderColor: 'transparent' }}>إلغاء</button>
-        )}
-        
-        {step < 4 ? (
-          <button type="button" className="btn btn--primary" onClick={nextStep} style={{ minWidth: 120 }}>التالي</button>
-        ) : (
-          <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ minWidth: 140, boxShadow: '0 0 24px var(--accent-glow)' }}>
-            {loading ? 'جاري الإرسال...' : 'تأكيد الطلب'}
-          </button>
-        )}
+        {/* ── Footer Actions ────────────────────────────────── */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)', gap: 12
+        }}>
+          {step > 1 ? (
+            <button type="button" className="btn" onClick={goPrev} disabled={loading}
+              style={{ minHeight: 48, minWidth: 100 }}>
+              ← السابق
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={onClose}
+              style={{ minHeight: 48, color: 'var(--text-muted)', background: 'transparent', border: 'none' }}>
+              إلغاء
+            </button>
+          )}
+
+          {step < 4 ? (
+            <button type="button" className="btn btn--primary" onClick={goNext}
+              style={{ minHeight: 48, minWidth: 130, fontWeight: 700, fontSize: 15 }}>
+              التالي →
+            </button>
+          ) : (
+            <button type="button" className="btn btn--primary btn--glow" onClick={submit}
+              disabled={loading}
+              style={{ minHeight: 48, minWidth: 150, fontWeight: 800, fontSize: 15 }}>
+              {loading
+                ? <><span className="spinner-sm" /> جارٍ الإرسال...</>
+                : '✅ تأكيد الطلب'
+              }
+            </button>
+          )}
+        </div>
       </div>
     </Modal>
   );
 }
+
 
 interface CaseStudyModalProps {
   item:     PortfolioItem;
