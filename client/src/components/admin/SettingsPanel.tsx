@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers, FileText, ShieldAlert, Database, Lock } from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers, FileText, ShieldAlert, Database, Lock, Building, Smartphone } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -326,7 +326,104 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
       {/* TAB 5: Payment Methods */}
       {activeTab === 'payments' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="animation-fade-in">
-          {/* Electronic Payment Gateway (Paymob) */}
+          
+          {/* Payment Methods Management */}
+          <div className="card" style={{ border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 className="card-title" style={{ margin: 0 }}>إدارة طرق الدفع المتاحة للعملاء</h3>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={s.payments_enabled !== false}
+                  onChange={e => setS(x => ({ ...x, payments_enabled: e.target.checked }))}
+                />
+                <span style={{ fontWeight: 'bold', color: s.payments_enabled !== false ? 'var(--success)' : 'var(--danger)' }}>
+                  {s.payments_enabled !== false ? 'تفعيل كل طرق الدفع' : 'إيقاف الدفع تماماً'}
+                </span>
+              </label>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+              يمكنك تعطيل الدفع بالكامل ليختفي قسم الدفع من صفحة المتابعة، أو يمكنك التحكم في كل طريقة دفع بشكل مستقل.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, opacity: s.payments_enabled !== false ? 1 : 0.5, pointerEvents: s.payments_enabled !== false ? 'auto' : 'none' }}>
+              
+              {/* Paymob Toggle */}
+              <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold' }}>
+                    <CreditCard size={18} />
+                    بوابة Paymob
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(s.paymob_enabled)}
+                    onChange={e => setS(x => ({ ...x, paymob_enabled: e.target.checked }))}
+                  />
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  الفيزا، الماستركارد، المحافظ الإلكترونية المباشرة
+                </div>
+              </div>
+
+              {/* InstaPay Toggle */}
+              <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold' }}>
+                    <Sparkles size={18} />
+                    انستاباي (InstaPay)
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={s.instapay_enabled !== false}
+                    onChange={e => setS(x => ({ ...x, instapay_enabled: e.target.checked }))}
+                  />
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {s.instapay_username ? <span style={{color: 'var(--success)'}}>✅ {s.instapay_username}</span> : <span style={{color: 'var(--danger)'}}>⚠️ غير مهيأ أسفله</span>}
+                </div>
+              </div>
+
+              {/* Vodafone Cash Toggle */}
+              <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold' }}>
+                    <Smartphone size={18} />
+                    فودافون كاش اليدوي
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={s.vodafone_enabled !== false}
+                    onChange={e => setS(x => ({ ...x, vodafone_enabled: e.target.checked }))}
+                  />
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {s.vodafone_cash ? <span style={{color: 'var(--success)'}}>✅ {s.vodafone_cash}</span> : <span style={{color: 'var(--danger)'}}>⚠️ غير مهيأ أسفله</span>}
+                </div>
+              </div>
+
+              {/* Bank Transfer Toggle */}
+              <div style={{ background: 'var(--bg-3)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold' }}>
+                    <Building size={18} />
+                    تحويل بنكي
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={s.bank_enabled !== false}
+                    onChange={e => setS(x => ({ ...x, bank_enabled: e.target.checked }))}
+                  />
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {s.bank_details ? <span style={{color: 'var(--success)'}}>✅ مهيأ</span> : <span style={{color: 'var(--danger)'}}>⚠️ غير مهيأ أسفله</span>}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+{/* Electronic Payment Gateway (Paymob) */}
           <div className="card" style={{ border: '1px solid var(--accent)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

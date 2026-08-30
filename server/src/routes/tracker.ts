@@ -106,13 +106,17 @@ router.get('/:orderNo', (req, res, next) => {
         currency: site.currency || 'EGP',
       },
       paymentInfo: {
-        paymobEnabled: Boolean(site.paymob_enabled),
+        paymentsEnabled: site.payments_enabled !== false,
+        paymobEnabled: site.paymob_enabled === true || site.paymob_enabled === 'true',
+        instapayEnabled: site.instapay_enabled !== false,
         instapayUsername: site.instapay_username,
+        vodafoneEnabled: site.vodafone_enabled !== false,
         vodafoneCash: site.vodafone_cash,
+        bankEnabled: site.bank_enabled !== false,
         bankDetails: site.bank_details,
         paymentInstructions: site.payment_instructions,
         currency: site.currency || 'EGP',
-      }
+      },
     });
   } catch (err) {
     next(err);

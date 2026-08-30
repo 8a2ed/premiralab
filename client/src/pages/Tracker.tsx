@@ -755,6 +755,18 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               )}
             </div>
 
+
+            {data.paymentInfo?.paymentsEnabled === false ? (
+              <div style={{ padding: 24, textAlign: 'center', background: 'var(--bg-3)', borderRadius: 12, border: '1px solid var(--border)', marginTop: 16 }}>
+                <ShieldCheck size={48} style={{ margin: '0 auto 16px', color: 'var(--accent)' }} />
+                <h4 style={{ margin: '0 0 8px', fontSize: 18 }}>ترتيب الدفع</h4>
+                <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 14, lineHeight: 1.6 }}>
+                  سيتم التواصل معك من قبل الإدارة لترتيب طريقة الدفع المناسبة لإتمام الطلب.
+                </p>
+              </div>
+            ) : (
+              <>
+
             {/* Payment Method 2x2 Modern Grid */}
             <div className="form-field" style={{ margin: 0 }}>
               <label className="form-label" style={{ marginBottom: 8, fontSize: 12 }}>اختر طريقة السداد:</label>
@@ -764,6 +776,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 gap: 8,
               }}>
                 {/* Vodafone Cash */}
+                {data.paymentInfo?.vodafoneEnabled !== false && (
                 <button
                   type="button"
                   onClick={() => { setSelectedMethod('wallet'); setFawryRefCode(null); }}
@@ -786,9 +799,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 >
                   <Smartphone size={16} color={selectedMethod === 'wallet' ? 'var(--accent)' : 'currentColor'} />
                   <span>فودافون كاش</span>
-                </button>
+                </button>)}
 
                 {/* InstaPay */}
+                {data.paymentInfo?.instapayEnabled !== false && (
                 <button
                   type="button"
                   onClick={() => { setSelectedMethod('manual'); setFawryRefCode(null); }}
@@ -811,9 +825,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 >
                   <Send size={16} color={selectedMethod === 'manual' ? 'var(--accent)' : 'currentColor'} />
                   <span>انستاباي</span>
-                </button>
+                </button>)}
 
                 {/* Cards */}
+                {data.paymentInfo?.paymobEnabled !== false && (
                 <button
                   type="button"
                   onClick={() => { setSelectedMethod('card'); setFawryRefCode(null); }}
@@ -836,9 +851,10 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 >
                   <CreditCard size={16} color={selectedMethod === 'card' ? 'var(--accent)' : 'currentColor'} />
                   <span>بطاقة بنكية</span>
-                </button>
+                </button>)}
 
                 {/* Fawry */}
+                {data.paymentInfo?.paymobEnabled !== false && (
                 <button
                   type="button"
                   onClick={() => { setSelectedMethod('fawry'); setFawryRefCode(null); }}
@@ -861,7 +877,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 >
                   <QrCode size={16} color={selectedMethod === 'fawry' ? 'var(--accent)' : 'currentColor'} />
                   <span>كود فوري</span>
-                </button>
+                </button>)}
               </div>
             </div>
 
@@ -1180,6 +1196,8 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               </div>
             )}
 
+            </>
+          )}
             <input
               ref={receiptFileRef}
               type="file"
@@ -1190,7 +1208,6 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           </div>
         </Modal>
       )}
-
       {/* Paymob iFrame Overlay Modal */}
       {paymobIframeUrl && (
         <Modal title="بوابة الدفع الإلكتروني الآمنة — Paymob" onClose={() => setPaymobIframeUrl(null)}>

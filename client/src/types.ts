@@ -9,6 +9,10 @@ export interface SiteSettings {
   telegram:             string;
   telegram_bot_token?:  string;
   telegram_chat_id?:    string;
+  payments_enabled?:    boolean;
+  instapay_enabled?:    boolean;
+  vodafone_enabled?:    boolean;
+  bank_enabled?:        boolean;
   instapay_username?:   string;
   vodafone_cash?:       string;
   bank_details?:        string;
@@ -320,6 +324,10 @@ export interface TrackerData {
     currency?:    string;
   };
   paymentInfo?: {
+    paymentsEnabled?:     boolean;
+    instapayEnabled?:     boolean;
+    vodafoneEnabled?:     boolean;
+    bankEnabled?:         boolean;
     paymobEnabled?:       boolean;
     instapayUsername?:    string;
     vodafoneCash?:        string;
