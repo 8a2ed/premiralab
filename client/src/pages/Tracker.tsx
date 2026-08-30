@@ -214,6 +214,8 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   };
 
   const handleInitiatePaymob = async (method: 'card' | 'wallet' | 'fawry') => {
+    trackEvent('add_payment_info', { payment_type: method, value: data?.paymentAmount, currency: 'EGP' });
+
     const phoneToUse = walletPhone.trim() || data?.clientPhone || '';
     if (method === 'wallet' && !phoneToUse) {
       alert('يرجى إدخال رقم محفظة فودافون كاش / المحفظة الإلكترونية');

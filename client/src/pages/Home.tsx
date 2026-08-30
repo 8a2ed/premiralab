@@ -10,7 +10,7 @@ import { Footer } from '../components/layout/Footer.js';
 import { Modal } from '../components/ui/Modal.js';
 import { ImageWithSkeleton } from '../components/ui/ImageWithSkeleton.js';
 import { Carousel } from '../components/ui/Carousel.js';
-import { money, waLink } from '../lib/utils.js';
+import { money, waLink, trackEvent } from '../lib/utils.js';
 import { api } from '../lib/api.js';
 import type { PublicData, Package, PortfolioItem, FAQ } from '../types.js';
 
@@ -614,6 +614,10 @@ interface OrderModalProps {
 }
 
 function OrderModal({ packages, services, defaultPackage, initialProjectType, onClose, onDone }: OrderModalProps) {
+  useEffect(() => {
+    trackEvent('begin_checkout');
+  }, []);
+
   const [step, setStep] = useState(1);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState('');
@@ -702,13 +706,8 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
       localStorage.removeItem('orderFormDraft');
       try {
         const val = finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0);
-        if (typeof (window as any).gtag === 'function') {
-          (window as any).gtag('event', 'generate_lead', { value: val, currency: 'EGP', send_to: 'default' });
-          (window as any).gtag('event', 'purchase', { value: val, currency: 'EGP', transaction_id: res.orderNo });
-        }
-        if (typeof (window as any).fbq === 'function') {
-          (window as any).fbq('track', 'Lead', { value: val, currency: 'EGP', order_no: res.orderNo });
-        }
+        trackEvent('purchase', { value: val, currency: 'EGP', transaction_id: res.orderNo, items: [{ item_name: selectedPackage?.title || f.projectType }] });
+        trackEvent('generate_lead', { value: val, currency: 'EGP' });
       } catch (e) { /* ignore */ }
     } catch (err) {
       setGlobalError((err as Error).message);
@@ -747,6 +746,11 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
 
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
+    if (step === 1) {
+      const pTitle = packages.find(p => p.id === Number(f.packageId))?.title || f.projectType;
+      trackEvent('add_to_cart', { items: [{ item_name: pTitle }] });
+    }
+
     setAnimDir('forward');
     setStep(s => s + 1);
   };
@@ -1344,6 +1348,10 @@ interface CaseStudyModalProps {
 }
 
 function CaseStudyModal({ item, onClose, onOrder, whatsapp, brand }: CaseStudyModalProps) {
+  useEffect(() => {
+    trackEvent('view_item', { items: [{ item_name: item.title }] });
+  }, [item.id]);
+
   const waUrl = whatsapp
     ? waLink(whatsapp, `مرحباً ${brand || 'PREMIRALAB'}، أعجبني مشروع "${item.title}" وأريد تنفيذ مشروع مشابه.`)
     : null;

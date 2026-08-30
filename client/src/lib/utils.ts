@@ -69,3 +69,31 @@ export function downloadUrl(url: string, filename?: string): void {
   a.click();
   document.body.removeChild(a);
 }
+
+/** Track events via Google Analytics 4 & Meta Pixel */
+export function trackEvent(eventName: string, params: Record<string, any> = {}): void {
+  try {
+    if (typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', eventName, params);
+    }
+    if (typeof (window as any).fbq === 'function') {
+      // Map GA4 events to standard Facebook events if needed
+      let fbEvent = 'CustomEvent';
+      if (eventName === 'purchase') fbEvent = 'Purchase';
+      if (eventName === 'begin_checkout') fbEvent = 'InitiateCheckout';
+      if (eventName === 'add_to_cart') fbEvent = 'AddToCart';
+      if (eventName === 'view_item') fbEvent = 'ViewContent';
+      
+      const fbParams: any = {};
+      if (params.value) fbParams.value = params.value;
+      if (params.currency) fbParams.currency = params.currency;
+      if (params.items) {
+          fbParams.content_name = params.items[0]?.item_name;
+      }
+      
+      (window as any).fbq('track', fbEvent, fbParams);
+    }
+  } catch (e) {
+    // Ignore analytics errors
+  }
+}
