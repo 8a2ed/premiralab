@@ -160,6 +160,8 @@ export const api = {
       request<Order>(`/api/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     deleteOrder: (id: number) =>
       request<void>(`/api/admin/orders/${id}`, { method: 'DELETE' }),
+    deleteReceipt: (id: number) =>
+      request<{ ok: boolean }>(`/api/admin/orders/${id}/receipt`, { method: 'DELETE' }),
 
     approvePayment: (id: number, data: { amount: number; notes?: string }) =>
       request<{ ok: boolean; message: string; order: Order }>(`/api/admin/orders/${id}/approve-payment`, {
