@@ -23,6 +23,7 @@ export function Projects({ onToast }: ProjectsProps) {
   const [revisions,   setRevisions]   = useState<Record<number, Revision[]>>({});
   const [files,       setFiles]       = useState<Record<number, FileEntry[]>>({});
   const [previewFile, setPreviewFile] = useState<FileEntry | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<Record<number, boolean>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -109,6 +110,7 @@ export function Projects({ onToast }: ProjectsProps) {
       onToast('حجم الملف يتجاوز الحد الأقصى المسموح به (15 ميجابايت)', 'error');
       return;
     }
+    setUploadingFiles(prev => ({ ...prev, [pId]: true }));
     try {
       const result = await api.admin.upload(pId, file);
       setFiles(f => ({
@@ -117,6 +119,7 @@ export function Projects({ onToast }: ProjectsProps) {
       }));
       onToast('تم رفع الملف بنجاح', 'success');
     } catch (e) { onToast((e as Error).message, 'error'); }
+    finally { setUploadingFiles(prev => ({ ...prev, [pId]: false })); }
   };
 
   const revStatusIcon = (s: string) => {
@@ -211,10 +214,11 @@ interface ProjectDetailProps {
   onSetRevisionStatus: (rId: number, status: 'approved' | 'rejected') => void;
   onUploadFile:        (file: File) => void;
   onPreviewFile:       (file: FileEntry) => void;
+  isUploading?:        boolean;
 }
 
 function ProjectDetail({
-  revisions, files, revStatusIcon, onAddRevision, onSetRevisionStatus, onUploadFile, onPreviewFile,
+  revisions, files, revStatusIcon, onAddRevision, onSetRevisionStatus, onUploadFile, onPreviewFile, isUploading,
 }: ProjectDetailProps) {
   const [revTitle, setRevTitle] = useState('');
   const [revDesc,  setRevDesc]  = useState('');
@@ -253,10 +257,45 @@ function ProjectDetail({
         </button>
       </div>
 
-      <h4>الملفات والتسليمات</h4>
-      <div className="file-drop" onClick={() => fileRef.current?.click()} role="button" tabIndex={0} aria-label="رفع ملف">
-        <Upload size={20} />
-        <span>اضغط أو اسحب لرفع ملف (PDF, صورة, ZIP — حتى 15 MB)</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <h4 style={{ margin: 0 }}>الملفات والتسليمات</h4>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{files.length} ملفات</span>
+      </div>
+      <div 
+        className={`file-drop ${isUploading ? 'is-uploading' : ''}`} 
+        onClick={() => !isUploading && fileRef.current?.click()} 
+        role="button" 
+        tabIndex={0} 
+        aria-label="رفع ملف"
+        style={{
+          border: '2px dashed var(--border)',
+          background: isUploading ? 'rgba(124, 58, 237, 0.05)' : 'var(--bg-2)',
+          padding: '30px 20px',
+          borderRadius: 12,
+          textAlign: 'center',
+          cursor: isUploading ? 'wait' : 'pointer',
+          transition: 'all 0.2s',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 16
+        }}
+      >
+        {isUploading ? (
+          <>
+            <div className="spinner" style={{ width: 24, height: 24, border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>جارٍ الرفع... يرجى الانتظار</span>
+          </>
+        ) : (
+          <>
+            <div style={{ background: 'var(--bg-3)', padding: 10, borderRadius: '50%', color: 'var(--text-muted)' }}>
+              <Upload size={24} />
+            </div>
+            <strong style={{ display: 'block', fontSize: 14 }}>اضغط أو اسحب الملف هنا للرفع</strong>
+            <span className="muted" style={{ fontSize: 12 }}>يدعم: PDF, JPG, PNG, ZIP (بحد أقصى 15 MB)</span>
+          </>
+        )}
       </div>
       <input
         ref={fileRef}
@@ -265,25 +304,38 @@ function ProjectDetail({
         style={{ display: 'none' }}
         onChange={e => { const f = e.target.files?.[0]; if (f) onUploadFile(f); e.target.value = ''; }}
       />
-      {files.map(f => (
-        <div key={f.id} className="file-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FileText size={16} className="icon--muted" />
-            <span
-              className="link"
-              onClick={() => onPreviewFile(f)}
-              style={{ cursor: 'pointer', fontWeight: 600 }}
-              role="button"
-              tabIndex={0}
-            >
-              {f.name}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="muted" style={{ fontSize: 12 }}>{formatBytes(f.size)}</span>
-            <button
-              className="btn btn--icon btn--sm"
-              title="معاينة"
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {files.map(f => (
+          <div key={f.id} className="file-item" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'var(--bg-2)',
+            border: '1px solid var(--border)',
+            padding: '12px 16px',
+            borderRadius: 10
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ background: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', padding: 8, borderRadius: 8 }}>
+                <FileText size={18} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span
+                  className="link"
+                  onClick={() => onPreviewFile(f)}
+                  style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {f.name}
+                </span>
+                <span className="muted" style={{ fontSize: 12 }}>{formatBytes(f.size)}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                className="btn btn--icon btn--sm"
+                title="معاينة"
               onClick={() => onPreviewFile(f)}
             >
               <Eye size={14} />
@@ -301,6 +353,7 @@ function ProjectDetail({
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
