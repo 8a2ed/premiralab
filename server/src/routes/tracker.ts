@@ -160,7 +160,7 @@ router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next
       }
     }
 
-    db.prepare('UPDATE orders SET payment_receipt = ?, payment_method = COALESCE(NULLIF(payment_method, ""), "تحويل بنكي / محفظة") WHERE id = ?').run(finalFilename, order.id);
+    db.prepare('UPDATE orders SET payment_receipt = ?, payment_method = COALESCE(NULLIF(payment_method, \'\'), \'تحويل بنكي / محفظة\') WHERE id = ?').run(finalFilename, order.id);
 
     const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
     const message = `🧾 <b>إيصال دفع جديد!</b>
