@@ -169,6 +169,7 @@ db.exec(`
     stored_name   TEXT    NOT NULL,
     mime_type     TEXT    NOT NULL,
     size          INTEGER NOT NULL,
+    sort_order    INTEGER NOT NULL DEFAULT 0,
     created_at    TEXT    NOT NULL,
     FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
   );
@@ -209,6 +210,7 @@ db.exec(`
 `);
 
 // ─── Safe Idempotent Column Additions for Existing Databases ───────────────────
+  try { db.exec('ALTER TABLE files ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE portfolio ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE testimonials ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE faqs ADD COLUMN created_at TEXT NOT NULL DEFAULT ""'); } catch (e) { /* ignore */ }

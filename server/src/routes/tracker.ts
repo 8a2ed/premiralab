@@ -56,7 +56,7 @@ router.get('/:orderNo', (req, res, next) => {
     }
 
     const project = db.prepare('SELECT * FROM projects WHERE order_id=?').get(order.id) as any | undefined;
-    const files = project ? db.prepare('SELECT * FROM files WHERE project_id=?').all(project.id) : [];
+    const files = project ? db.prepare('SELECT * FROM files WHERE project_id=? ORDER BY sort_order ASC, id DESC').all(project.id) : [];
     const revisions = project ? db.prepare('SELECT * FROM revisions WHERE project_id=? ORDER BY id DESC').all(project.id) : [];
 
     // Fetch Payment & Site Settings

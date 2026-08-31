@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Upload, CheckCircle2, XCircle, Clock, Plus, Eye, Download, FileText } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, Clock, Plus, Eye, Download, FileText, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { formatDate, formatBytes, debounce } from '../../lib/utils.js';
 import type { Project, Revision, Order } from '../../types.js';
@@ -122,6 +122,41 @@ export function Projects({ onToast }: ProjectsProps) {
     finally { setUploadingFiles(prev => ({ ...prev, [pId]: false })); }
   };
 
+  
+  const deleteFile = async (pId: number, fId: number) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الملف؟')) return;
+    try {
+      await api.admin.deleteFile(pId, fId);
+      setFiles(f => ({ ...f, [pId]: f[pId].filter(file => file.id !== fId) }));
+      onToast('تم الحذف بنجاح', 'success');
+    } catch (e) { onToast((e as Error).message, 'error'); }
+  };
+
+  const renameFile = async (pId: number, fId: number, newName: string) => {
+    try {
+      await api.admin.updateFile(pId, fId, newName);
+      setFiles(f => ({
+        ...f,
+        [pId]: f[pId].map(file => file.id === fId ? { ...file, name: newName } : file)
+      }));
+      onToast('تم تغيير الاسم', 'success');
+    } catch (e) { onToast((e as Error).message, 'error'); }
+  };
+
+  const reorderFiles = async (pId: number, direction: 'up' | 'down', index: number) => {
+    const arr = [...(files[pId] || [])];
+    if (direction === 'up' && index > 0) {
+      [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
+    } else if (direction === 'down' && index < arr.length - 1) {
+      [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+    } else { return; }
+    
+    setFiles(f => ({ ...f, [pId]: arr }));
+    try {
+      await api.admin.reorderFiles(pId, arr.map(a => a.id));
+    } catch (e) { onToast((e as Error).message, 'error'); }
+  };
+
   const revStatusIcon = (s: string) => {
     if (s === 'approved') return <CheckCircle2 size={16} className="icon--success" />;
     if (s === 'rejected') return <XCircle      size={16} className="icon--danger" />;
@@ -215,13 +250,18 @@ interface ProjectDetailProps {
   onUploadFile:        (file: File) => void;
   onPreviewFile:       (file: FileEntry) => void;
   isUploading?:        boolean;
+  onDeleteFile:        (fId: number) => void;
+  onRenameFile:        (fId: number, name: string) => void;
+  onReorderFile:       (index: number, direction: 'up' | 'down') => void;
 }
 
 function ProjectDetail({
-  revisions, files, revStatusIcon, onAddRevision, onSetRevisionStatus, onUploadFile, onPreviewFile, isUploading,
+  revisions, files, revStatusIcon, onAddRevision, onSetRevisionStatus, onUploadFile, onPreviewFile, isUploading, onDeleteFile, onRenameFile, onReorderFile
 }: ProjectDetailProps) {
   const [revTitle, setRevTitle] = useState('');
   const [revDesc,  setRevDesc]  = useState('');
+  const [editingFileId, setEditingFileId] = useState<number | null>(null);
+  const [editingFileName, setEditingFileName] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const clearForm = () => { setRevTitle(''); setRevDesc(''); };
 
@@ -305,7 +345,7 @@ function ProjectDetail({
         onChange={e => { const f = e.target.files?.[0]; if (f) onUploadFile(f); e.target.value = ''; }}
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {files.map(f => (
+        {files.map((f, i) => (
           <div key={f.id} className="file-item" style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -320,19 +360,56 @@ function ProjectDetail({
                 <FileText size={18} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span
-                  className="link"
-                  onClick={() => onPreviewFile(f)}
-                  style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  {f.name}
-                </span>
+                {editingFileId === f.id ? (
+                  <input
+                    autoFocus
+                    className="input"
+                    style={{ padding: '2px 8px', fontSize: 12, height: 24 }}
+                    value={editingFileName}
+                    onChange={e => setEditingFileName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { onRenameFile(f.id, editingFileName); setEditingFileId(null); }
+                      if (e.key === 'Escape') setEditingFileId(null);
+                    }}
+                    onBlur={() => { onRenameFile(f.id, editingFileName); setEditingFileId(null); }}
+                  />
+                ) : (
+                  <span
+                    className="link"
+                    onClick={() => onPreviewFile(f)}
+                    style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {f.name}
+                  </span>
+                )}
                 <span className="muted" style={{ fontSize: 12 }}>{formatBytes(f.size)}</span>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginLeft: 8 }}>
+                <button className="btn btn--icon" style={{ padding: 2, height: 'auto', background: 'transparent' }} onClick={() => onReorderFile(i, 'up')} disabled={i === 0}>
+                  <ChevronUp size={12} />
+                </button>
+                <button className="btn btn--icon" style={{ padding: 2, height: 'auto', background: 'transparent' }} onClick={() => onReorderFile(i, 'down')} disabled={i === files.length - 1}>
+                  <ChevronDown size={12} />
+                </button>
+              </div>
+              <button
+                className="btn btn--icon btn--sm"
+                title="إعادة تسمية"
+                onClick={() => { setEditingFileId(f.id); setEditingFileName(f.name); }}
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                className="btn btn--icon btn--sm"
+                title="حذف"
+                onClick={() => onDeleteFile(f.id)}
+              >
+                <Trash2 size={14} className="icon--danger" />
+              </button>
               <button
                 className="btn btn--icon btn--sm"
                 title="معاينة"

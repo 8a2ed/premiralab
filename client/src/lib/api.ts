@@ -243,6 +243,22 @@ export const api = {
         `/api/admin/projects/${projectId}/files`,
       ),
 
+    
+    updateFile: (projectId: number, fileId: number, name: string) =>
+      request<{ok: boolean}>(`/api/admin/projects/${projectId}/files/${fileId}`, {
+        method: 'PATCH', body: JSON.stringify({ name })
+      }),
+
+    deleteFile: (projectId: number, fileId: number) =>
+      request<{ok: boolean}>(`/api/admin/projects/${projectId}/files/${fileId}`, {
+        method: 'DELETE'
+      }),
+
+    reorderFiles: (projectId: number, orderedIds: number[]) =>
+      request<{ok: boolean}>(`/api/admin/projects/${projectId}/files/reorder`, {
+        method: 'PATCH', body: JSON.stringify({ orderedIds })
+      }),
+
     upload: (projectId: number, file: File) => {
       const fd = new FormData();
       fd.append('file', file);

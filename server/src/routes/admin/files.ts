@@ -49,7 +49,7 @@ const storage = multer({
 router.get('/:projectId/files', auth, admin, (req: AuthRequest, res, next) => {
   try {
     const projectId = Number(req.params.projectId);
-    const files = db.prepare('SELECT id, original_name as originalName, stored_name as storedName, mime_type as mimeType, size, created_at FROM files WHERE project_id=? ORDER BY id DESC').all(projectId) as any[];
+    const files = db.prepare('SELECT id, original_name as originalName, stored_name as storedName, mime_type as mimeType, size, created_at FROM files WHERE project_id=? ORDER BY sort_order ASC, id DESC').all(projectId) as any[];
     
     const mapped = files.map(f => ({
       ...f,
@@ -122,6 +122,46 @@ router.post('/:projectId/files', auth, admin, storage.single('file'), async (req
       size:         finalSize,
       url:          fileUrl,
     });
+  } catch (err) { next(err); }
+});
+
+
+router.patch('/:projectId/files/reorder', auth, admin, (req: AuthRequest, res, next) => {
+  try {
+    const projectId = Number(req.params.projectId);
+    const { orderedIds } = req.body as { orderedIds: number[] };
+    if (!orderedIds || !Array.isArray(orderedIds)) {
+      return res.status(400).json({ error: 'orderedIds array is required' });
+    }
+    
+    const updateStmt = db.prepare('UPDATE files SET sort_order=? WHERE id=? AND project_id=?');
+    const tx = db.transaction((ids: number[]) => {
+      ids.forEach((id, index) => {
+        updateStmt.run(index, id, projectId);
+      });
+    });
+    tx(orderedIds);
+    audit(req, 'reorder', 'files', projectId);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.patch('/:projectId/files/:fileId', auth, admin, (req: AuthRequest, res, next) => {
+  try {
+    const projectId = Number(req.params.projectId);
+    const fileId = Number(req.params.fileId);
+    const { name } = req.body;
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    const result = db.prepare('UPDATE files SET original_name=? WHERE id=? AND project_id=?').run(name.trim(), fileId, projectId);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    audit(req, 'update', 'files', fileId);
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 
