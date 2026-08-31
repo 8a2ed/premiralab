@@ -406,9 +406,14 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
       {/* Global CSS for Single-Page A4 Printing */}
       <style>{`
         @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
           @page {
             size: A4 portrait;
-            margin: 8mm 10mm;
+            margin: 5mm;
           }
           html, body {
             height: auto !important;
@@ -453,8 +458,25 @@ export function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             background: #ffffff !important;
             color: #000000 !important;
             padding: 0 !important;
+            margin: 0 !important;
             max-height: none !important;
             overflow: visible !important;
+            zoom: 0.93 !important;
+          }
+          .printable-invoice-content > div {
+            margin-bottom: 12px !important;
+          }
+          .inv-card {
+            padding: 10px !important;
+          }
+          .inv-print-totals-box {
+            margin-bottom: 10px !important;
+          }
+          .inv-print-footer {
+            padding-top: 8px !important;
+          }
+          td, th {
+            padding: 6px 10px !important;
           }
           .no-print {
             display: none !important;
