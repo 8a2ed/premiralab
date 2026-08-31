@@ -83,7 +83,7 @@ router.get('/:orderNo', (req, res, next) => {
       paidAmount: order.paid_amount || 0,
       promoCode: order.promo_code,
       promoDiscount: order.promo_discount,
-      paymentReceipt: order.payment_receipt,
+      paymentReceipt: order.payment_receipt ? (order.payment_receipt.startsWith('http') ? order.payment_receipt : `/uploads/${order.payment_receipt}`) : null,
       paymentMethod: order.payment_method,
       deadline: order.deadline,
       createdAt: order.created_at,
@@ -171,10 +171,52 @@ router.post('/:orderNo/receipt', upload.single('receipt'), async (req, res, next
       buttons: [{ text: '💻 مراجعة في لوحة التحكم', url: adminUrl }]
     }).catch(console.error);
 
-    res.json({ ok: true, message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: `/uploads/${finalFilename}`, status: (order as any).status });
+    res.json({ ok: true, message: 'تم رفع إيصال الدفع بنجاح', receiptUrl: finalFilename.startsWith('http') ? finalFilename : `/uploads/${finalFilename}`, status: (order as any).status });
   } catch (err) {
     next(err);
   }
 });
 
-export default router;
+
+router.post('/:orderNo/revisions', async (req, res, next) => {
+  try {
+    const { orderNo } = req.params;
+    const { title, description } = req.body;
+    if (!title) {
+      res.status(400).json({ error: 'العنوان مطلوب' });
+      return;
+    }
+
+    const order = db.prepare('SELECT id FROM orders WHERE order_no = ?').get(orderNo) as { id: number } | undefined;
+    if (!order) {
+      res.status(404).json({ error: 'الطلب غير موجود' });
+      return;
+    }
+
+    const project = db.prepare('SELECT id FROM projects WHERE order_id = ?').get(order.id) as { id: number } | undefined;
+    if (!project) {
+      res.status(404).json({ error: 'المشروع غير موجود' });
+      return;
+    }
+
+    const t = new Date().toISOString();
+    const r = db.prepare('INSERT INTO revisions(project_id, title, description, status, created_at) VALUES(?, ?, ?, ?, ?)').run(
+      project.id, title, description || '', 'pending', t
+    );
+
+    const newRev = {
+      id: r.lastInsertRowid,
+      title,
+      description,
+      status: 'pending',
+      created_at: t
+    };
+    
+    // Notify admin
+    const { sendTelegramAlert } = await import('../services/telegram.js');
+    sendTelegramAlert(📝 <b>طلب تعديل جديد!</b>\n<b>الطلب:</b> \n<b>العنوان:</b> ).catch(() => {});
+
+    res.json({ ok: true, revision: newRev });
+  } catch (err) { next(err); }
+});
+\nexport default router;

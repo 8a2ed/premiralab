@@ -147,6 +147,12 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
     try {
       const res = await api.track(orderNo);
       setData(res);
+      if (res.paymentInfo) {
+        if (res.paymentInfo.paymobEnabled !== false) setSelectedMethod('card');
+        else if (res.paymentInfo.vodafoneEnabled !== false) setSelectedMethod('wallet');
+        else if (res.paymentInfo.instapayEnabled !== false) setSelectedMethod('manual');
+        else setSelectedMethod('manual');
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally { setLoading(false); }
@@ -884,7 +890,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             </div>
 
             {/* Vodafone Cash Panel */}
-            {selectedMethod === 'wallet' && (
+            {selectedMethod === 'wallet' && data.paymentInfo?.vodafoneEnabled !== false && (
               <div style={{
                 background: 'var(--bg-2)',
                 border: '1px solid var(--border)',
@@ -1029,7 +1035,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             )}
 
             {/* InstaPay Panel */}
-            {selectedMethod === 'manual' && (
+            {selectedMethod === 'manual' && (data.paymentInfo?.instapayEnabled !== false || data.paymentInfo?.bankEnabled !== false) && (
               <div style={{
                 background: 'var(--bg-2)',
                 border: '1px solid var(--border)',
@@ -1106,7 +1112,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             )}
 
             {/* Cards (Visa/Mastercard) Panel */}
-            {selectedMethod === 'card' && (
+            {selectedMethod === 'card' && data.paymentInfo?.paymobEnabled !== false && (
               <div style={{
                 background: 'var(--bg-2)',
                 border: '1px solid var(--border)',
@@ -1132,7 +1138,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
             )}
 
             {/* Fawry Panel */}
-            {selectedMethod === 'fawry' && (
+            {selectedMethod === 'fawry' && data.paymentInfo?.paymobEnabled !== false && (
               <div style={{
                 background: 'var(--bg-2)',
                 border: '1px solid var(--border)',
