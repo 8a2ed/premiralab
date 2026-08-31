@@ -547,24 +547,26 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                   )}
 
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <button
-                      className="btn btn--primary btn--glow"
-                      style={{
-                        flex: 1,
-                        padding: '14px 20px',
-                        fontSize: 15,
-                        fontWeight: 700,
-                        justifyContent: 'center',
-                        gap: 10,
-                        width: '100%',
-                        borderRadius: 12,
-                        lineHeight: 1.3,
-                        boxShadow: '0 8px 24px rgba(124, 58, 237, 0.4)',
-                      }}
-                      onClick={() => setPayModalOpen(true)}
-                    >
-                      <CreditCard size={18} /> سداد الدفعة وتأكيد الحجز ⚡
-                    </button>
+                    {!data.paymentReceipt && (
+                      <button
+                        className="btn btn--primary btn--glow"
+                        style={{
+                          flex: 1,
+                          padding: '14px 20px',
+                          fontSize: 15,
+                          fontWeight: 700,
+                          justifyContent: 'center',
+                          gap: 10,
+                          width: '100%',
+                          borderRadius: 12,
+                          lineHeight: 1.3,
+                          boxShadow: '0 8px 24px rgba(124, 58, 237, 0.4)',
+                        }}
+                        onClick={() => setPayModalOpen(true)}
+                      >
+                        <CreditCard size={18} /> سداد الدفعة وتأكيد الحجز ⚡
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -984,6 +986,9 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                       </div>
 
                       {/* Upload Receipt CTA Button */}
+                      <div style={{ fontSize: 11, color: '#ef4444', textAlign: 'center', marginTop: 12, marginBottom: 8, fontWeight: 700, padding: '4px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6 }}>
+                        ⚠️ يرجى التأكد من المراجعة الدقيقة لبيانات التحويل قبل الرفع (لا يمكن تعديل الصورة لاحقاً)
+                      </div>
                       <button
                         className="btn btn--primary btn--glow"
                         style={{
@@ -994,12 +999,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                           borderRadius: 10,
                           justifyContent: 'center',
                           gap: 8,
-                          marginTop: 12,
                         }}
                         onClick={() => receiptFileRef.current?.click()}
                         disabled={uploadingReceipt}
                       >
-                        <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل 📸'}
+                        <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل المكتمل 📸'}
                       </button>
 
                       {/* Paymob Gateway Fallback */}
@@ -1092,6 +1096,9 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                 </div>
 
                 {/* Upload Receipt CTA Button */}
+                <div style={{ fontSize: 11, color: '#ef4444', textAlign: 'center', marginTop: 12, marginBottom: 8, fontWeight: 700, padding: '4px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6 }}>
+                  ⚠️ يرجى التأكد من المراجعة الدقيقة لبيانات التحويل قبل الرفع (لا يمكن تعديل الصورة لاحقاً)
+                </div>
                 <button
                   className="btn btn--primary btn--glow"
                   style={{
@@ -1102,12 +1109,11 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
                     borderRadius: 10,
                     justifyContent: 'center',
                     gap: 8,
-                    marginTop: 12,
                   }}
                   onClick={() => receiptFileRef.current?.click()}
                   disabled={uploadingReceipt}
                 >
-                  <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل 📸'}
+                  <Upload size={16} /> {uploadingReceipt ? 'جارٍ رفع الإيصال...' : 'رفع صورة إشعار التحويل المكتمل 📸'}
                 </button>
               </div>
             )}
