@@ -202,6 +202,11 @@ if (CLIENT_DIST) {
   console.warn('[static] Frontend client/dist folder not found. API is running, but no static files will be served.');
 }
 
+// ─── 404 handler for API and Uploads ──────────────────────────────────────────
+app.use((req, res, next) => {
+  res.status(404).json({ error: 'المورد المطلوب غير موجود أو تم حذفه.' });
+});
+
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
