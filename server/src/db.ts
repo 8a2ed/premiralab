@@ -37,6 +37,17 @@ db.exec(`
     value TEXT NOT NULL
   );
 
+  
+  CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id   INTEGER NOT NULL,
+    amount      REAL    NOT NULL,
+    type        TEXT    NOT NULL,
+    description TEXT,
+    created_at  TEXT    NOT NULL,
+    FOREIGN KEY(client_id) REFERENCES clients(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS packages (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     title       TEXT    NOT NULL,
@@ -220,6 +231,8 @@ try { db.exec('ALTER TABLE clients ADD COLUMN reset_token TEXT'); } catch (e) { 
 try { db.exec('ALTER TABLE clients ADD COLUMN reset_expires TEXT'); } catch (e) { /* ignore */ }
 
 try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
+  try { db.exec('ALTER TABLE orders ADD COLUMN wallet_used REAL DEFAULT 0'); } catch (e) { /* ignore */ }
+  try { db.exec('ALTER TABLE orders ADD COLUMN points_granted INTEGER DEFAULT 0'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE orders ADD COLUMN payment_receipt TEXT;'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE orders ADD COLUMN payment_method TEXT;'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE orders ADD COLUMN promo_code TEXT;'); } catch (e) { /* ignore */ }

@@ -7,9 +7,10 @@ interface NavProps {
   site?: SiteSettings;
   onOrder: () => void;
   onClientClick: () => void;
+  isClientLoggedIn?: boolean;
 }
 
-export function Nav({ site = {} as SiteSettings, onOrder, onClientClick }: NavProps) {
+export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClientLoggedIn }: NavProps) {
   const [open, setOpen] = useState(false);
 
   const scrollTo = (id: string) => {
@@ -36,7 +37,7 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick }: NavPr
             <button onClick={() => scrollTo('packages')} aria-label="انتقل إلى الباقات">الباقات</button>
             <button onClick={() => scrollTo('portfolio')} aria-label="انتقل إلى أعمالنا">أعمالنا</button>
             <button onClick={() => scrollTo('testimonials')} aria-label="انتقل إلى آراء العملاء">العملاء</button>
-            <button onClick={onClientClick} aria-label="تسجيل الدخول / حسابي" style={{ color: 'var(--accent)', fontWeight: 'bold' }}>تسجيل الدخول</button>
+            <button onClick={onClientClick} aria-label="تسجيل الدخول / حسابي" style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{isClientLoggedIn ? 'صفحتي 👤' : 'تسجيل الدخول'}</button>
           </nav>
 
           {/* Actions */}
@@ -62,7 +63,7 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick }: NavPr
             <button onClick={() => scrollTo('packages')}>الباقات</button>
             <button onClick={() => scrollTo('portfolio')}>أعمالنا</button>
             <button onClick={() => scrollTo('testimonials')}>آراء العملاء</button>
-            <button onClick={() => { onClientClick(); setOpen(false); }} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>تسجيل الدخول / حسابي</button>
+            <button onClick={() => { onClientClick(); setOpen(false); }} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{isClientLoggedIn ? 'صفحتي 👤' : 'تسجيل الدخول / حسابي'}</button>
             <button className="btn btn--primary" onClick={() => { onOrder(); setOpen(false); }}>ابدأ مشروعك</button>
           </nav>
         )}

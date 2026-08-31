@@ -224,7 +224,7 @@ export function Home({
         }} 
       />
 
-      <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} />
+      <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} isClientLoggedIn={!!localStorage.getItem('client_token')} />
 
       <main id="top">
         {/* Hero Section */}
@@ -653,6 +653,17 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   }, []);
 
   const [loading,   setLoading]   = useState(false);
+  const [clientProfile, setClientProfile] = useState<any>(null);
+  useEffect(() => {
+    if (localStorage.getItem('client_token')) {
+      api.client.profile().then(res => {
+        if (res.client) {
+          setClientProfile(res.client);
+          setF(prev => ({ ...prev, name: res.client.name, phone: res.client.phone, email: res.client.email }));
+        }
+      }).catch(() => {});
+    }
+  }, []);
   const [submitted, setSubmitted] = useState<{ orderNo: string } | null>(null);
   const [checkingPromo, setCheckingPromo] = useState(false);
   const [promoResult, setPromoResult] = useState<{ success?: string; error?: string; discount?: number; type?: string } | null>(null);
@@ -667,7 +678,12 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         ? Math.round(basePrice * promoResult.discount / 100)
         : promoResult.discount)
     : 0;
-  const finalPrice = Math.max(0, basePrice - discountVal);
+  let finalPrice = Math.max(0, basePrice - discountVal);
+  let walletDiscount = 0;
+  if (f.useWallet && clientProfile && clientProfile.wallet_balance > 0) {
+     walletDiscount = Math.min(clientProfile.wallet_balance, finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0));
+     finalPrice = Math.max(0, finalPrice - walletDiscount);
+  }
 
   const handleCheckPromo = async () => {
     if (!f.promoCode) return;
@@ -701,6 +717,8 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         budget:      f.budget && !f.packageId ? Number(f.budget) : undefined,
         deadline:    f.deadline || undefined,
         promoCode:   f.promoCode && promoResult?.success ? f.promoCode : undefined,
+        referralCode: localStorage.getItem('referral_code') || undefined,
+        useWallet:   f.useWallet,
       });
       setSubmitted({ orderNo: res.orderNo });
       localStorage.removeItem('orderFormDraft');
@@ -1242,6 +1260,25 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                 )}
               </div>
 
+              {/* Wallet Usage */}
+              {clientProfile && clientProfile.wallet_balance > 0 && (
+                <div style={{ background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--primary-light)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10, marginTop: 15 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                       <span style={{ fontSize: 18 }}>💳</span>
+                       <div>
+                         <div style={{ fontSize: 14, fontWeight: 600 }}>رصيد المحفظة متاح</div>
+                         <div style={{ fontSize: 12, color: 'var(--primary)' }}>{clientProfile.wallet_balance} ج.م</div>
+                       </div>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={f.useWallet} onChange={e => setF({ ...f, useWallet: e.target.checked })} style={{ width: 18, height: 18, accentColor: 'var(--primary)' }} />
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>استخدام الرصيد</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {/* Price Summary */}
               {(basePrice > 0 || (f.budget && !f.packageId)) && (
                 <div style={{ background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1255,6 +1292,12 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--success)' }}>
                       <span>خصم ({f.promoCode})</span>
                       <strong>— {money(discountVal)}</strong>
+                    </div>
+                  )}
+                  {walletDiscount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--primary)' }}>
+                      <span>خصم الرصيد المستخدم</span>
+                      <strong>— {money(walletDiscount)}</strong>
                     </div>
                   )}
                   {f.budget && !f.packageId && (

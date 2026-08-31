@@ -138,8 +138,9 @@ export const api = {
     forgotPassword: (email: string) => request<{ ok: boolean }>('/api/client/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
     resetPassword:  (data: any) => request<{ ok: boolean }>('/api/client/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
     
-    orders:   () => request<{ orders: any[] }>('/api/client/dashboard/orders'),
-    project:  (id: number) => request<any>(`/api/client/dashboard/projects/${id}`),
+    orders: () => request<any>('/api/client/dashboard/orders'),
+    profile: () => request<any>('/api/client/dashboard/profile'),
+    project: (id: number) => request<any>(`/api/client/dashboard/projects/${id}`),
   },
 
   // ─── Admin ────────────────────────────────────────────────────────────────────
@@ -207,6 +208,9 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ password }),
       }),
+
+    updateClientWallet: (id: number, data: { balance?: number; points?: number }) =>
+      request<{ ok: boolean; client: any }>(`/api/admin/clients/${id}/wallet`, { method: 'PATCH', body: JSON.stringify(data) }),
 
     resetClientPassword: (id: number) =>
       request<{
@@ -285,6 +289,8 @@ export const api = {
     settings: () => request<{ site: SiteSettings }>('/api/admin/settings'),
     saveSettings: (key: string, data: SiteSettings) =>
       request<SiteSettings>(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify(data) }),
+    getMarketingSettings: () => request<any>('/api/admin/settings/marketing'),
+    saveMarketingSettings: (data: any) => request<{ ok: boolean }>('/api/admin/settings/marketing', { method: 'POST', body: JSON.stringify(data) }),
     testTelegram: () =>
       request<{ ok: boolean; message: string }>('/api/admin/settings/test-telegram', { method: 'POST' }),
     testEmail: () =>

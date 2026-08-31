@@ -42,7 +42,10 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
   
   // Dashboard State
   const [orders, setOrders] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [activeProject, setActiveProject] = useState<any>(null);
+  const [dashboardTab, setDashboardTab] = useState<'orders' | 'wallet'>('orders');
 
   // Check redirects
   const url = new URL(window.location.href);
@@ -261,6 +264,61 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
             </button>
           </div>
         </div>
+
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+          <button className={`btn ${dashboardTab === 'orders' ? 'btn--primary' : 'btn--outline'}`} onClick={() => setDashboardTab('orders')}>طلباتي والمشاريع</button>
+          <button className={`btn ${dashboardTab === 'wallet' ? 'btn--primary' : 'btn--outline'}`} onClick={() => setDashboardTab('wallet')}>المحفظة والمكافآت 🎁</button>
+        </div>
+
+        {dashboardTab === 'wallet' && profile && (
+          <div className="card" style={{ borderRadius: 18, padding: 24, marginBottom: 20 }}>
+            <h3 className="card-title" style={{ fontSize: 20, marginBottom: 20 }}>المحفظة وبرنامج المكافآت</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>💳</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>رصيد المحفظة</div>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: 'var(--primary)' }}>{profile.wallet_balance || 0} ج.م</div>
+              </div>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>✨</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>نقاط الولاء</div>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: 'var(--primary)' }}>{profile.points || 0} نقطة</div>
+              </div>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--primary-light)', borderRadius: 14, padding: 20, textAlign: 'center', cursor: 'pointer' }} onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/?ref=${profile.referral_code}`);
+                  onToast('تم نسخ رابط الدعوة بنجاح!', 'success');
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🔗</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>رابط الدعوة الخاص بك</div>
+                <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--primary)', letterSpacing: 2 }}>{profile.referral_code}</div>
+                <div style={{ fontSize: 11, color: 'var(--success)', marginTop: 8 }}>اضغط لنسخ الرابط ومشاركته</div>
+              </div>
+            </div>
+
+            <h4 style={{ fontSize: 16, marginBottom: 12 }}>سجل حركات المحفظة</h4>
+            {transactions.length === 0 ? (
+              <div className="muted" style={{ textAlign: 'center', padding: '20px' }}>لا توجد حركات سابقة</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {transactions.map((tx: any) => (
+                  <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 12, background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--border)', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500 }}>{tx.description}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(tx.created_at).toLocaleString('ar-EG')}</div>
+                    </div>
+                    <div style={{ fontWeight: 'bold', direction: 'ltr', color: tx.type === 'spend' ? 'var(--danger)' : 'var(--success)' }}>
+                      {tx.type === 'spend' ? '-' : '+'}{tx.amount} ج.م
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: dashboardTab === 'orders' ? 'block' : 'none' }}>
+
 
         {activeProject ? (
           <div className="card" style={{ borderRadius: 18, padding: 24 }}>
@@ -554,6 +612,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
             </div>
           </div>
         )}
+        </div>
       </div>
     );
   }

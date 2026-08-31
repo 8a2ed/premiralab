@@ -93,6 +93,7 @@ export function Clients({ onToast }: ClientsProps) {
                   <th>بيانات التواصل</th>
                   <th>حالة الحساب</th>
                   <th>الطلبات والمبالغ</th>
+                  <th>المحفظة/النقاط</th>
                   <th>تاريخ الانضمام</th>
                   <th>الإجراءات</th>
                 </tr>
@@ -176,6 +177,16 @@ export function Clients({ onToast }: ClientsProps) {
                             مسدد: {money(c.total_spent || 0)}
                           </div>
                         )}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <span style={{ fontSize: 12, fontWeight: 'bold', color: 'var(--primary)' }}>
+                          💳 {c.wallet_balance || 0} ج.م
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          ✨ {c.points || 0} نقطة
+                        </span>
                       </div>
                     </td>
 
@@ -353,6 +364,11 @@ function ClientControlModal({ client, onClose, onToast, onUpdated }: ClientContr
 
   // Temporary password reset result
   const [tempPassResult, setTempPassResult] = useState<string | null>(null);
+  
+  // Wallet state
+  const [walletBalance, setWalletBalance] = useState<number>(client.wallet_balance || 0);
+  const [points, setPoints] = useState<number>(client.points || 0);
+  const [savingWallet, setSavingWallet] = useState(false);
   const [copiedPass,     setCopiedPass]     = useState(false);
   const [resettingPass,  setResettingPass]  = useState(false);
 
@@ -364,6 +380,8 @@ function ClientControlModal({ client, onClose, onToast, onUpdated }: ClientContr
       setName(res.client.name);
       setPhone(res.client.phone);
       setEmail(res.client.email || '');
+      setWalletBalance(res.client.wallet_balance || 0);
+      setPoints(res.client.points || 0);
     } catch (e: any) {
       onToast(e.message || 'فشل تحميل بيانات العميل', 'error');
     } finally {
@@ -426,6 +444,20 @@ function ClientControlModal({ client, onClose, onToast, onUpdated }: ClientContr
     }
   };
 
+
+  const handleUpdateWallet = async () => {
+    setSavingWallet(true);
+    try {
+      await api.admin.updateClientWallet(client.id, { balance: walletBalance, points });
+      onToast('تم تحديث المحفظة بنجاح', 'success');
+      onUpdated();
+      loadFullClient();
+    } catch (e: any) {
+      onToast(e.message || 'فشل تحديث المحفظة', 'error');
+    } finally {
+      setSavingWallet(false);
+    }
+  };
   const copyPassword = (pass: string) => {
     navigator.clipboard.writeText(pass).then(() => {
       setCopiedPass(true);
@@ -528,15 +560,44 @@ function ClientControlModal({ client, onClose, onToast, onUpdated }: ClientContr
           >
             <Layers size={14} /> سجل الطلبات والماليات ({fullData?.orders.length ?? client.orders_count ?? 0})
           </button>
-          <button
+          <button 
+            type="button"
+            className={`btn btn--sm ${activeTab === 'wallet' ? 'btn--primary' : 'btn--outline'}`}
+            onClick={() => setActiveTab('wallet')}
+          >
+            المحفظة والنقاط 💳
+          </button>
+          <button 
             type="button"
             className={`btn btn--sm ${activeTab === 'profile' ? 'btn--primary' : 'btn--outline'}`}
             onClick={() => setActiveTab('profile')}
-            style={{ gap: 6, borderRadius: 8 }}
           >
-            <Edit size={14} /> تعديل البيانات
+            بيانات العميل
           </button>
         </div>
+
+        {activeTab === 'wallet' && (
+          <div className="form-stack" style={{ gap: 16 }}>
+            <h4 style={{ margin: 0 }}>إدارة رصيد المحفظة ونقاط الولاء</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="input-group">
+                <label>رصيد المحفظة (EGP)</label>
+                <input type="number" className="input" value={walletBalance} onChange={e => setWalletBalance(Number(e.target.value))} />
+              </div>
+              <div className="input-group">
+                <label>نقاط الولاء</label>
+                <input type="number" className="input" value={points} onChange={e => setPoints(Number(e.target.value))} />
+              </div>
+            </div>
+            <button className="btn btn--primary" onClick={handleUpdateWallet} disabled={savingWallet} style={{ width: '100%', marginTop: 10 }}>
+              {savingWallet ? 'جاري الحفظ...' : 'تحديث المحفظة'}
+            </button>
+            <div style={{ background: 'var(--bg-3)', padding: 12, borderRadius: 10, fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>
+              <p>ملاحظة: يمكنك تعديل رصيد العميل ونقاطه يدوياً هنا.</p>
+              <p>رابط دعوة العميل: <strong>{client.referral_code || 'لم يتم إنشاء طلب بعد'}</strong></p>
+            </div>
+          </div>
+        )}
 
         {/* ─── TAB 1: Security & Password Management ─── */}
         {activeTab === 'security' && (

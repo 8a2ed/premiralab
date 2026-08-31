@@ -67,4 +67,18 @@ router.get('/promo/:code', (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET public marketing settings
+router.get('/marketing', (req, res, next) => {
+  try {
+    const row = db.prepare("SELECT value FROM settings WHERE key='marketing'").get() as { value: string } | undefined;
+    const mkt = row && row.value ? JSON.parse(row.value) : {};
+    res.json({
+      googleAnalyticsId: mkt.googleAnalyticsId || '',
+      metaPixelId: mkt.metaPixelId || '',
+      tiktokPixelId: mkt.tiktokPixelId || '',
+      snapchatPixelId: mkt.snapchatPixelId || ''
+    });
+  } catch (err) { next(err); }
+});
+
 export default router;

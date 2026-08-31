@@ -6,6 +6,29 @@ const router = Router();
 
 router.use(clientAuth);
 
+
+router.get('/profile', (req: any, res) => {
+  try {
+    const client = db.prepare('SELECT id, name, email, phone, company, wallet_balance, points, referral_code FROM clients WHERE id = ?').get(req.client.id) as any;
+    if (!client) return res.status(404).json({ error: 'Client not found' });
+    
+    // Auto-generate referral code if not exists
+    if (!client.referral_code) {
+      const code = 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      try {
+        db.prepare('UPDATE clients SET referral_code = ? WHERE id = ?').run(code, req.client.id);
+        client.referral_code = code;
+      } catch (e) { /* ignore collision */ }
+    }
+    
+    const transactions = db.prepare('SELECT id, amount, type, description, created_at FROM wallet_transactions WHERE client_id = ? ORDER BY id DESC').all(req.client.id);
+    
+    res.json({ client, transactions });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get all orders for the logged in client
 router.get('/orders', (req: any, res) => {
   try {

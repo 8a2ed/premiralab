@@ -30,6 +30,8 @@ const orderSchema = z.object({
   budget:      z.number().nonnegative().optional(),
   deadline:    z.string().max(30).optional(),
   promoCode:   z.string().trim().max(20).optional(),
+  referralCode: z.string().trim().max(20).optional(),
+  useWallet:    z.boolean().optional(),
 });
 
 router.post('/', orderLimiter, async (req, res, next) => {
@@ -65,7 +67,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
       }
 
       // Identify or Upsert client
-      let client: { id: number; email: string } | undefined;
+      let client: { id: number; email: string; referred_by?: number | null } | undefined;
       
       // 1. If client is logged in
       if (loggedInClientId) {
@@ -102,9 +104,14 @@ router.post('/', orderLimiter, async (req, res, next) => {
 
       // 4. Create new client record if still not found
       if (!client) {
-        const r = db.prepare('INSERT INTO clients(name,phone,email,created_at,updated_at) VALUES(?,?,?,?,?)')
-          .run(d.name, d.phone, d.email || '', t, t);
-        client = { id: Number(r.lastInsertRowid), email: d.email || '' };
+        let referred_by = null;
+        if (d.referralCode) {
+          const refClient = db.prepare('SELECT id FROM clients WHERE referral_code=?').get(d.referralCode) as any;
+          if (refClient) referred_by = refClient.id;
+        }
+        const r = db.prepare('INSERT INTO clients(name,phone,email,referred_by,created_at,updated_at) VALUES(?,?,?,?,?,?)')
+          .run(d.name, d.phone, d.email || '', referred_by, t, t);
+        client = { id: Number(r.lastInsertRowid), email: d.email || '', referred_by };
       }
 
       // Determine base price and calculated budget with promo
@@ -127,14 +134,29 @@ router.post('/', orderLimiter, async (req, res, next) => {
       }
 
       const orderNo = `ORD-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+      
+      let walletUsed = 0;
+      let finalPaymentAmount = calculatedBudget;
+      
+      if (d.useWallet && client!.id) {
+        const cRow = db.prepare('SELECT wallet_balance FROM clients WHERE id=?').get(client.id) as any;
+        if (cRow && cRow.wallet_balance > 0) {
+           walletUsed = Math.min(cRow.wallet_balance, finalPaymentAmount);
+           finalPaymentAmount -= walletUsed;
+           db.prepare('UPDATE clients SET wallet_balance = wallet_balance - ? WHERE id=?').run(walletUsed, client.id);
+           db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)').run(client!.id, walletUsed, 'spend', `دفع جزء من طلب ${orderNo}`, t);
+        }
+      }
+
       const r = db.prepare(
-        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,payment_amount,deadline,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO orders(order_no,client_id,package_id,service_id,project_type,notes,status,budget,payment_amount,wallet_used,deadline,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       ).run(
-        orderNo, client.id,
+        orderNo, client!.id,
         d.packageId ?? null, d.serviceId ?? null,
         d.projectType, d.notes, 'new',
         calculatedBudget > 0 ? calculatedBudget : (d.budget ?? null),
-        calculatedBudget > 0 ? calculatedBudget : (d.budget ?? null),
+        finalPaymentAmount > 0 ? finalPaymentAmount : (d.budget ?? null),
+        walletUsed,
         d.deadline ?? null,
         validPromo ? validPromo.code : null, discountInfo,
         t, t,

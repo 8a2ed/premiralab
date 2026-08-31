@@ -58,7 +58,22 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
   const [saving,    setSaving]    = useState(false);
   const [testingTg, setTestingTg] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'metrics' | 'sections' | 'general' | 'payments' | 'integrations' | 'seo' | 'legal' | 'security'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'metrics' | 'sections' | 'general' | 'payments' | 'integrations' | 'seo' | 'legal' | 'security' | 'marketing'>('content');
+
+  const [marketing, setMarketing] = useState({
+    googleAnalyticsId: '',
+    metaPixelId: '',
+    tiktokPixelId: '',
+    snapchatPixelId: '',
+    pointsPerDollar: 0,
+    referralReward: 0,
+  });
+
+  useEffect(() => {
+    api.admin.getMarketingSettings?.().then(data => {
+       if (data) setMarketing(data);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     api.admin.settings().then(data => {
@@ -114,6 +129,7 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
       <div className="admin-tabs-nav" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
         <TabBtn label="واجهة البداية والهوية" icon={<Palette size={16} />} active={activeTab === 'content'} onClick={() => setActiveTab('content')} />
         <TabBtn label="شريط الأرقام والمؤشرات" icon={<TrendingUp size={16} />} active={activeTab === 'metrics'} onClick={() => setActiveTab('metrics')} />
+        <TabBtn label="التسويق والولاء" icon={<Share2 size={16} />} active={activeTab === 'marketing'} onClick={() => setActiveTab('marketing')} />
         <TabBtn label="نصوص وعناوين الأقسام" icon={<Layout size={16} />} active={activeTab === 'sections'} onClick={() => setActiveTab('sections')} />
         <TabBtn label="بيانات التواصل والعامة" icon={<MessageSquare size={16} />} active={activeTab === 'general'} onClick={() => setActiveTab('general')} />
         <TabBtn label="طرق الدفع والبنوك" icon={<CreditCard size={16} />} active={activeTab === 'payments'} onClick={() => setActiveTab('payments')} />
@@ -298,7 +314,49 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
       )}
 
       {/* TAB 4: General Settings */}
-      {activeTab === 'general' && (
+        {activeTab === 'marketing' && (
+          <div className="card" style={{ padding: '24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <h3 style={{ fontSize: 18, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Share2 size={20} /> أداوت التسويق وبرنامج الولاء
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Input label="نقاط الولاء لكل جنيه (Points/EGP)" type="number" 
+                value={marketing.pointsPerDollar} 
+                onChange={e => setMarketing({ ...marketing, pointsPerDollar: Number(e.target.value) })} 
+              />
+              <Input label="مكافأة دعوة الأصدقاء (EGP)" type="number" 
+                value={marketing.referralReward} 
+                onChange={e => setMarketing({ ...marketing, referralReward: Number(e.target.value) })} 
+              />
+            </div>
+
+            <hr style={{ borderColor: 'var(--border)', margin: '10px 0' }} />
+            
+            <h4 style={{ fontSize: 15, marginBottom: 5 }}>أكواد التتبع (Pixels & Analytics)</h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Input label="Google Analytics ID (G-XXXX)" 
+                value={marketing.googleAnalyticsId} 
+                onChange={e => setMarketing({ ...marketing, googleAnalyticsId: e.target.value })} 
+              />
+              <Input label="Meta Pixel ID" 
+                value={marketing.metaPixelId} 
+                onChange={e => setMarketing({ ...marketing, metaPixelId: e.target.value })} 
+              />
+              <Input label="TikTok Pixel ID" 
+                value={marketing.tiktokPixelId} 
+                onChange={e => setMarketing({ ...marketing, tiktokPixelId: e.target.value })} 
+              />
+              <Input label="Snapchat Pixel ID" 
+                value={marketing.snapchatPixelId} 
+                onChange={e => setMarketing({ ...marketing, snapchatPixelId: e.target.value })} 
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'general' && (
         <div className="card animation-fade-in">
           <h3 className="card-title">إعدادات الموقع والهوية ومعلومات التواصل</h3>
           <div className="form-stack">

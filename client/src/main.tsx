@@ -4,6 +4,7 @@ import { Home } from './pages/Home.js';
 import { Toast } from './components/ui/Toast.js';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.js';
 import { Skeleton } from './components/ui/Skeleton.js';
+import MarketingPixels from './components/MarketingPixels.js';
 import { api } from './lib/api.js';
 import { applyTheme, getInitialTheme } from './lib/utils.js';
 import type { PublicData } from './types.js';
@@ -39,8 +40,11 @@ function App() {
   // Apply theme on mount
   useEffect(() => { applyTheme(getInitialTheme()); }, []);
 
-  // Check URL on load for tracker or admin access
+  // Check URL on load for tracker, admin, or referral
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) localStorage.setItem('referral_code', ref);
     const handleLocation = () => {
       const path = window.location.pathname;
       const params = new URLSearchParams(window.location.search);

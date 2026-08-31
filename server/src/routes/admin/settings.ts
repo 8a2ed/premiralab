@@ -85,4 +85,22 @@ router.put('/:key', auth, admin, (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET marketing
+router.get('/marketing', auth, admin, (req, res, next) => {
+  try {
+    const row = db.prepare("SELECT value FROM settings WHERE key='marketing'").get() as { value: string } | undefined;
+    res.json(row && row.value ? JSON.parse(row.value) : {});
+  } catch (err) { next(err); }
+});
+
+// POST marketing
+router.post('/marketing', auth, admin, (req: AuthRequest, res, next) => {
+  try {
+    const data = req.body;
+    db.prepare("INSERT INTO settings (key, value) VALUES ('marketing', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(JSON.stringify(data));
+    audit(req, 'update_settings_marketing', 'settings', 0);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 export default router;

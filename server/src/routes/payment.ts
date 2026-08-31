@@ -246,6 +246,8 @@ router.post('/paymob/webhook', async (req, res, next) => {
           );
         })();
 
+        import('../services/rewards.js').then(m => m.processOrderRewards(order.id));
+
         // 4. Send Telegram Alert to Admin
         const adminUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admin`;
         sendTelegramAlert(`💸 <b>تم استلام دفعة إلكترونية بنجاح!</b>

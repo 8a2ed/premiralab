@@ -75,6 +75,9 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
     }
     if (d.paid_amount !== undefined) {
       db.prepare('UPDATE orders SET paid_amount=?,updated_at=? WHERE id=?').run(d.paid_amount, now(), id);
+      if (d.paid_amount > 0) {
+        import('../../services/rewards.js').then(m => m.processOrderRewards(id));
+      }
     }
 
     // Return fresh data
