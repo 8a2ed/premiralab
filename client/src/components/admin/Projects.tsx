@@ -255,6 +255,15 @@ interface ProjectDetailProps {
   onReorderFile:       (index: number, direction: 'up' | 'down') => void;
 }
 
+const getExt = (name: string) => {
+  const i = name.lastIndexOf('.');
+  return i !== -1 ? name.substring(i) : '';
+};
+const getBase = (name: string) => {
+  const i = name.lastIndexOf('.');
+  return i !== -1 ? name.substring(0, i) : name;
+};
+
 function ProjectDetail({
   revisions, files, revStatusIcon, onAddRevision, onSetRevisionStatus, onUploadFile, onPreviewFile, isUploading, onDeleteFile, onRenameFile, onReorderFile
 }: ProjectDetailProps) {
@@ -361,18 +370,34 @@ function ProjectDetail({
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {editingFileId === f.id ? (
-                  <input
-                    autoFocus
-                    className="input"
-                    style={{ padding: '2px 8px', fontSize: 12, height: 24 }}
-                    value={editingFileName}
-                    onChange={e => setEditingFileName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') { onRenameFile(f.id, editingFileName); setEditingFileId(null); }
-                      if (e.key === 'Escape') setEditingFileId(null);
-                    }}
-                    onBlur={() => { onRenameFile(f.id, editingFileName); setEditingFileId(null); }}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                      autoFocus
+                      className="input"
+                      style={{ padding: '2px 8px', fontSize: 12, height: 24 }}
+                      value={editingFileName}
+                      onChange={e => setEditingFileName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          if (editingFileName.trim()) {
+                            onRenameFile(f.id, editingFileName.trim() + getExt(f.name));
+                          }
+                          setEditingFileId(null);
+                        }
+                        if (e.key === 'Escape') setEditingFileId(null);
+                      }}
+                    />
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', direction: 'ltr' }}>{getExt(f.name)}</span>
+                    <button className="btn btn--sm btn--primary" style={{ padding: '0 8px', height: 24, marginRight: 8 }} onClick={() => {
+                        if (editingFileName.trim()) {
+                          onRenameFile(f.id, editingFileName.trim() + getExt(f.name));
+                        }
+                        setEditingFileId(null);
+                    }}><Check size={14}/></button>
+                    <button className="btn btn--sm" style={{ padding: '0 8px', height: 24, marginRight: 4 }} onClick={() => setEditingFileId(null)}>
+                      <X size={14}/>
+                    </button>
+                  </div>
                 ) : (
                   <span
                     className="link"
@@ -399,7 +424,7 @@ function ProjectDetail({
               <button
                 className="btn btn--icon btn--sm"
                 title="إعادة تسمية"
-                onClick={() => { setEditingFileId(f.id); setEditingFileName(f.name); }}
+                onClick={() => { setEditingFileId(f.id); setEditingFileName(getBase(f.name)); }}
               >
                 <Edit2 size={14} />
               </button>
