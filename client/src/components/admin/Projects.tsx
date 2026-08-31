@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Upload, CheckCircle2, XCircle, Clock, Plus, Eye, Download, FileText, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, Clock, Plus, Eye, Download, FileText, Trash2, Edit2, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { formatDate, formatBytes, debounce } from '../../lib/utils.js';
 import type { Project, Revision, Order } from '../../types.js';
