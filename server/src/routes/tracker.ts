@@ -214,9 +214,9 @@ router.post('/:orderNo/revisions', async (req, res, next) => {
     
     // Notify admin
     const { sendTelegramAlert } = await import('../services/telegram.js');
-    sendTelegramAlert(📝 <b>طلب تعديل جديد!</b>\n<b>الطلب:</b> \n<b>العنوان:</b> ).catch(() => {});
+    sendTelegramAlert(`📝 <b>طلب تعديل جديد!</b>\n<b>الطلب:</b> ${orderNo}\n<b>العنوان:</b> ${title}`).catch(() => {});
 
     res.json({ ok: true, revision: newRev });
   } catch (err) { next(err); }
 });
-\nexport default router;
+export default router;
