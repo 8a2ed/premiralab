@@ -99,6 +99,7 @@ router.post('/:projectId/files', auth, admin, storage.single('file'), async (req
       try {
         const result = await cloudinary.uploader.upload(pathForCloudinary, { folder: 'premiralab', resource_type: 'auto' });
         fileUrl = result.secure_url;
+        finalFilename = result.secure_url;
         // delete local file to save space
         try { await fs.unlink(pathForCloudinary); } catch {}
         try { await fs.unlink(req.file.path); } catch {}
