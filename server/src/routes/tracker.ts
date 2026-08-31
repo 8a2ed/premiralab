@@ -200,8 +200,8 @@ router.post('/:orderNo/revisions', async (req, res, next) => {
     }
 
     const t = new Date().toISOString();
-    const r = db.prepare('INSERT INTO revisions(project_id, title, description, status, created_at) VALUES(?, ?, ?, ?, ?)').run(
-      project.id, title, description || '', 'pending', t
+    const r = db.prepare('INSERT INTO revisions(project_id, title, description, status, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)').run(
+      project.id, title, description || '', 'pending', t, t
     );
 
     const newRev = {
