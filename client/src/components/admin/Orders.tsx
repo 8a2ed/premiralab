@@ -231,16 +231,36 @@ export function Orders({ onToast }: OrdersProps) {
                               <DollarSign size={13} style={{ color: (o.paid_amount || 0) >= (o.budget || 0) && (o.budget || 0) > 0 ? '#10b981' : 'var(--accent)' }} />
                             </button>
                             {o.payment_receipt && (
-                              <a
-                                href={o.payment_receipt.startsWith('http') ? o.payment_receipt : `/uploads/${o.payment_receipt}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn--icon btn--sm"
-                                style={{ color: '#22c55e' }}
-                                title="معاينة إيصال التحويل المرفوع"
-                              >
-                                <Paperclip size={13} />
-                              </a>
+                              <>
+                                <a
+                                  href={o.payment_receipt.startsWith('http') ? o.payment_receipt : `/uploads/${o.payment_receipt}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn--icon btn--sm"
+                                  style={{ color: '#22c55e' }}
+                                  title="معاينة إيصال التحويل المرفوع"
+                                >
+                                  <Paperclip size={13} />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (!confirm('هل أنت متأكد من حذف إيصال الدفع؟')) return;
+                                    try {
+                                      await api.admin.deleteReceipt(o.id);
+                                      load();
+                                    } catch (err) {
+                                      alert((err as Error).message);
+                                    }
+                                  }}
+                                  className="btn btn--icon btn--sm"
+                                  style={{ color: '#ef4444' }}
+                                  title="حذف الإيصال"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
                             )}
                           </div>
                           {o.promo_code && (
@@ -664,16 +684,34 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
         </div>
 
         {order.payment_receipt && (
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
             <a
               href={order.payment_receipt.startsWith('http') ? order.payment_receipt : `/uploads/${order.payment_receipt}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn--sm"
-              style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 6 }}
+              style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: 6 }}
             >
               <Paperclip size={14} /> معاينة إيصال التحويل المرفوع من العميل
             </a>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm('هل أنت متأكد من حذف إيصال الدفع؟')) return;
+                try {
+                  await api.admin.deleteReceipt(order.id);
+                  onClose();
+                  load();
+                } catch (err) {
+                  alert((err as Error).message);
+                }
+              }}
+              className="btn btn--sm btn--outline"
+              style={{ color: '#ef4444', borderColor: '#ef4444' }}
+              title="حذف الإيصال"
+            >
+              <Trash2 size={14} /> حذف
+            </button>
           </div>
         )}
 

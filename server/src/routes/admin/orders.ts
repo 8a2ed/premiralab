@@ -373,4 +373,48 @@ router.delete('/:id', auth, admin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+// Delete Payment Receipt
+router.delete('/:id/receipt', auth, admin, async (req: AuthRequest, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const order = db.prepare('SELECT id, payment_receipt FROM orders WHERE id=?').get(id) as { id: number, payment_receipt: string } | undefined;
+    if (!order || !order.payment_receipt) {
+      res.status(404).json({ error: 'Receipt not found' });
+      return;
+    }
+
+    const receiptUrl = order.payment_receipt;
+    
+    // Attempt to delete from Cloudinary if it's a cloudinary URL
+    if (receiptUrl.includes('cloudinary.com') && process.env.CLOUDINARY_URL) {
+      try {
+        const cloudinary = (await import('cloudinary')).v2;
+        // Extract public ID from Cloudinary URL (assuming folder 'premiralab_receipts')
+        // URL format: http://res.cloudinary.com/.../upload/v1234/premiralab_receipts/filename.webp
+        const parts = receiptUrl.split('/');
+        const filename = parts[parts.length - 1];
+        const publicId = 'premiralab_receipts/' + filename.split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Failed to delete receipt from Cloudinary:', err);
+      }
+    } else if (!receiptUrl.startsWith('http')) {
+      // Local file delete
+      try {
+        const fs = await import('node:fs/promises');
+        const path = await import('node:path');
+        const { UPLOAD_DIR } = await import('../../db.js');
+        await fs.unlink(path.join(UPLOAD_DIR, receiptUrl));
+      } catch (err) {
+        console.error('Failed to delete local receipt:', err);
+      }
+    }
+
+    db.prepare('UPDATE orders SET payment_receipt = NULL WHERE id=?').run(id);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 export default router;

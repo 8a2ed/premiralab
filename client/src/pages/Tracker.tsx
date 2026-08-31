@@ -209,6 +209,8 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           status: (res.status as any) || prev.status,
         } : prev);
         setReceiptSuccess(true);
+        setPayModalOpen(false);
+        alert('تم رفع إيصال الدفع بنجاح! جاري مراجعة طلبك وتأكيد الدفعة.');
         setTimeout(() => setReceiptSuccess(false), 6000);
         load();
       }
@@ -1211,7 +1213,8 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               type="file"
               accept="image/*,.pdf"
               style={{ display: 'none' }}
-              onChange={e => { const f = e.target.files?.[0]; if (f) { handleUploadReceipt(f); setPayModalOpen(false); } e.target.value = ''; }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleUploadReceipt(f); setPayModalOpen(false);
+        alert('تم رفع إيصال الدفع بنجاح! جاري مراجعة طلبك وتأكيد الدفعة.'); } e.target.value = ''; }}
             />
           </div>
         </Modal>
