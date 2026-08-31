@@ -221,6 +221,10 @@ export function Projects({ onToast }: ProjectsProps) {
                   onSetRevisionStatus={(rId, status) => setRevisionStatus(p.id, rId, status)}
                   onUploadFile={file => uploadFile(p.id, file)}
                   onPreviewFile={file => setPreviewFile(file)}
+                  isUploading={uploadingFiles[p.id] || false}
+                  onDeleteFile={(fId) => deleteFile(p.id, fId)}
+                  onRenameFile={(fId, name) => renameFile(p.id, fId, name)}
+                  onReorderFile={(idx, dir) => reorderFiles(p.id, dir, idx)}
                 />
               )}
             </div>
