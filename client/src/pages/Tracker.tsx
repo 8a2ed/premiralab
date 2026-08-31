@@ -113,6 +113,7 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
   // Manual payment receipt state
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [receiptSuccess,   setReceiptSuccess]   = useState(false);
+  const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
   const [copiedField,      setCopiedField]      = useState<string | null>(null);
   const [paymentNotice,    setPaymentNotice]    = useState<'success' | 'failed' | null>(null);
   const [paymentReason,    setPaymentReason]    = useState<string | null>(null);
@@ -208,10 +209,8 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
           paymentReceipt: res.receiptUrl,
           status: (res.status as any) || prev.status,
         } : prev);
-        setReceiptSuccess(true);
         setPayModalOpen(false);
-        alert('تم رفع إيصال الدفع بنجاح! جاري مراجعة طلبك وتأكيد الدفعة.');
-        setTimeout(() => setReceiptSuccess(false), 6000);
+        setShowSuccessPrompt(true);
         load();
       }
     } catch (e) {
@@ -1213,12 +1212,51 @@ export function Tracker({ orderNo, onHome }: TrackerProps) {
               type="file"
               accept="image/*,.pdf"
               style={{ display: 'none' }}
-              onChange={e => { const f = e.target.files?.[0]; if (f) { handleUploadReceipt(f); setPayModalOpen(false);
-        alert('تم رفع إيصال الدفع بنجاح! جاري مراجعة طلبك وتأكيد الدفعة.'); } e.target.value = ''; }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleUploadReceipt(f); } e.target.value = ''; }}
             />
           </div>
         </Modal>
       )}
+
+      {/* Upload Success Prompt Modal */}
+      {showSuccessPrompt && (
+        <Modal title="عملية ناجحة" onClose={() => setShowSuccessPrompt(false)}>
+          <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'rgba(34, 197, 94, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              color: '#22c55e',
+              animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }}>
+              <CheckCircle2 size={40} />
+            </div>
+            <h3 style={{ fontSize: 22, margin: '0 0 12px', color: '#fff' }}>تم استلام إيصال التحويل! 🎉</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, margin: '0 0 24px' }}>
+              تم رفع صورة إيصال الدفع بنجاح. سيقوم فريقنا بمطابقة البيانات وتأكيد الدفعة في أسرع وقت. سنقوم بتحديث حالة الطلب وإشعارك فور الانتهاء.
+            </p>
+            <button
+              className="btn btn--primary btn--glow"
+              style={{ width: '100%', padding: '12px', fontSize: 15, fontWeight: 600, borderRadius: 10, justifyContent: 'center' }}
+              onClick={() => setShowSuccessPrompt(false)}
+            >
+              حسناً، فهمت
+            </button>
+            <style>{`
+              @keyframes popIn {
+                0% { transform: scale(0.5); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+              }
+            `}</style>
+          </div>
+        </Modal>
+      )}
+
       {/* Paymob iFrame Overlay Modal */}
       {paymobIframeUrl && (
         <Modal title="بوابة الدفع الإلكتروني الآمنة — Paymob" onClose={() => setPaymobIframeUrl(null)}>
