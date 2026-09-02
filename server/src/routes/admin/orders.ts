@@ -121,7 +121,7 @@ router.patch('/:id', auth, admin, async (req: AuthRequest, res, next) => {
 router.post('/:id/approve-payment', auth, admin, async (req: AuthRequest, res, next) => {
   try {
     const schema = z.object({
-      amount: z.number().positive(),
+      amount: z.number().nonnegative(),
       notes:  z.string().optional(),
     });
     const parsed = schema.safeParse(req.body);
@@ -133,15 +133,42 @@ router.post('/:id/approve-payment', auth, admin, async (req: AuthRequest, res, n
     const { amount, notes } = parsed.data;
     const t = now();
 
-    db.prepare(`
-      UPDATE orders 
-      SET payment_status = 'approved_for_payment',
-          payment_amount = ?,
-          payment_approved_at = ?,
-          review_notes = ?,
-          updated_at = ?
-      WHERE id = ?
-    `).run(amount, t, notes || 'تمت مراجعة الطلب والموافقة على الموعد والتنفيذ. يمكنك إتمام الدفع الآن.', t, id);
+    const orderRow = db.prepare('SELECT order_no, project_type, status, budget FROM orders WHERE id = ?').get(id) as any;
+    if (!orderRow) return res.status(404).json({ error: 'الطلب غير موجود' });
+
+    const paymentStatus = amount === 0 ? 'paid' : 'approved_for_payment';
+    const orderStatus = (amount === 0 && orderRow.status === 'new') ? 'in_progress' : orderRow.status;
+    const msg = amount === 0 
+       ? 'تمت مراجعة الطلب وتأكيد السداد بالكامل عبر الرصيد أو الخصم.'
+       : 'تمت مراجعة الطلب والموافقة على الموعد والتنفيذ. يمكنك إتمام الدفع الآن.';
+
+    db.transaction(() => {
+      db.prepare(`
+        UPDATE orders 
+        SET payment_status = ?,
+            status = ?,
+            payment_amount = ?,
+            paid_amount = CASE WHEN ? = 0 THEN budget ELSE paid_amount END,
+            payment_approved_at = ?,
+            review_notes = ?,
+            updated_at = ?
+        WHERE id = ?
+      `).run(paymentStatus, orderStatus, amount, amount, t, notes || msg, t, id);
+
+      if (amount === 0) {
+        const existingProj = db.prepare('SELECT id FROM projects WHERE order_id = ?').get(id);
+        if (!existingProj) {
+          db.prepare(`
+            INSERT INTO projects(order_id, title, progress, status, created_at, updated_at)
+            VALUES(?, ?, 5, 'in_progress', ?, ?)
+          `).run(id, `مشروع ${orderRow.order_no} — ${orderRow.project_type || 'تصميم وتطوير'}`, t, t);
+        }
+      }
+    })();
+    
+    if (amount === 0) {
+      import('../../services/rewards.js').then(m => m.processOrderRewards(id));
+    }
 
     const order = db.prepare(`
       SELECT o.*, c.name client_name, c.phone client_phone, c.email client_email 

@@ -77,13 +77,17 @@ router.post('/apply-promo', async (req, res, next) => {
 
     const newTotal = Math.max(0, basePrice - discountAmount);
 
-    // Update order in database
+    // Update order and promo usage in database
     const t = now();
-    db.prepare(`
-      UPDATE orders 
-      SET promo_code = ?, promo_discount = ?, budget = ?, payment_amount = ?, updated_at = ?
-      WHERE id = ?
-    `).run(promo.code, discountInfo, newTotal, newTotal, t, order.id);
+    db.transaction(() => {
+      db.prepare(`
+        UPDATE orders 
+        SET promo_code = ?, promo_discount = ?, budget = ?, payment_amount = ?, updated_at = ?
+        WHERE id = ?
+      `).run(promo.code, discountInfo, newTotal, newTotal, t, order.id);
+
+      db.prepare('UPDATE promo_codes SET current_uses = current_uses + 1 WHERE id = ?').run(promo.id);
+    })();
 
     res.json({
       ok: true,

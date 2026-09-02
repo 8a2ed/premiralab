@@ -145,22 +145,29 @@ router.patch('/:id', auth, admin, (req: AuthRequest, res, next) => {
 router.patch('/:id/wallet', auth, admin, (req: AuthRequest, res, next) => {
   try {
     const id = Number(req.params.id);
-    const { amount, type, description } = req.body;
-    if (typeof amount !== 'number' || amount <= 0) return res.status(400).json({ error: 'مبلغ غير صالح' });
-    const client = db.prepare('SELECT wallet_balance FROM clients WHERE id = ?').get(id) as any;
+    const { balance, points } = req.body;
+    
+    if (typeof balance !== 'number' || balance < 0) return res.status(400).json({ error: 'الرصيد غير صالح' });
+    if (typeof points !== 'number' || points < 0) return res.status(400).json({ error: 'النقاط غير صالحة' });
+    
+    const client = db.prepare('SELECT wallet_balance, points FROM clients WHERE id = ?').get(id) as any;
     if (!client) return res.status(404).json({ error: 'العميل غير موجود' });
     
-    const newBalance = type === 'deposit' ? client.wallet_balance + amount : client.wallet_balance - amount;
-    if (newBalance < 0) return res.status(400).json({ error: 'الرصيد لا يكفي للخصم' });
+    const diff = balance - (client.wallet_balance || 0);
     
     const tx = db.transaction(() => {
-      db.prepare('UPDATE clients SET wallet_balance = ? WHERE id = ?').run(newBalance, id);
-      db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)').run(id, amount, type, description || '', now());
+      db.prepare('UPDATE clients SET wallet_balance = ?, points = ?, updated_at = ? WHERE id = ?').run(balance, points, now(), id);
+      
+      if (diff !== 0) {
+        const type = diff > 0 ? 'deposit' : 'withdrawal';
+        const amount = Math.abs(diff);
+        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)').run(id, amount, type, 'تعديل إداري للرصيد', now());
+      }
     });
     tx();
     
-    audit(req, 'update_wallet', 'clients', id);
-    res.json({ ok: true, newBalance });
+    audit(req, 'update_wallet', 'clients', id, { balance, points, diff });
+    res.json({ ok: true, balance, points });
   } catch (err) { next(err); }
 });
 

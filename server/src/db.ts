@@ -112,15 +112,19 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS clients (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    name          TEXT    NOT NULL,
-    phone         TEXT    NOT NULL,
-    email         TEXT    NOT NULL DEFAULT '',
-    password_hash TEXT,
-    reset_token   TEXT,
-    reset_expires TEXT,
-    created_at    TEXT    NOT NULL,
-    updated_at    TEXT    NOT NULL
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    name           TEXT    NOT NULL,
+    phone          TEXT    NOT NULL,
+    email          TEXT    NOT NULL DEFAULT '',
+    password_hash  TEXT,
+    reset_token    TEXT,
+    reset_expires  TEXT,
+    wallet_balance REAL    NOT NULL DEFAULT 0,
+    points         INTEGER NOT NULL DEFAULT 0,
+    referral_code  TEXT    UNIQUE,
+    referred_by    INTEGER REFERENCES clients(id) ON DELETE SET NULL,
+    created_at     TEXT    NOT NULL,
+    updated_at     TEXT    NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS orders (
@@ -229,6 +233,12 @@ try { db.exec('ALTER TABLE faqs ADD COLUMN updated_at TEXT NOT NULL DEFAULT ""')
 try { db.exec('ALTER TABLE clients ADD COLUMN password_hash TEXT'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE clients ADD COLUMN reset_token TEXT'); } catch (e) { /* ignore */ }
 try { db.exec('ALTER TABLE clients ADD COLUMN reset_expires TEXT'); } catch (e) { /* ignore */ }
+
+// Clients: wallet, points, referral (existing DBs)
+try { db.exec('ALTER TABLE clients ADD COLUMN wallet_balance REAL NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE clients ADD COLUMN points INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE clients ADD COLUMN referral_code TEXT'); } catch (e) { /* ignore */ }
+try { db.exec('ALTER TABLE clients ADD COLUMN referred_by INTEGER'); } catch (e) { /* ignore */ }
 
 try { db.exec('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0;'); } catch (e) { /* ignore */ }
   try { db.exec('ALTER TABLE orders ADD COLUMN wallet_used REAL DEFAULT 0'); } catch (e) { /* ignore */ }

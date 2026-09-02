@@ -155,7 +155,7 @@ router.post('/', orderLimiter, async (req, res, next) => {
         d.packageId ?? null, d.serviceId ?? null,
         d.projectType, d.notes, 'new',
         calculatedBudget > 0 ? calculatedBudget : (d.budget ?? null),
-        finalPaymentAmount > 0 ? finalPaymentAmount : (d.budget ?? null),
+        calculatedBudget > 0 ? finalPaymentAmount : (d.budget ?? null),
         walletUsed,
         d.deadline ?? null,
         validPromo ? validPromo.code : null, discountInfo,
