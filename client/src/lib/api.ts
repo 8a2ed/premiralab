@@ -70,6 +70,7 @@ export const api = {
     name: string; phone: string; email?: string;
     packageId?: number; serviceId?: number; projectType?: string;
     notes?: string; budget?: number; deadline?: string; promoCode?: string;
+    referralCode?: string; useWallet?: boolean;
   }) => request<{ ok: boolean; id: number; orderNo: string }>(
     '/api/orders', { method: 'POST', body: JSON.stringify(data) },
   ),

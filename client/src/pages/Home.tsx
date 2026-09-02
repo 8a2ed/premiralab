@@ -673,15 +673,17 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const selectedPackage = packages.find(p => p.id === Number(f.packageId));
   const selectedService  = services.find(s => s.id === Number(f.serviceId));
   const basePrice = selectedPackage?.price || 0;
-  const discountVal = promoResult?.success && promoResult.discount
+  // Effective price to calculate discounts on (package price or manual budget)
+  const effectiveBase = basePrice > 0 ? basePrice : (f.budget ? Number(f.budget) : 0);
+  const discountVal = promoResult?.success && promoResult.discount && effectiveBase > 0
     ? (promoResult.type === 'percentage'
-        ? Math.round(basePrice * promoResult.discount / 100)
+        ? Math.round(effectiveBase * promoResult.discount / 100)
         : promoResult.discount)
     : 0;
-  let finalPrice = Math.max(0, basePrice - discountVal);
+  let finalPrice = Math.max(0, effectiveBase - discountVal);
   let walletDiscount = 0;
-  if (f.useWallet && clientProfile && clientProfile.wallet_balance > 0) {
-     walletDiscount = Math.min(clientProfile.wallet_balance, finalPrice > 0 ? finalPrice : (f.budget ? Number(f.budget) : 0));
+  if (f.useWallet && clientProfile && clientProfile.wallet_balance > 0 && finalPrice > 0) {
+     walletDiscount = Math.min(clientProfile.wallet_balance, finalPrice);
      finalPrice = Math.max(0, finalPrice - walletDiscount);
   }
 
@@ -1280,12 +1282,18 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
               )}
 
               {/* Price Summary */}
-              {(basePrice > 0 || (f.budget && !f.packageId)) && (
+              {effectiveBase > 0 && (
                 <div style={{ background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {basePrice > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                       <span style={{ color: 'var(--text-muted)' }}>سعر الباقة</span>
                       <span>{money(basePrice)}</span>
+                    </div>
+                  )}
+                  {f.budget && !f.packageId && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>الميزانية المقترحة</span>
+                      <span>{money(Number(f.budget))}</span>
                     </div>
                   )}
                   {discountVal > 0 && (
@@ -1296,14 +1304,8 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                   )}
                   {walletDiscount > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--primary)' }}>
-                      <span>خصم الرصيد المستخدم</span>
+                      <span>خصم المحفظة</span>
                       <strong>— {money(walletDiscount)}</strong>
-                    </div>
-                  )}
-                  {f.budget && !f.packageId && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                      <span style={{ color: 'var(--text-muted)' }}>الميزانية المقترحة</span>
-                      <span>{money(Number(f.budget))}</span>
                     </div>
                   )}
                   <div style={{
@@ -1311,8 +1313,8 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
                     paddingTop: 12, borderTop: '1px solid var(--border)',
                     fontWeight: 900, fontSize: 18, color: 'var(--accent)'
                   }}>
-                    <span>الإجمالي</span>
-                    <span>{basePrice > 0 ? money(finalPrice) : (f.budget ? money(Number(f.budget)) : 'يُحدد لاحقاً')}</span>
+                    <span>الإجمالي المطلوب</span>
+                    <span>{money(finalPrice)}</span>
                   </div>
                 </div>
               )}
