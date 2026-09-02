@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers, FileText, ShieldAlert, Database, Lock, Building, Smartphone } from 'lucide-react';
+import { Send, Bot, CreditCard, LineChart, Mail, Palette, Sparkles, TrendingUp, Layout, MessageSquare, Layers, FileText, ShieldAlert, Database, Lock, Building, Smartphone, Share2 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import type { SiteSettings } from '../../types.js';
 
@@ -317,42 +317,61 @@ export function SettingsPanel({ onToast }: SettingsPanelProps) {
         {activeTab === 'marketing' && (
           <div className="card" style={{ padding: '24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h3 style={{ fontSize: 18, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Share2 size={20} /> أداوت التسويق وبرنامج الولاء
+              <Share2 size={20} /> أدوات التسويق وبرنامج الولاء
             </h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <Input label="نقاط الولاء لكل جنيه (Points/EGP)" type="number" 
-                value={marketing.pointsPerDollar} 
-                onChange={e => setMarketing({ ...marketing, pointsPerDollar: Number(e.target.value) })} 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+              <Field label="نقاط الولاء لكل جنيه (Points/EGP)" type="number"
+                value={String(marketing.pointsPerDollar)}
+                onChange={v => setMarketing({ ...marketing, pointsPerDollar: Number(v) })}
               />
-              <Input label="مكافأة دعوة الأصدقاء (EGP)" type="number" 
-                value={marketing.referralReward} 
-                onChange={e => setMarketing({ ...marketing, referralReward: Number(e.target.value) })} 
+              <Field label="مكافأة دعوة الأصدقاء (EGP)" type="number"
+                value={String(marketing.referralReward)}
+                onChange={v => setMarketing({ ...marketing, referralReward: Number(v) })}
               />
             </div>
 
             <hr style={{ borderColor: 'var(--border)', margin: '10px 0' }} />
             
-            <h4 style={{ fontSize: 15, marginBottom: 5 }}>أكواد التتبع (Pixels & Analytics)</h4>
+            <h4 style={{ fontSize: 15, marginBottom: 5 }}>أكواد التتبع (Pixels &amp; Analytics)</h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <Input label="Google Analytics ID (G-XXXX)" 
-                value={marketing.googleAnalyticsId} 
-                onChange={e => setMarketing({ ...marketing, googleAnalyticsId: e.target.value })} 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+              <Field label="Google Analytics ID (G-XXXX)"
+                value={marketing.googleAnalyticsId}
+                onChange={v => setMarketing({ ...marketing, googleAnalyticsId: v })}
               />
-              <Input label="Meta Pixel ID" 
-                value={marketing.metaPixelId} 
-                onChange={e => setMarketing({ ...marketing, metaPixelId: e.target.value })} 
+              <Field label="Meta Pixel ID"
+                value={marketing.metaPixelId}
+                onChange={v => setMarketing({ ...marketing, metaPixelId: v })}
               />
-              <Input label="TikTok Pixel ID" 
-                value={marketing.tiktokPixelId} 
-                onChange={e => setMarketing({ ...marketing, tiktokPixelId: e.target.value })} 
+              <Field label="TikTok Pixel ID"
+                value={marketing.tiktokPixelId}
+                onChange={v => setMarketing({ ...marketing, tiktokPixelId: v })}
               />
-              <Input label="Snapchat Pixel ID" 
-                value={marketing.snapchatPixelId} 
-                onChange={e => setMarketing({ ...marketing, snapchatPixelId: e.target.value })} 
+              <Field label="Snapchat Pixel ID"
+                value={marketing.snapchatPixelId}
+                onChange={v => setMarketing({ ...marketing, snapchatPixelId: v })}
               />
             </div>
+
+            <button
+              className="btn btn--primary"
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await api.admin.saveMarketingSettings?.(marketing);
+                  onToast('تم حفظ إعدادات التسويق بنجاح! 🚀', 'success');
+                } catch (e) {
+                  onToast((e as Error).message, 'error');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+              style={{ marginTop: 10, alignSelf: 'flex-start' }}
+            >
+              {saving ? 'جارٍ الحفظ...' : 'حفظ إعدادات التسويق'}
+            </button>
           </div>
         )}
 
