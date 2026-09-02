@@ -175,10 +175,24 @@ router.delete('/:projectId/files/:fileId', auth, admin, async (req: AuthRequest,
     db.prepare('DELETE FROM files WHERE id=? AND project_id=?').run(fileId, projectId);
     audit(req, 'delete', 'files', fileId);
 
-    // Best-effort delete from disk
-    try {
-      await fs.unlink(path.join(UPLOAD_DIR, file.stored_name));
-    } catch { /* file may already be gone */ }
+    // Best-effort delete from disk or Cloudinary
+    if (file.stored_name.includes('cloudinary.com') && process.env.CLOUDINARY_URL) {
+      try {
+        const cloudinary = (await import('cloudinary')).v2;
+        const parts = file.stored_name.split('/');
+        const filename = parts.pop();
+        if (filename) {
+          const publicId = `premiralab/${filename.split('.')[0]}`;
+          await cloudinary.uploader.destroy(publicId);
+        }
+      } catch (err) {
+        console.error('Failed to delete file from Cloudinary:', err);
+      }
+    } else {
+      try {
+        await fs.unlink(path.join(UPLOAD_DIR, file.stored_name));
+      } catch { /* file may already be gone */ }
+    }
 
     res.status(204).end();
   } catch (err) { next(err); }
