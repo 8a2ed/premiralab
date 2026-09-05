@@ -76,6 +76,63 @@ const FaqItem = ({ faq }: { faq: FAQ }) => {
   );
 };
 
+const AnimatedStat = ({ value }: { value: string }) => {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Parse out the first sequence of digits
+  const match = value.match(/(\D*)(\d+)(\D*)/);
+  const prefix = match ? match[1] : '';
+  const targetNumber = match ? parseInt(match[2], 10) : 0;
+  const suffix = match ? match[3] : '';
+
+  useEffect(() => {
+    if (!match || targetNumber === 0) return;
+    
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasStarted) {
+        setHasStarted(true);
+      }
+    }, { threshold: 0.5 });
+    
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasStarted, match, targetNumber]);
+
+  useEffect(() => {
+    if (!hasStarted || targetNumber === 0) return;
+    
+    let startTime: number | null = null;
+    const duration = 2000;
+    
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const percentage = Math.min(progress / duration, 1);
+      
+      const ease = 1 - Math.pow(1 - percentage, 3);
+      setCount(Math.floor(targetNumber * ease));
+
+      if (percentage < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(targetNumber);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [hasStarted, targetNumber]);
+
+  if (!match) return <div className="stat-tile__number">{value}</div>;
+
+  return (
+    <div className="stat-tile__number" ref={ref}>
+      {prefix}{count}{suffix}
+    </div>
+  );
+};
+
 export function Home({
  data, onToast, onClientClick }: HomeProps) {
   // Smooth Scroll Reveal Effect
@@ -291,15 +348,15 @@ export function Home({
         </section>
 
         {/* Live Metrics & Highlights Bar */}
-        <section className="stats-banner-section">
+        <section className="stats-banner-section reveal-on-scroll">
           <div className="container">
-            <div className="stats-glass-bar card">
+            <div className="stats-glass-bar card card--lift">
               <div className="stat-tile">
                 <div className="stat-tile__icon-wrap">
                   <TrendingUp size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">{data.site?.stat_1_num || '+150'}</div>
+                  <AnimatedStat value={data.site?.stat_1_num || '+150'} />
                   <div className="stat-tile__label">{data.site?.stat_1_label || 'مشروع ناجح ومكتمل'}</div>
                 </div>
               </div>
@@ -311,7 +368,7 @@ export function Home({
                   <Award size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">{data.site?.stat_2_num || '100%'}</div>
+                  <AnimatedStat value={data.site?.stat_2_num || '100%'} />
                   <div className="stat-tile__label">{data.site?.stat_2_label || 'نسبة رضا وثقة العملاء'}</div>
                 </div>
               </div>
@@ -323,7 +380,7 @@ export function Home({
                   <Clock size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">{data.site?.stat_3_num || '48 س'}</div>
+                  <AnimatedStat value={data.site?.stat_3_num || '48 س'} />
                   <div className="stat-tile__label">{data.site?.stat_3_label || 'متوسط بدء التنفيذ'}</div>
                 </div>
               </div>
@@ -335,7 +392,7 @@ export function Home({
                   <Headphones size={22} className="stat-tile__icon" />
                 </div>
                 <div>
-                  <div className="stat-tile__number">{data.site?.stat_4_num || '24/7'}</div>
+                  <AnimatedStat value={data.site?.stat_4_num || '24/7'} />
                   <div className="stat-tile__label">{data.site?.stat_4_label || 'متابعة ودعم مستمر'}</div>
                 </div>
               </div>
@@ -917,7 +974,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
         )}
 
         {/* ── Step Content ─────────────────────────────────── */}
-        <div style={{ minHeight: 300 }} className="animation-fade-in" key={step}>
+        <div style={{ minHeight: 300 }} className={animDir === 'forward' ? 'step-slide-forward' : 'step-slide-back'} key={step}>
 
           {/* STEP 1 ─ Choose Service */}
           {step === 1 && (
