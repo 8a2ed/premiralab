@@ -211,9 +211,10 @@ img {
 .nav-hamburger { display: none }
 .nav-admin-link { display: none }
 .nav-cta-btn { display: inline-flex }
-.nav-mobile { display: flex; flex-direction: column; padding: 14px 20px 24px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter: blur(20px); }
+.nav-mobile { display: flex; flex-direction: column; padding: 14px 20px 24px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter: blur(20px); animation: nav-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 .nav-mobile button { text-align: right; background: none; border: 0; color: var(--text-muted); padding: 14px 0; font-weight: 700; font-size: 15px; border-bottom: 1px solid var(--border-2) }
 .nav-mobile button:last-child { border-bottom: 0; margin-top: 10px; }
+@keyframes nav-slide-down { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ─── Hero ─────────────────────────────────────────────────────────────────── */
 .hero { padding: 90px 0 70px; overflow: hidden; position: relative; }
@@ -307,7 +308,7 @@ img {
 .section { padding: 80px 0; scroll-margin-top: 80px; }
 .section-header { text-align: center; margin-bottom: 44px; }
 .section h2, .hero-heading { font-size: 32px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.01em; }
-.eyebrow { color: var(--accent-text); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: .06em }
+.eyebrow { color: var(--accent-text); font-weight: 800; font-size: 13px; letter-spacing: .04em }
 .muted { color: var(--text-muted) }
 .empty { padding: 40px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: var(--radius-sm) }
 
@@ -701,11 +702,13 @@ img {
 .modal__body { padding: 24px; overflow-y: auto; flex: 1; text-align: start; }
 
 /* ─── Toast ────────────────────────────────────────────────────────────────── */
-.toast { position: fixed; bottom: 24px; left: 24px; z-index: 300; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); min-width: 260px; animation: toast-in .25s ease }
+.toast { position: fixed; top: 88px; right: 24px; z-index: 300; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); min-width: 280px; max-width: min(400px, calc(100vw - 48px)); animation: toast-in .3s cubic-bezier(0.16, 1, 0.3, 1) }
 .toast--success { border-color: #22c55e44; background: #22c55e0f }
 .toast--error   { border-color: var(--danger); background: var(--danger-dim) }
-.toast__close { background: none; border: none; color: var(--text-muted); font-size: 18px; line-height: 1; margin-right: auto }
-@keyframes toast-in { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+.toast--info    { border-color: var(--accent); background: var(--accent-dim) }
+.toast__close { background: none; border: none; color: var(--text-muted); font-size: 18px; line-height: 1; margin-right: auto; flex-shrink: 0; padding: 2px 4px; border-radius: 4px; transition: color .15s }
+.toast__close:hover { color: var(--text) }
+@keyframes toast-in { from { transform: translateX(20px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
 
 /* ─── Admin layout ─────────────────────────────────────────────────────────── */
 .admin { min-height: 100vh; background: var(--bg-2) }
@@ -842,6 +845,36 @@ img {
 /* ─── Accessibility ─────────────────────────────────────────────────────────── */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0 }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+/* Placeholder colors */
+.input::placeholder, .textarea::placeholder { color: var(--text-muted); opacity: 0.55; }
+[data-theme="light"] .input::placeholder, [data-theme="light"] .textarea::placeholder { opacity: 0.45; }
+
+/* ─── Hero Stagger Entrance Animations ────────────────────────────────────── */
+.hero-enter-1 { animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.hero-enter-2 { animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.hero-enter-3 { animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both; }
+.hero-enter-4 { animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both; }
+.hero-enter-5 { animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both; }
+.hero-enter-art { animation: hero-fade-left 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-fade-left {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Card Hover Lift — Only Scoped to Public Cards ─────────────────────── */
+.card--lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.4), inset 0 2px 20px rgba(255, 255, 255, 0.03) !important;
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+/* Toast mobile fix */
+@media (max-width: 600px) { .toast { top: auto; bottom: 16px; right: 12px; left: 12px; min-width: unset; max-width: 100%; } }
 
 /* ─── End of core components ──────────────────────────────────────────────── */
 
@@ -1670,14 +1703,9 @@ img {
 ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--border) 80%, white); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* Global Card Hover Effect */
-.card {
+/* Global Card Hover Effect — scoped to .card--lift class on public cards */
+.card--lift {
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease !important;
-}
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), inset 0 2px 20px rgba(255, 255, 255, 0.03) !important;
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
 
 /* Enhancing existing buttons */
@@ -1734,12 +1762,11 @@ body::before {
   height: 100vh;
   pointer-events: none;
   z-index: -1;
-  will-change: transform, opacity;
+  will-change: opacity;
+  transform: translateZ(0);
   background: radial-gradient(circle at 15% 50%, var(--accent-dim) 0%, transparent 40%),
               radial-gradient(circle at 85% 30%, var(--accent-glow) 0%, transparent 40%);
-  z-index: -1;
-  pointer-events: none;
-  animation: mesh-float 15s infinite ease-in-out;
+  animation: mesh-float 20s infinite ease-in-out;
 }
 
 /* Smooth fade in for everything */
@@ -2271,7 +2298,7 @@ body::before {
 .login-eye-btn {
   position: absolute;
   top: 50%;
-  left: 12px;
+  right: 12px;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -2283,6 +2310,7 @@ body::before {
   transition: color 0.2s ease;
   border-radius: 6px;
 }
+.login-input { padding-right: 44px; }
 .login-eye-btn:hover { color: var(--text); }
 
 /* Submit Button */

@@ -98,15 +98,11 @@ export function Home({
   const [initialProjectType, setInitialProjectType] = useState<string | undefined>(undefined);
   const [activePortfolio,    setActivePortfolio]    = useState<PortfolioItem | null>(null);
   const [selectedCategory,   setSelectedCategory]   = useState<string>('all');
-  const [scrollProgress,     setScrollProgress]     = useState(0);
   const [showScrollTop,      setShowScrollTop]      = useState(false);
 
-  // Track scroll progress and back-to-top visibility
+  // Track back-to-top visibility
   useEffect(() => {
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const currentProgress = totalScroll > 0 ? (window.scrollY / totalScroll) * 100 : 0;
-      setScrollProgress(currentProgress);
       setShowScrollTop(window.scrollY > 400);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -209,44 +205,29 @@ export function Home({
         }
       `}</style>
 
-      {/* Top Scroll Progress Indicator */}
-      <div 
-        className="top-scroll-progress" 
-        style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          height: 3, 
-          width: `${scrollProgress}%`, 
-          background: 'linear-gradient(90deg, var(--accent), #f59e0b)', 
-          zIndex: 100, 
-          transition: 'width 0.1s ease-out' 
-        }} 
-      />
-
       <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} isClientLoggedIn={!!localStorage.getItem('client_token')} />
 
       <main id="top">
         {/* Hero Section */}
         <section className="hero">
           <div className="container hero-grid">
-            <div className="animation-fade-in hero-text-col">
-              <div className="hero-badge animation-fade-in" style={{ animationDelay: "0.1s" }}>
+            <div className="hero-text-col">
+              <div className="hero-badge hero-enter-1">
                 <Sparkles size={15} className="hero-badge-icon" />
                 <span>{data.site?.hero_badge || 'استوديو رقمي متكامل للتصميم والتطوير'}</span>
               </div>
               
-              <h1 className="hero-heading animation-fade-in" style={{ animationDelay: "0.2s" }}>
+              <h1 className="hero-heading hero-enter-2">
                 {data.site?.hero_title ? data.site.hero_title.split(' ').map((word, i, arr) => 
                   i === arr.length - 1 ? <span key={i} className="highlight">{word}</span> : word + ' '
                 ) : <>نحوّل أفكارك إلى واقع رقمي <span className="highlight">استثنائي</span></>}
               </h1>
               
-              <p className="hero-subtitle animation-fade-in" style={{ animationDelay: "0.3s" }}>
+              <p className="hero-subtitle hero-enter-3">
                 {data.site?.hero_subtitle ?? 'من الهوية البصرية وتصميم الواجهات إلى المنصات المتقدمة، نحن هنا لنبني لعلامتك التجارية حضورًا قويًا ينمو ويتفوق.'}
               </p>
               
-              <div className="actions hero-actions animation-fade-in" style={{ animationDelay: "0.4s" }}>
+              <div className="actions hero-actions hero-enter-4">
                 <button className="btn btn--primary btn--lg hero-btn-main" onClick={() => openOrder()}>
                   {data.site?.hero_primary_btn ?? 'ابدأ مشروعك الآن'} <ArrowLeft size={18} aria-hidden />
                 </button>
@@ -256,7 +237,7 @@ export function Home({
               </div>
 
               {/* Trust badges */}
-              <div className="hero-trust-row animation-fade-in" style={{ animationDelay: "0.5s" }}>
+              <div className="hero-trust-row hero-enter-5">
                 <div className="hero-trust-item">
                   <Shield size={16} style={{ color: 'var(--success)' }} />
                   <span>{data.site?.hero_trust_1 || 'ضمان أعلى جودة'}</span>
@@ -269,7 +250,7 @@ export function Home({
             </div>
 
             {/* Hero Visual Card */}
-            <div className="hero-art-wrapper">
+            <div className="hero-art-wrapper hero-enter-art">
               <div className="hero-art-glow" />
               <div 
                 className="hero-art" 
@@ -280,7 +261,31 @@ export function Home({
                   backgroundRepeat: 'no-repeat, no-repeat',
                   backgroundPosition: 'center, center'
                 }} 
-              />
+              >
+                {/* Floating stats inside hero art card */}
+                <div style={{
+                  position: 'absolute', bottom: 20, right: 16, left: 16,
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  {[
+                    { icon: '🚀', label: data.site?.stat_1_num || '+150', sub: 'مشروع مكتمل' },
+                    { icon: '⭐', label: '100%', sub: 'رضا العملاء' },
+                  ].map((s, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)',
+                      borderRadius: 12, padding: '8px 14px',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                      <span style={{ fontSize: 18 }}>{s.icon}</span>
+                      <div>
+                        <div style={{ fontWeight: 900, fontSize: 15, color: '#fff', lineHeight: 1.2 }}>{s.label}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>{s.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -350,7 +355,7 @@ export function Home({
 
               <Carousel autoPlay={true} intervalMs={3800}>
                 {data.testimonials.map(t => (
-                  <div className="card testimonial-card" key={t.id}>
+                  <div className="card testimonial-card card--lift" key={t.id}>
                     <div className="stars" aria-label={`تقييم ${t.rating} من 5`}>
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} size={16} fill={i < t.rating ? '#f59e0b' : 'none'} color={i < t.rating ? '#f59e0b' : 'var(--border)'} />
@@ -385,8 +390,8 @@ export function Home({
             </div>
 
             <div className="grid grid-3">
-              {data.services?.map(s => (
-                <div className="card service-card" key={s.id}>
+              {data.services?.map((s, idx) => (
+                <div className="card service-card card--lift reveal-on-scroll" key={s.id} style={{ transitionDelay: `${idx * 0.07}s` }}>
                   <div className="service-icon-wrap">
                     <DynamicIcon name={s.icon} size={24} />
                   </div>
@@ -408,8 +413,8 @@ export function Home({
             </div>
 
             <div className="grid grid-3 pricing-grid">
-              {data.packages?.map(p => (
-                <div className={`card package-card ${p.popular ? 'package-card--popular' : ''}`} key={p.id}>
+              {data.packages?.map((p, idx) => (
+                <div className={`card package-card card--lift reveal-on-scroll ${p.popular ? 'package-card--popular' : ''}`} key={p.id} style={{ transitionDelay: `${idx * 0.1}s` }}>
                   {p.popular && (
                     <div className="package-popular-tag">
                       <Sparkles size={12} /> الأكثر طلبًا

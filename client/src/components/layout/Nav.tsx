@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from '../ui/ThemeToggle.js';
 import type { SiteSettings } from '../../types.js';
@@ -10,19 +10,67 @@ interface NavProps {
   isClientLoggedIn?: boolean;
 }
 
+const SECTIONS = ['services', 'packages', 'portfolio', 'testimonials'];
+
 export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClientLoggedIn }: NavProps) {
   const [open, setOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState<string>('');
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Scroll progress bar
+  useEffect(() => {
+    const handleScroll = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(total > 0 ? (window.scrollY / total) * 100 : 0);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Active section tracker via IntersectionObserver
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    SECTIONS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observerRef.current!.observe(el);
+    });
+    return () => observerRef.current?.disconnect();
+  }, []);
 
   const scrollTo = (id: string) => {
     setOpen(false);
     const el = document.getElementById(id);
     if (el) {
-      window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
     }
   };
 
   return (
     <>
+      {/* Scroll progress bar */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          height: 3,
+          width: `${scrollProgress}%`,
+          background: 'linear-gradient(90deg, var(--accent), #f59e0b)',
+          zIndex: 200,
+          transition: 'width 0.15s linear',
+          pointerEvents: 'none',
+        }}
+      />
+
       <header className="nav">
         <div className="container nav-inner">
           {/* Brand */}
@@ -33,11 +81,46 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
 
           {/* Desktop nav */}
           <nav className="nav-links" aria-label="التنقل الرئيسي">
-            <button onClick={() => scrollTo('services')} aria-label="انتقل إلى الخدمات">الخدمات</button>
-            <button onClick={() => scrollTo('packages')} aria-label="انتقل إلى الباقات">الباقات</button>
-            <button onClick={() => scrollTo('portfolio')} aria-label="انتقل إلى أعمالنا">أعمالنا</button>
-            <button onClick={() => scrollTo('testimonials')} aria-label="انتقل إلى آراء العملاء">العملاء</button>
-            <button onClick={onClientClick} aria-label="تسجيل الدخول / حسابي" style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{isClientLoggedIn ? 'صفحتي 👤' : 'تسجيل الدخول'}</button>
+            {[
+              { id: 'services', label: 'الخدمات' },
+              { id: 'packages', label: 'الباقات' },
+              { id: 'portfolio', label: 'أعمالنا' },
+              { id: 'testimonials', label: 'العملاء' },
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => scrollTo(id)}
+                aria-label={`انتقل إلى ${label}`}
+                style={{
+                  color: activeSection === id ? 'var(--text)' : undefined,
+                  background: activeSection === id ? 'var(--accent-dim)' : undefined,
+                  borderRadius: 8,
+                  position: 'relative',
+                  transition: 'all .2s ease',
+                }}
+              >
+                {label}
+                {activeSection === id && (
+                  <span aria-hidden style={{
+                    position: 'absolute',
+                    bottom: 2,
+                    right: '20%',
+                    left: '20%',
+                    height: 2,
+                    background: 'var(--accent)',
+                    borderRadius: 2,
+                    display: 'block',
+                  }} />
+                )}
+              </button>
+            ))}
+            <button
+              onClick={onClientClick}
+              aria-label="تسجيل الدخول / حسابي"
+              style={{ color: 'var(--accent)', fontWeight: 'bold' }}
+            >
+              {isClientLoggedIn ? 'صفحتي 👤' : 'تسجيل الدخول'}
+            </button>
           </nav>
 
           {/* Actions */}
@@ -56,7 +139,7 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
           </div>
         </div>
 
-        {/* Mobile dropdown */}
+        {/* Mobile dropdown with slide-down animation */}
         {open && (
           <nav className="nav-mobile" aria-label="قائمة الجوال">
             <button onClick={() => scrollTo('services')}>الخدمات</button>
