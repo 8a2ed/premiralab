@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { 
   ArrowLeft, Star, CheckCircle2, Copy, Check, MessageCircle, 
