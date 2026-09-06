@@ -9,7 +9,7 @@ router.use(clientAuth);
 
 router.get('/profile', (req: any, res) => {
   try {
-    const client = db.prepare('SELECT id, name, email, phone, company, wallet_balance, points, referral_code FROM clients WHERE id = ?').get(req.client.id) as any;
+    const client = db.prepare('SELECT id, name, email, phone, wallet_balance, points, referral_code FROM clients WHERE id = ?').get(req.client.id) as any;
     if (!client) return res.status(404).json({ error: 'Client not found' });
     
     // Auto-generate referral code if not exists
@@ -48,8 +48,8 @@ router.post('/redeem-points', (req: any, res) => {
         .run(pointsToRedeem, egpReward, req.client.id);
       
       // Log transaction
-      db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
-        .run(req.client.id, egpReward, 'earn', `استبدال ${pointsToRedeem} نقطة بمكافأة نقدية`);
+      db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)')
+        .run(req.client.id, egpReward, 'earn', `استبدال ${pointsToRedeem} نقطة برصيد مالي`, new Date().toISOString());
     })();
 
     res.json({ message: 'تم استبدال النقاط بنجاح!', egpReward, pointsDeducted: pointsToRedeem });

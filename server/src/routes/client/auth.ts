@@ -53,13 +53,13 @@ router.post('/register', (req, res) => {
       db.transaction(() => {
         // Give new user 50 points
         db.prepare('UPDATE clients SET points = points + 50 WHERE id = ?').run(newId);
-        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
-          .run(newId, 5, 'earn', 'مكافأة التسجيل عبر رابط دعوة');
+        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)')
+          .run(newId, 5, 'earn', 'مكافأة التسجيل عبر رابط دعوة', now());
           
         // Give referrer 100 points
         db.prepare('UPDATE clients SET points = points + 100 WHERE id = ?').run(referredBy);
-        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
-          .run(referredBy, 10, 'earn', 'مكافأة دعوة صديق');
+        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)')
+          .run(referredBy, 10, 'earn', 'مكافأة دعوة صديق', now());
       })();
     }
 
