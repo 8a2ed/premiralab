@@ -82,7 +82,7 @@ const AnimatedStat = ({ value }: { value: string }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   // Parse out the first sequence of digits
-  const match = value.match(/(\D*)(\d+)(\D*)/);
+  const match = value.match(/^(\D*)(\d+)(.*)$/);
   const prefix = match ? match[1] : '';
   const targetNumber = match ? parseInt(match[2], 10) : 0;
   const suffix = match ? match[3] : '';
