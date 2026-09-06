@@ -54,9 +54,9 @@ export function Footer({ site }: FooterProps) {
                   </a>
                 )}
                 {site.phone && (
-                  <a href={`tel:${site.phone}`} className="footer-contact-item" dir="ltr">
+                  <a href={`tel:${site.phone}`} className="footer-contact-item">
                     <div className="icon-wrap"><Phone size={16} /></div>
-                    <span>{site.phone}</span>
+                    <span dir="ltr">{site.phone}</span>
                   </a>
                 )}
                 {whatsappHref && (

@@ -1956,6 +1956,7 @@ body::before {
   letter-spacing: 0.5px;
   box-shadow: 0 8px 20px var(--accent-glow) !important;
   border: 1px solid color-mix(in srgb, var(--accent-text) 30%, transparent);
+  z-index: 10 !important;
 }
 
 /* Popular Features Text Highlight */

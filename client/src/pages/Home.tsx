@@ -318,31 +318,7 @@ export function Home({
                   backgroundRepeat: 'no-repeat, no-repeat',
                   backgroundPosition: 'center, center'
                 }} 
-              >
-                {/* Floating stats inside hero art card */}
-                <div style={{
-                  position: 'absolute', bottom: 20, right: 16, left: 16,
-                  display: 'flex', flexDirection: 'column', gap: 10,
-                }}>
-                  {[
-                    { icon: '🚀', label: data.site?.stat_1_num || '+150', sub: 'مشروع مكتمل' },
-                    { icon: '⭐', label: '100%', sub: 'رضا العملاء' },
-                  ].map((s, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)',
-                      borderRadius: 12, padding: '8px 14px',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}>
-                      <span style={{ fontSize: 18 }}>{s.icon}</span>
-                      <div>
-                        <div style={{ fontWeight: 900, fontSize: 15, color: '#fff', lineHeight: 1.2 }}>{s.label}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>{s.sub}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              />
             </div>
           </div>
         </section>
