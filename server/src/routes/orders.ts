@@ -109,9 +109,27 @@ router.post('/', orderLimiter, async (req, res, next) => {
           const refClient = db.prepare('SELECT id FROM clients WHERE referral_code=?').get(d.referralCode) as any;
           if (refClient) referred_by = refClient.id;
         }
-        const r = db.prepare('INSERT INTO clients(name,phone,email,referred_by,created_at,updated_at) VALUES(?,?,?,?,?,?)')
-          .run(d.name, d.phone, d.email || '', referred_by, t, t);
-        client = { id: Number(r.lastInsertRowid), email: d.email || '', referred_by };
+        
+        // Auto-generate referral code for new client
+        const newRefCode = 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        const r = db.prepare('INSERT INTO clients(name,phone,email,referred_by,referral_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?)')
+          .run(d.name, d.phone, d.email || '', referred_by, newRefCode, t, t);
+        
+        const newId = Number(r.lastInsertRowid);
+        client = { id: newId, email: d.email || '', referred_by };
+        
+        if (referred_by) {
+          // Give new user 50 points
+          db.prepare('UPDATE clients SET points = points + 50 WHERE id = ?').run(newId);
+          db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)')
+            .run(newId, 5, 'earn', 'مكافأة التسجيل عبر رابط دعوة', t);
+            
+          // Give referrer 100 points
+          db.prepare('UPDATE clients SET points = points + 100 WHERE id = ?').run(referred_by);
+          db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)')
+            .run(referred_by, 10, 'earn', 'مكافأة دعوة صديق', t);
+        }
       }
 
       // Determine base price and calculated budget with promo

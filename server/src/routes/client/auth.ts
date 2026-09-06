@@ -43,8 +43,9 @@ router.post('/register', (req, res) => {
 
     // Create new client
     const hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare('INSERT INTO clients(name, phone, email, password_hash, referred_by, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)')
-      .run(name, phone, emailLower, hash, referredBy, now(), now());
+    const newRefCode = 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const result = db.prepare('INSERT INTO clients(name, phone, email, password_hash, referred_by, referral_code, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(name, phone, emailLower, hash, referredBy, newRefCode, now(), now());
     
     const newId = Number(result.lastInsertRowid);
 
