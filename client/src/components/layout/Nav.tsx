@@ -10,7 +10,13 @@ interface NavProps {
   isClientLoggedIn?: boolean;
 }
 
-const SECTIONS = ['services', 'packages', 'portfolio', 'testimonials'];
+const PAGE_SECTIONS = ['testimonials', 'services', 'packages', 'portfolio'];
+const MENU_ITEMS = [
+  { id: 'services', label: 'الخدمات' },
+  { id: 'packages', label: 'الباقات' },
+  { id: 'portfolio', label: 'أعمالنا' },
+  { id: 'testimonials', label: 'العملاء' },
+];
 
 export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClientLoggedIn }: NavProps) {
   const [open, setOpen] = useState(false);
@@ -28,21 +34,22 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Active section tracker via IntersectionObserver
+  // Active section tracker via scroll position (more robust than observer for this layout)
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id);
-        });
-      },
-      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
-    );
-    SECTIONS.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observerRef.current!.observe(el);
-    });
-    return () => observerRef.current?.disconnect();
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY + 120; // 120px offset for navbar and breathing room
+      let current = '';
+      for (const section of PAGE_SECTIONS) {
+        const el = document.getElementById(section);
+        if (el && el.offsetTop <= currentScrollPos) {
+          current = section;
+        }
+      }
+      setActiveSection(current);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // initialize on mount
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollTo = (id: string) => {
@@ -81,37 +88,14 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
 
           {/* Desktop nav */}
           <nav className="nav-links" aria-label="التنقل الرئيسي">
-            {[
-              { id: 'services', label: 'الخدمات' },
-              { id: 'packages', label: 'الباقات' },
-              { id: 'portfolio', label: 'أعمالنا' },
-              { id: 'testimonials', label: 'العملاء' },
-            ].map(({ id, label }) => (
+            {MENU_ITEMS.map(({ id, label }) => (
               <button
                 key={id}
+                className={`nav-link-btn ${activeSection === id ? 'active' : ''}`}
                 onClick={() => scrollTo(id)}
                 aria-label={`انتقل إلى ${label}`}
-                style={{
-                  color: activeSection === id ? 'var(--text)' : undefined,
-                  background: activeSection === id ? 'var(--accent-dim)' : undefined,
-                  borderRadius: 8,
-                  position: 'relative',
-                  transition: 'all .2s ease',
-                }}
               >
                 {label}
-                {activeSection === id && (
-                  <span aria-hidden style={{
-                    position: 'absolute',
-                    bottom: 2,
-                    right: '20%',
-                    left: '20%',
-                    height: 2,
-                    background: 'var(--accent)',
-                    borderRadius: 2,
-                    display: 'block',
-                  }} />
-                )}
               </button>
             ))}
             <button
@@ -142,10 +126,15 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
         {/* Mobile dropdown with slide-down animation */}
         {open && (
           <nav className="nav-mobile" aria-label="قائمة الجوال">
-            <button onClick={() => scrollTo('services')}>الخدمات</button>
-            <button onClick={() => scrollTo('packages')}>الباقات</button>
-            <button onClick={() => scrollTo('portfolio')}>أعمالنا</button>
-            <button onClick={() => scrollTo('testimonials')}>آراء العملاء</button>
+            {MENU_ITEMS.map(({ id, label }) => (
+              <button 
+                key={id}
+                onClick={() => scrollTo(id)}
+                style={{ color: activeSection === id ? 'var(--accent)' : undefined }}
+              >
+                {label}
+              </button>
+            ))}
             <button onClick={() => { onClientClick(); setOpen(false); }} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{isClientLoggedIn ? 'صفحتي 👤' : 'تسجيل الدخول / حسابي'}</button>
             <button className="btn btn--primary" onClick={() => { onOrder(); setOpen(false); }}>ابدأ مشروعك</button>
           </nav>

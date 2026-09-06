@@ -205,8 +205,42 @@ img {
 .brand:hover .brand-logo { transform: scale(1.05); }
 .brand-name { color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 900; }
 .nav-links { display: flex; gap: 6px; align-items: center; }
-.nav-links button { background: none; border: 0; color: var(--text-muted); padding: 8px 14px; border-radius: var(--radius-xs); transition: all .15s ease; font-weight: 600; font-size: 14px; }
-.nav-links button:hover { color: var(--text); background: var(--accent-dim) }
+.nav-links button.nav-link-btn {
+  position: relative;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: var(--radius-xs);
+  transition: all .2s ease;
+  font-weight: 600;
+  font-size: 14px;
+}
+.nav-links button.nav-link-btn:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.nav-links button.nav-link-btn.active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.nav-links button.nav-link-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+.nav-links button.nav-link-btn.active::after {
+  left: 20%;
+  right: 20%;
+  opacity: 1;
+}
 .nav-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0 }
 .nav-hamburger { display: none }
 .nav-admin-link { display: none }
