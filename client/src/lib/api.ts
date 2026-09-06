@@ -142,6 +142,7 @@ export const api = {
     orders: () => request<any>('/api/client/dashboard/orders'),
     profile: () => request<any>('/api/client/dashboard/profile'),
     project: (id: number) => request<any>(`/api/client/dashboard/projects/${id}`),
+    redeemPoints: () => request<any>('/api/client/dashboard/redeem-points', { method: 'POST' }),
   },
 
   // ─── Admin ────────────────────────────────────────────────────────────────────

@@ -34,12 +34,35 @@ router.post('/register', (req, res) => {
       return res.json({ id: existing.id, name, email: emailLower });
     }
 
+    // Check for referral code
+    let referredBy = null;
+    if (req.body.referralCode) {
+      const referrer = db.prepare('SELECT id FROM clients WHERE referral_code = ?').get(req.body.referralCode) as any;
+      if (referrer) referredBy = referrer.id;
+    }
+
     // Create new client
     const hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare('INSERT INTO clients(name, phone, email, password_hash, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)')
-      .run(name, phone, emailLower, hash, now(), now());
+    const result = db.prepare('INSERT INTO clients(name, phone, email, password_hash, referred_by, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)')
+      .run(name, phone, emailLower, hash, referredBy, now(), now());
     
     const newId = Number(result.lastInsertRowid);
+
+    // Give points to referrer and referred
+    if (referredBy) {
+      db.transaction(() => {
+        // Give new user 50 points
+        db.prepare('UPDATE clients SET points = points + 50 WHERE id = ?').run(newId);
+        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
+          .run(newId, 5, 'earn', 'مكافأة التسجيل عبر رابط دعوة');
+          
+        // Give referrer 100 points
+        db.prepare('UPDATE clients SET points = points + 100 WHERE id = ?').run(referredBy);
+        db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
+          .run(referredBy, 10, 'earn', 'مكافأة دعوة صديق');
+      })();
+    }
+
     const token = jwt.sign({ id: newId, email: emailLower }, getSecret(), { expiresIn: '30d' });
     res.cookie('client_session', token, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: 30*24*60*60*1000, path: '/' });
     

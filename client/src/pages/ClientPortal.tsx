@@ -95,10 +95,15 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
 
   const loadDashboard = async () => {
     try {
-      const res = await api.client.orders();
-      setOrders(res.orders);
+      const [ordersRes, profileRes] = await Promise.all([
+        api.client.orders(),
+        api.client.profile()
+      ]);
+      setOrders(ordersRes.orders);
+      setProfile(profileRes.client);
+      setTransactions(profileRes.transactions);
     } catch (e) {
-      onToast('فشل تحميل الطلبات', 'error');
+      onToast('فشل تحميل بيانات لوحة التحكم', 'error');
     }
   };
 
@@ -128,7 +133,9 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.client.register({ name, phone, email, password });
+      const refCode = localStorage.getItem('referral_code');
+      const res = await api.client.register({ name, phone, email, password, referralCode: refCode });
+      if (refCode) localStorage.removeItem('referral_code');
       setClient(res);
       sessionStorage.setItem('client_user', JSON.stringify(res.client || res));
       onToast('تم إنشاء الحساب بنجاح', 'success');
@@ -141,6 +148,20 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       }
     } catch (err: any) {
       onToast(err.error || err.message || 'فشل إنشاء الحساب', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRedeem = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await api.client.redeemPoints();
+      onToast(`تم التحويل بنجاح! كسبت ${res.egpReward} ج.م في محفظتك 💸`, 'success');
+      loadDashboard();
+    } catch (err: any) {
+      onToast(err.error || err.message || 'فشل استبدال النقاط', 'error');
     } finally {
       setLoading(false);
     }
@@ -270,52 +291,133 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
           <button className={`btn ${dashboardTab === 'wallet' ? 'btn--primary' : 'btn--outline'}`} onClick={() => setDashboardTab('wallet')}>المحفظة والمكافآت 🎁</button>
         </div>
 
-        {dashboardTab === 'wallet' && profile && (
-          <div className="card" style={{ borderRadius: 18, padding: 24, marginBottom: 20 }}>
-            <h3 className="card-title" style={{ fontSize: 20, marginBottom: 20 }}>المحفظة وبرنامج المكافآت</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>💳</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>رصيد المحفظة</div>
-                <div style={{ fontSize: 24, fontWeight: 'bold', color: 'var(--primary)' }}>{profile.wallet_balance || 0} ج.م</div>
-              </div>
-              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>✨</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>نقاط الولاء</div>
-                <div style={{ fontSize: 24, fontWeight: 'bold', color: 'var(--primary)' }}>{profile.points || 0} نقطة</div>
-              </div>
-              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--primary-light)', borderRadius: 14, padding: 20, textAlign: 'center', cursor: 'pointer' }} onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/?ref=${profile.referral_code}`);
-                  onToast('تم نسخ رابط الدعوة بنجاح!', 'success');
-              }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>🔗</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>رابط الدعوة الخاص بك</div>
-                <div style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--primary)', letterSpacing: 2 }}>{profile.referral_code}</div>
-                <div style={{ fontSize: 11, color: 'var(--success)', marginTop: 8 }}>اضغط لنسخ الرابط ومشاركته</div>
-              </div>
-            </div>
+        {dashboardTab === 'wallet' && profile && (() => {
+          const points = profile.points || 0;
+          let tier = 'برونزي'; let tierColor = '#cd7f32'; let nextTier = 500; let nextTierName = 'فضي';
+          let tierIcon = '🥉';
+          if (points >= 500) { tier = 'فضي'; tierColor = '#94a3b8'; nextTier = 1500; nextTierName = 'ذهبي'; tierIcon = '🥈'; }
+          if (points >= 1500) { tier = 'ذهبي'; tierColor = '#fbbf24'; nextTier = 5000; nextTierName = 'VIP'; tierIcon = '🥇'; }
+          if (points >= 5000) { tier = 'VIP'; tierColor = '#a855f7'; nextTier = points; nextTierName = 'الحد الأقصى'; tierIcon = '👑'; }
+          
+          const progress = points >= 5000 ? 100 : Math.min(100, (points / nextTier) * 100);
 
-            <h4 style={{ fontSize: 16, marginBottom: 12 }}>سجل حركات المحفظة</h4>
-            {transactions.length === 0 ? (
-              <div className="muted" style={{ textAlign: 'center', padding: '20px' }}>لا توجد حركات سابقة</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {transactions.map((tx: any) => (
-                  <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 12, background: 'var(--bg-2)', borderRadius: 10, border: '1px solid var(--border)', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500 }}>{tx.description}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(tx.created_at).toLocaleString('ar-EG')}</div>
+          return (
+            <div className="wallet-dashboard" style={{ animation: 'fade-in 0.3s ease' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, marginBottom: 24 }}>
+                
+                {/* Balance Card */}
+                <div className="card" style={{ background: 'linear-gradient(135deg, var(--bg-2) 0%, var(--bg) 100%)', borderRadius: 20, padding: 24, border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: -20, left: -20, fontSize: 120, opacity: 0.03, transform: 'rotate(-15deg)' }}>💳</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                      <Zap size={24} />
                     </div>
-                    <div style={{ fontWeight: 'bold', direction: 'ltr', color: tx.type === 'spend' ? 'var(--danger)' : 'var(--success)' }}>
-                      {tx.type === 'spend' ? '-' : '+'}{tx.amount} ج.م
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 15, color: 'var(--text-muted)', fontWeight: 600 }}>رصيد المحفظة الحالي</h3>
+                      <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', marginTop: 4 }}>{profile.wallet_balance || 0} <span style={{ fontSize: 16, color: 'var(--text-muted)', fontWeight: 500 }}>ج.م</span></div>
                     </div>
                   </div>
-                ))}
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    يمكنك استخدام رصيدك في سداد دفعات مشاريعك القادمة بكل سهولة.
+                  </p>
+                </div>
+
+                {/* Points & Tier Card */}
+                <div className="card" style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(245, 158, 11, 0.05) 100%)', borderRadius: 20, padding: 24, border: '1px solid var(--primary-light)', position: 'relative' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 15, color: 'var(--text-muted)', fontWeight: 600 }}>نقاط الولاء</h3>
+                      <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {points} <Sparkles size={24} color="var(--accent)" />
+                      </div>
+                    </div>
+                    <div style={{ background: tierColor, color: '#fff', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4, boxShadow: `0 4px 12px ${tierColor}40` }}>
+                      {tierIcon} العضوية الـ{tier}
+                    </div>
+                  </div>
+
+                  {/* Progress to next tier */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6, color: 'var(--text-muted)', fontWeight: 500 }}>
+                      <span>تقدمك نحو العضوية الـ{nextTierName}</span>
+                      <span>{points} / {nextTier}</span>
+                    </div>
+                    <div style={{ height: 8, background: 'var(--bg)', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${progress}%`, background: `linear-gradient(90deg, var(--primary), ${tierColor})`, borderRadius: 4, transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+                    </div>
+                  </div>
+
+                  {points >= 100 ? (
+                    <button onClick={handleRedeem} disabled={loading} className="btn btn--primary" style={{ width: '100%', background: 'linear-gradient(90deg, var(--primary), var(--accent))', border: 0 }}>
+                      {loading ? 'جاري التحويل...' : '✨ استبدل 100 نقطة بـ 10 ج.م'}
+                    </button>
+                  ) : (
+                    <button disabled className="btn btn--outline" style={{ width: '100%', opacity: 0.6 }}>
+                      اجمع 100 نقطة للاستبدال
+                    </button>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Referral Section */}
+              <div className="card" style={{ borderRadius: 20, padding: 24, marginBottom: 24, border: '1px dashed var(--primary)', background: 'var(--bg-2)', textAlign: 'center' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: '50%', background: 'rgba(124,58,237,0.1)', color: 'var(--primary)', marginBottom: 16 }}>
+                  <User size={32} />
+                </div>
+                <h3 style={{ fontSize: 18, marginBottom: 8 }}>شارك الرابط واكسب نقاط! 🤝</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20, maxWidth: 500, margin: '0 auto 20px' }}>
+                  شارك رابط الدعوة الخاص بك مع أصدقائك. سيحصل صديقك على خصم، وستحصل أنت على نقاط إضافية فور تسجيله وطلبه أول مشروع!
+                </p>
+                <div 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/?ref=${profile.referral_code}`);
+                    onToast('تم نسخ الرابط بنجاح! شاركه الآن.', 'success');
+                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: 'var(--bg)', border: '1px solid var(--border)', padding: '12px 24px', borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                >
+                  <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)', letterSpacing: 2 }}>{profile.referral_code}</span>
+                  <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>نسخ الرابط</span>
+                </div>
+              </div>
+
+              {/* Transactions History */}
+              <div className="card" style={{ borderRadius: 20, padding: 24 }}>
+                <h4 style={{ fontSize: 18, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Activity size={20} color="var(--primary)" /> سجل الحركات
+                </h4>
+                {transactions.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--bg-2)', borderRadius: 12 }}>
+                    <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.5 }}>📭</div>
+                    <div className="muted" style={{ fontWeight: 500 }}>لا توجد حركات حتى الآن</div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>ابدأ بطلب خدماتنا أو دعوة الأصدقاء لجمع النقاط!</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {transactions.map((tx: any) => (
+                      <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 16, background: 'var(--bg-2)', borderRadius: 14, border: '1px solid var(--border)', alignItems: 'center', transition: 'transform 0.2s', cursor: 'default' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 10, background: tx.type === 'spend' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: tx.type === 'spend' ? '#ef4444' : '#22c55e' }}>
+                            {tx.type === 'spend' ? <ArrowLeft size={20} /> : <ArrowRight size={20} />}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 15, fontWeight: 600 }}>{tx.description}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{new Date(tx.created_at).toLocaleString('ar-EG')}</div>
+                          </div>
+                        </div>
+                        <div style={{ fontWeight: 800, fontSize: 16, direction: 'ltr', color: tx.type === 'spend' ? 'var(--danger)' : 'var(--success)' }}>
+                          {tx.type === 'spend' ? '-' : '+'}{tx.amount} <span style={{ fontSize: 12, fontWeight: 600 }}>ج.م</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         <div style={{ display: dashboardTab === 'orders' ? 'block' : 'none' }}>
 

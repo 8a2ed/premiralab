@@ -29,6 +29,35 @@ router.get('/profile', (req: any, res) => {
   }
 });
 
+// Redeem points for wallet balance (Ratio: 100 points = 10 EGP)
+router.post('/redeem-points', (req: any, res) => {
+  try {
+    const client = db.prepare('SELECT id, wallet_balance, points FROM clients WHERE id = ?').get(req.client.id) as any;
+    if (!client) return res.status(404).json({ error: 'Client not found' });
+
+    const pointsToRedeem = 100;
+    const egpReward = 10;
+
+    if (client.points < pointsToRedeem) {
+      return res.status(400).json({ error: `تحتاج إلى ${pointsToRedeem} نقطة على الأقل للتحويل.` });
+    }
+
+    db.transaction(() => {
+      // Deduct points, add balance
+      db.prepare('UPDATE clients SET points = points - ?, wallet_balance = wallet_balance + ? WHERE id = ?')
+        .run(pointsToRedeem, egpReward, req.client.id);
+      
+      // Log transaction
+      db.prepare('INSERT INTO wallet_transactions (client_id, amount, type, description) VALUES (?, ?, ?, ?)')
+        .run(req.client.id, egpReward, 'earn', `استبدال ${pointsToRedeem} نقطة بمكافأة نقدية`);
+    })();
+
+    res.json({ message: 'تم استبدال النقاط بنجاح!', egpReward, pointsDeducted: pointsToRedeem });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get all orders for the logged in client
 router.get('/orders', (req: any, res) => {
   try {
