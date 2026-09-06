@@ -262,7 +262,7 @@ export function Home({
         }
       `}</style>
 
-      <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} isClientLoggedIn={!!localStorage.getItem('client_token')} />
+      <Nav site={data.site} onOrder={() => openOrder()} onClientClick={onClientClick} isClientLoggedIn={!!sessionStorage.getItem('client_user')} />
 
       <main id="top">
         {/* Hero Section */}

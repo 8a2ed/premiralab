@@ -99,6 +99,7 @@ export function Nav({ site = {} as SiteSettings, onOrder, onClientClick, isClien
               </button>
             ))}
             <button
+              className="nav-link-btn"
               onClick={onClientClick}
               aria-label="تسجيل الدخول / حسابي"
               style={{ color: 'var(--accent)', fontWeight: 'bold' }}
