@@ -113,7 +113,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
     try {
       const res = await api.client.login({ email, password });
       setClient(res);
-      sessionStorage.setItem('client_user', JSON.stringify(res.client || res));
+      sessionStorage.setItem('client_user', JSON.stringify(res));
       onToast('تم تسجيل الدخول بنجاح', 'success');
       
       if (hasPendingOrder()) {
@@ -137,7 +137,7 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
       const res = await api.client.register({ name, phone, email, password, referralCode: refCode });
       if (refCode) localStorage.removeItem('referral_code');
       setClient(res);
-      sessionStorage.setItem('client_user', JSON.stringify(res.client || res));
+      sessionStorage.setItem('client_user', JSON.stringify(res));
       onToast('تم إنشاء الحساب بنجاح', 'success');
       
       if (hasPendingOrder()) {
@@ -429,12 +429,14 @@ export function ClientPortal({ onToast, onNavigateHome }: ClientPortalProps) {
             </button>
             <h3 className="card-title" style={{ fontSize: 20 }}>مشروع: {activeProject.project.title}</h3>
             
-            <div className="progress-bar" style={{ marginTop: 20, height: 10, borderRadius: 10 }}>
-              <div className="progress-bar-fill" style={{ width: `${activeProject.project.progress}%` }}></div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 13 }} className="muted">
-              <span>تقدم المشروع</span>
-              <strong style={{ color: 'var(--accent)' }}>{activeProject.project.progress}%</strong>
+            <div style={{ marginTop: 20 }}>
+              <div style={{ height: 10, borderRadius: 10, overflow: 'hidden', background: 'var(--bg-3)' }}>
+                <div className="progress-bar-fill" style={{ height: '100%', width: `${activeProject.project.progress}%` }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 13 }} className="muted">
+                <span>تقدم المشروع</span>
+                <strong style={{ color: 'var(--accent)' }}>{activeProject.project.progress}%</strong>
+              </div>
             </div>
 
             {activeProject.files?.length > 0 && (

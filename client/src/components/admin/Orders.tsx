@@ -701,7 +701,6 @@ function PaymentEditModal({ order, onClose, onSaved }: PaymentEditModalProps) {
                 try {
                   await api.admin.deleteReceipt(order.id);
                   onClose();
-                  load();
                 } catch (err) {
                   alert((err as Error).message);
                 }

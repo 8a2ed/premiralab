@@ -5,7 +5,7 @@ import {
   Tag, Receipt, Printer, Share2
 } from 'lucide-react';
 import { api } from '../lib/api.js';
-import { money, formatDate, formatBytes } from '../lib/utils.js';
+import { money, formatDate, formatBytes, trackEvent } from '../lib/utils.js';
 import { ORDER_STATUS_LABELS } from '../types.js';
 import type { TrackerData } from '../types.js';
 import { Skeleton } from '../components/ui/Skeleton.js';

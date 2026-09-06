@@ -84,6 +84,10 @@ export interface SiteSettings {
   cta_btn_wa?:          string;
   about_text?:          string;
   footer_text?:         string;
+  // --- SEO Settings ---
+  seo_title?:           string;
+  seo_description?:     string;
+  seo_image?:           string;
 }
 
 export interface Package {
@@ -149,6 +153,9 @@ export interface Client {
   has_password?: number | boolean;
   total_spent?:  number;
   active_orders?: number;
+  wallet_balance?: number;
+  points?:       number;
+  referral_code?: string;
   created_at:    string;
   updated_at:    string;
 }

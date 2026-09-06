@@ -124,10 +124,10 @@ const AnimatedStat = ({ value }: { value: string }) => {
     requestAnimationFrame(animate);
   }, [hasStarted, targetNumber]);
 
-  if (!match) return <div className="stat-tile__number">{value}</div>;
+  if (!match) return <div className="stat-tile__number" dir="ltr">{value}</div>;
 
   return (
-    <div className="stat-tile__number" ref={ref}>
+    <div className="stat-tile__number" ref={ref} dir="ltr" style={{ display: 'inline-block' }}>
       {prefix}{count}{suffix}
     </div>
   );
@@ -680,12 +680,12 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   }, [f]);
 
   useEffect(() => {
-    api.client.me().then(res => {
-      setF(prev => ({
+    api.client.me().then((res: any) => {
+      setF((prev: any) => ({
         ...prev,
-        name: res.client.name,
-        phone: res.client.phone || '',
-        email: res.client.email || ''
+        name: res.client?.name || res.name || prev.name,
+        phone: res.client?.phone || res.phone || '',
+        email: res.client?.email || res.email || ''
       }));
     }).catch(() => {});
   }, []);
@@ -694,10 +694,10 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const [clientProfile, setClientProfile] = useState<any>(null);
   useEffect(() => {
     if (localStorage.getItem('client_token')) {
-      api.client.profile().then(res => {
+      api.client.profile().then((res: any) => {
         if (res.client) {
           setClientProfile(res.client);
-          setF(prev => ({ ...prev, name: res.client.name, phone: res.client.phone, email: res.client.email }));
+          setF((prev: any) => ({ ...prev, name: res.client.name, phone: res.client.phone, email: res.client.email }));
         }
       }).catch(() => {});
     }
@@ -1542,7 +1542,9 @@ function FloatingWhatsApp({ whatsapp, brand }: { whatsapp?: string; brand?: stri
         onClick={() => setOpen(o => !o)}
         aria-label="تواصل عبر واتساب"
       >
-        <MessageCircle size={26} />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+        </svg>
         <span className="floating-wa-pulse" />
       </button>
     </div>

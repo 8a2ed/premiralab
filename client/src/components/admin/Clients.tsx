@@ -347,7 +347,7 @@ interface ClientControlModalProps {
 }
 
 function ClientControlModal({ client, onClose, onToast, onUpdated }: ClientControlModalProps) {
-  const [activeTab,     setActiveTab]     = useState<'security' | 'profile' | 'orders'>('security');
+  const [activeTab,     setActiveTab]     = useState<'security' | 'profile' | 'orders' | 'wallet'>('security');
   const [fullData,      setFullData]      = useState<{ client: Client; orders: Order[]; stats: any } | null>(null);
   const [, setLoadingData]  = useState(true);
 
