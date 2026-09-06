@@ -706,7 +706,7 @@ function OrderModal({ packages, services, defaultPackage, initialProjectType, on
   const [checkingPromo, setCheckingPromo] = useState(false);
   const [promoResult, setPromoResult] = useState<{ success?: string; error?: string; discount?: number; type?: string } | null>(null);
 
-  const updateF = (updates: Partial<typeof f>) => setF(prev => ({ ...prev, ...updates }));
+  const updateF = (updates: Partial<typeof f>) => setF((prev: any) => ({ ...prev, ...updates }));
 
   const selectedPackage = packages.find(p => p.id === Number(f.packageId));
   const selectedService  = services.find(s => s.id === Number(f.serviceId));
