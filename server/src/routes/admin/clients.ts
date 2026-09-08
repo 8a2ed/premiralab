@@ -32,6 +32,9 @@ router.get('/', auth, admin, (req, res, next) => {
         c.email, 
         c.created_at, 
         c.updated_at,
+        c.wallet_balance,
+        c.points,
+        c.referral_code,
         CASE WHEN c.password_hash IS NOT NULL AND c.password_hash != '' THEN 1 ELSE 0 END AS has_password,
         COUNT(o.id) AS orders_count,
         COALESCE(SUM(o.paid_amount), 0) AS total_spent,
@@ -57,6 +60,9 @@ router.get('/:id', auth, admin, (req, res, next) => {
         c.email, 
         c.created_at, 
         c.updated_at,
+        c.wallet_balance,
+        c.points,
+        c.referral_code,
         CASE WHEN c.password_hash IS NOT NULL AND c.password_hash != '' THEN 1 ELSE 0 END AS has_password
       FROM clients c 
       WHERE c.id = ?
